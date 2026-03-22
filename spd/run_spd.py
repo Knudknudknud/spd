@@ -113,10 +113,16 @@ def optimize(
         component_params.extend(list(component.parameters()))
         gate_params.extend(list(gates[name].parameters()))
 
-    #Change active module to determine which method we use!
-    active_module = CrossLayerCorrelation(C=config.C).to(device)
-    gates["active_module"] = active_module
-    gate_params.extend(list(active_module.parameters()))
+    from spd.models.gnan import TensorGNAN
+    gnan = TensorGNAN(
+        in_channels=1,
+        out_channels=1,
+        n_layers=2,
+        hidden_channels=16,
+        device=device,
+    ).to(device)
+    gates["active_module"] = gnan
+    gate_params.extend(list(gnan.parameters()))
 
     assert len(component_params) > 0, "No parameters found in components to optimize"
 
@@ -165,8 +171,7 @@ def optimize(
         As = {module_name: components[module_name].A for module_name in components}
 
         causal_importances, causal_importances_upper_leaky = calc_causal_importances(
-            pre_weight_acts=pre_weight_acts, As=As, gates=gates, detach_inputs=False
-        )
+        pre_weight_acts=pre_weight_acts, As=As, gates=gates, detach_inputs=False, device=device)
 
         for layer_name, ci in causal_importances.items():
             alive_components[layer_name] = alive_components[layer_name] | (ci > 0.1).any(dim=(0, 1))

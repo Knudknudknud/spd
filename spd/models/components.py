@@ -7,15 +7,6 @@ from torch.nn import functional as F
 from spd.module_utils import init_param_
 from torch_geometric.nn import GATConv
 
-class CausalGate(nn.Module):
-    def __init__(self, C: int):
-        super().__init__()
-        self.scale = nn.Parameter(torch.ones(C))  # one scale per component
-
-    def forward(self, current_acts, prev_acts):
-        # component j in current layer is only informed by component j in prev layer
-        return current_acts + self.scale * prev_acts                       # (batch, C)
-
 
 class Gate(nn.Module):
     """A gate that maps a single input to a single output."""
@@ -31,66 +22,6 @@ class Gate(nn.Module):
         return x * self.weight + self.bias
 
 
-class ComponentCorrelationGate(nn.Module):
-    def __init__(self, C: int):
-        super().__init__()
-        self.proj = nn.Linear(C, C)  # learns how to use the correlation
-
-    def forward(self, gate_output):
-        # gate_output: (batch, C)
-        corr = torch.mm(gate_output.T, gate_output) / gate_output.shape[0]  # (C, C)
-        return gate_output + self.proj(torch.mm(gate_output, corr))          # (batch, C)
-
-class CrossLayerMLP(nn.Module):
-    def __init__(self, C: int):
-        super().__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(2 * C, C),
-            nn.ReLU(),
-            nn.Linear(C, C),
-            nn.ReLU(),
-            nn.Linear(C, C),
-        )
-
-    def forward(self, current_acts, prev_acts):
-        combined = torch.cat([current_acts, prev_acts], dim=-1)
-        return self.layers(combined)
-    
-
-
-class CrossLayerCorrelation(nn.Module):
-    def __init__(self, C: int):
-        super().__init__()
-        self.proj = nn.Linear(C, C)  # learns how to use the cross-layer correlation
-
-    def forward(self, current_acts, prev_acts):
-        # (batch, C) x (C, batch) -> (C, C)
-        # entry [i,j] = how much component i in current layer co-activates with component j in prev layer
-        cross_corr = torch.mm(current_acts.T, prev_acts) / current_acts.shape[0]
-        
-        # Each component in current layer gets a signal from its correlation with all prev components
-        return current_acts + self.proj(torch.mm(current_acts, cross_corr))
-
-
-
-#Basically just the mean from the previous layer.
-class GraphMLP(nn.Module):
-    def __init__(self, C: int):
-        super().__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(2 * C, C),
-            nn.ReLU(),
-            nn.Linear(C, C),
-            nn.ReLU(),
-            nn.Linear(C, C),
-        )
-
-    def forward(self, current_acts, prev_acts):
-        prev_mean = prev_acts.mean(dim=-1, keepdim=True).expand_as(current_acts)
-        combined = torch.cat([current_acts, prev_mean], dim=-1)
-        return self.layers(combined)
-    
-    
 
 
 class GateMLP(nn.Module):
