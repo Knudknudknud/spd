@@ -21,6 +21,43 @@ class Gate(nn.Module):
         return x * self.weight + self.bias
 
 
+class GATGate(nn.Module):
+
+    def __init__(self, C:int, hidden=32):
+        super().__init__()
+
+        self.W = nn.Linear(1, hidden, bias=False)
+        self.attn = nn.Linear(2 * hidden, 1, bias=False)
+
+        self.out = nn.Linear(hidden, 1)
+
+    def forward(self, x):
+        # x shape (..., C)
+
+        B = x.shape[0]
+        C = x.shape[-1]
+
+        x = x.unsqueeze(-1)      # (B, C, 1)
+
+        z = self.W(x)            # (B, C, hidden)
+
+        z_i = z.unsqueeze(2)     # (B, C, 1, hidden)
+        z_j = z.unsqueeze(1)     # (B, 1, C, hidden)
+
+        pair = torch.cat([z_i.expand(-1,-1,C,-1),
+                          z_j.expand(-1,C,-1,-1)], dim=-1)
+
+        e = F.leaky_relu(self.attn(pair)).squeeze(-1)   # (B, C, C)
+
+        alpha = torch.softmax(e, dim=-1)
+
+        out = torch.matmul(alpha, z)   # (B, C, hidden)
+
+        out = self.out(out).squeeze(-1)
+
+        return out
+
+
 class GateMLP(nn.Module):
     """A gate with a hidden layer that maps a single input to a single output."""
 

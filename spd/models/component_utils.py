@@ -138,17 +138,29 @@ def calc_causal_importances(
     causal_importances = {}
     causal_importances_upper_leaky = {}
 
+    # For each layer
     for param_name in pre_weight_acts:
+        #Extract all activations, from a given layer
         acts = pre_weight_acts[param_name]
 
+        #If the acts contain integers (is an embedding layer), then select the tensor of embeddings
         if not acts.dtype.is_floating_point:
             # Embedding layer
             component_act = As[param_name][acts]
-        else:
-            # Linear layer
-            component_act = einops.einsum(acts, As[param_name], "... d_in, d_in C -> ... C")
 
+        #Otherwise we are in any linear layer in the network hW^T+b, and we can work with it directly.
+        else:
+            #Matrix multiplicaiton between the activations of the previous layer and the A matrix of the given layer.
+            #This is where i would inject the graph neural network
+            #This creates a matrix with the scalar from each component. 
+            #As is then the matrix containing all components, hence C is the vector of c values, one for each component.
+            component_act = einops.einsum(acts, As[param_name], "... d_in, d_in C -> ... C")
+            #Question is if we should use a different measure for component act or not.
+        
         gate_input = component_act.detach() if detach_inputs else component_act
+        #Send it into the gate!!
+
+
         gate_output = gates[param_name](gate_input)
         causal_importances[param_name] = lower_leaky_relu(gate_output)
         causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
