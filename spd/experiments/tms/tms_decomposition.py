@@ -111,6 +111,7 @@ def main(config_path_or_obj: Path | str | Config) -> None:
     if target_model.config.tied_weights:
         tied_weights = [("linear1", "linear2")]
 
+    
     optimize(
         target_model=target_model,
         config=config,

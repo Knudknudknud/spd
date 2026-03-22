@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 
 from spd.models.component_model import ComponentModel
 from spd.models.components import EmbeddingComponent, Gate, GateMLP, LinearComponent
+import torch.nn as nn
 from spd.utils import extract_batch_data
 
 
@@ -118,23 +119,51 @@ def upper_leaky_relu(x: Tensor, alpha: float = 0.01) -> Tensor:
     return torch.where(x > 1, 1 + alpha * (x - 1), F.relu(x))
 
 
+# def calc_causal_importances(
+#     pre_weight_acts: dict[str, Float[Tensor, "... d_in"] | Int[Tensor, "... pos"]],
+#     As: Mapping[str, Float[Tensor, "d_in C"]],
+#     gates: Mapping[str, Gate | GateMLP],
+#     detach_inputs: bool = False,
+# ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
+#     """Calculate component activations and causal importances in one pass to save memory.
+
+#     Args:
+#         pre_weight_acts: The activations before each layer in the target model.
+#         As: The A matrix at each layer.
+#         gates: The gates to use for the mask.
+#         detach_inputs: Whether to detach the inputs to the gates.
+
+#     Returns:
+#         Tuple of (causal_importances, causal_importances_upper_leaky) dictionaries for each layer.
+#     """
+#     causal_importances = {}
+#     causal_importances_upper_leaky = {}
+
+#     for param_name in pre_weight_acts:
+#         acts = pre_weight_acts[param_name]
+
+#         if not acts.dtype.is_floating_point:
+#             # Embedding layer
+#             component_act = As[param_name][acts]
+#         else:
+#             # Linear layer
+#             component_act = einops.einsum(acts, As[param_name], "... d_in, d_in C -> ... C")
+
+#         gate_input = component_act.detach() if detach_inputs else component_act
+#         gate_output = gates[param_name](gate_input)
+#         causal_importances[param_name] = lower_leaky_relu(gate_output)
+#         causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
+
+#     return causal_importances, causal_importances_upper_leaky
+
+
 def calc_causal_importances(
     pre_weight_acts: dict[str, Float[Tensor, "... d_in"] | Int[Tensor, "... pos"]],
     As: Mapping[str, Float[Tensor, "d_in C"]],
     gates: Mapping[str, Gate | GateMLP],
     detach_inputs: bool = False,
 ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
-    """Calculate component activations and causal importances in one pass to save memory.
-
-    Args:
-        pre_weight_acts: The activations before each layer in the target model.
-        As: The A matrix at each layer.
-        gates: The gates to use for the mask.
-        detach_inputs: Whether to detach the inputs to the gates.
-
-    Returns:
-        Tuple of (causal_importances, causal_importances_upper_leaky) dictionaries for each layer.
-    """
+    """Calculate component activations and causal importances using GAT instead of gates."""
     causal_importances = {}
     causal_importances_upper_leaky = {}
 
@@ -145,7 +174,6 @@ def calc_causal_importances(
 
         #If the acts contain integers (is an embedding layer), then select the tensor of embeddings
         if not acts.dtype.is_floating_point:
-            # Embedding layer
             component_act = As[param_name][acts]
 
         #Otherwise we are in any linear layer in the network hW^T+b, and we can work with it directly.
@@ -160,9 +188,11 @@ def calc_causal_importances(
         gate_input = component_act.detach() if detach_inputs else component_act
         #Send it into the gate!!
 
-
+        
         gate_output = gates[param_name](gate_input)
         causal_importances[param_name] = lower_leaky_relu(gate_output)
         causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
+        #prev_gate_output = gate_output.detach() if detach_inputs else gate_output
 
     return causal_importances, causal_importances_upper_leaky
+

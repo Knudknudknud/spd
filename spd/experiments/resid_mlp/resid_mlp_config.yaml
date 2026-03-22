@@ -40,7 +40,7 @@ save_freq: null
 
 # --- Pretrained model info ---
 pretrained_model_class: "spd.experiments.resid_mlp.models.ResidualMLP"
-pretrained_model_path: "wandb:spd-train-resid-mlp/runs/4p05k7vn"
+pretrained_model_path: "C:\\Users\\Knud\\uni\\spd\\spd\\experiments\\resid_mlp\\out\\resid_mlp_identity_act_plus_resid_n-features100_d-resid1000_d-mlp25_n-layers2_seed0_p0.01_random_embedding_True_identity_embedding_False_bias_False_False_lossreadoff_20260314_180417_804\\resid_mlp.pth"
 
 # --- Task Specific ---
 task_config:

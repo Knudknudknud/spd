@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.optim as optim
 import wandb
 from jaxtyping import Bool, Float, Int
-from torch import Tensor
+from torch import Tensor, device
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -25,7 +25,8 @@ from spd.models.component_utils import (
     calc_ci_l_zero,
     component_activation_statistics,
 )
-from spd.models.components import EmbeddingComponent, Gate, GateMLP, LinearComponent
+from spd.models.components import EmbeddingComponent, Gate, GateMLP, LinearComponent, CrossLayerCorrelation, CrossLayerMLP,GraphMLP
+from spd.models.components import ComponentCorrelationGate
 from spd.plotting import (
     create_embed_ci_sample_table,
     plot_ci_histograms,
@@ -105,11 +106,17 @@ def optimize(
             components[tgt_name].B.data = components[src_name].A.data.T
             components[tgt_name].A.data = components[src_name].B.data.T
 
+
     component_params: list[torch.nn.Parameter] = []
     gate_params: list[torch.nn.Parameter] = []
     for name, component in components.items():
         component_params.extend(list(component.parameters()))
         gate_params.extend(list(gates[name].parameters()))
+
+    #Change active module to determine which method we use!
+    active_module = CrossLayerCorrelation(C=config.C).to(device)
+    gates["active_module"] = active_module
+    gate_params.extend(list(active_module.parameters()))
 
     assert len(component_params) > 0, "No parameters found in components to optimize"
 
