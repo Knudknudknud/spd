@@ -342,10 +342,22 @@ def calc_causal_importances(
         #Average activation over the batch, perhaps this is insufficient? Will test next week.
         #I believe it has problems with batch and GNAN as they expect different dimensions.
         #Would matter more with multiple features? Talk to lukas.
-        node_feats = torch.cat([
-            all_gate_outputs[n].reshape(-1, all_gate_outputs[n].shape[-1]).mean(dim=0)
-            for n in pre_weight_acts
-        ], dim=0).unsqueeze(-1)
+        # Build one feature per node (component) for the GNAN
+
+        #Idk some issue with gnan not taking batches, and 
+        #since its a graph it prolly has no quick fix, i'll rewatch the youtube series.
+        per_layer_means = []
+        for n in pre_weight_acts:
+            acts = all_gate_outputs[n]          # (batch, pos, C)
+            flat = acts.reshape(-1, acts.shape[-1])  # (batch*pos, C)
+            mean = flat.mean(dim=0)             # (C,) — avg activation per component
+            per_layer_means.append(mean)
+
+        # Concatenate all layers: (C_layer0 + C_layer1 + ... ) = (total_nodes,)
+        node_feats = torch.cat(per_layer_means, dim=0)
+
+        # GNAN expects (total_nodes, 1) — one feature per node
+        node_feats = node_feats.unsqueeze(-1)
 
 
         graph_data = pyg.data.Data(
@@ -361,7 +373,7 @@ def calc_causal_importances(
         for param_name in pre_weight_acts:
             C = all_gate_outputs[param_name].shape[-1]
             layer_out = gnn_out[offset:offset + C].squeeze(-1)  # (C,)
-            #Residual, f(x) + x - might be dumb?
+            #Residual, x+ gnan(mean(x)) - over the batch? I feel like this is what to look at.
             all_gate_outputs[param_name] = all_gate_outputs[param_name] + layer_out
             offset += C
 
