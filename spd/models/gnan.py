@@ -48,10 +48,13 @@ class TensorGNAN(nn.Module):
 
         for name, param in self.named_parameters():
             if 'weight' in name:
-                nn.init.xavier_normal_(param, gain=0.01)
+                #changed from 0.01
+                nn.init.xavier_normal_(param, gain=1.0)
             elif 'bias' in name:
                 nn.init.constant_(param, 0)
 
+
+#It doesnt even use the idnex?
     def forward(self, inputs):
         x, edge_index, node_distances = inputs.x, inputs.edge_index, inputs.node_distances
         fx = torch.empty(x.size(0), x.size(1), self.out_channels).to(self.device)

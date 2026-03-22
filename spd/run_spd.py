@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torchgen import model
 import wandb
 from jaxtyping import Bool, Float, Int
 from torch import Tensor, device
@@ -25,8 +26,7 @@ from spd.models.component_utils import (
     calc_ci_l_zero,
     component_activation_statistics,
 )
-from spd.models.components import EmbeddingComponent, Gate, GateMLP, LinearComponent, CrossLayerCorrelation, CrossLayerMLP,GraphMLP
-from spd.models.components import ComponentCorrelationGate
+from spd.models.components import EmbeddingComponent, Gate, GateMLP, LinearComponent
 from spd.plotting import (
     create_embed_ci_sample_table,
     plot_ci_histograms,
@@ -113,17 +113,22 @@ def optimize(
         component_params.extend(list(component.parameters()))
         gate_params.extend(list(gates[name].parameters()))
 
+
     from spd.models.gnan import TensorGNAN
+
     gnan = TensorGNAN(
         in_channels=1,
         out_channels=1,
         n_layers=2,
         hidden_channels=16,
         device=device,
+        normalize_rho=False,
     ).to(device)
-    gates["active_module"] = gnan
-    gate_params.extend(list(gnan.parameters()))
 
+    model.gates["active_module"] = gnan
+    gates["active_module"] = gnan      
+    gate_params.extend(list(gnan.parameters()))
+    
     assert len(component_params) > 0, "No parameters found in components to optimize"
 
     optimizer = optim.AdamW(component_params + gate_params, lr=config.lr, weight_decay=0)
@@ -171,7 +176,7 @@ def optimize(
         As = {module_name: components[module_name].A for module_name in components}
 
         causal_importances, causal_importances_upper_leaky = calc_causal_importances(
-        pre_weight_acts=pre_weight_acts, As=As, gates=gates, detach_inputs=False, device=device)
+        pre_weight_acts=pre_weight_acts, As=As, gates=gates, detach_inputs=False)
 
         for layer_name, ci in causal_importances.items():
             alive_components[layer_name] = alive_components[layer_name] | (ci > 0.1).any(dim=(0, 1))
@@ -284,7 +289,6 @@ def optimize(
                             v.savefig(out_dir / f"{k}_{step}.png")
                             tqdm.write(f"Saved plot to {out_dir / f'{k}_{step}.png'}")
 
-        # --- Saving Checkpoint --- #
         if (
             (config.save_freq is not None and step % config.save_freq == 0 and step > 0)
             or step == config.steps
@@ -297,8 +301,7 @@ def optimize(
                     str(out_dir / f"optimizer_{step}.pth"), base_path=str(out_dir), policy="now"
                 )
 
-        # --- Backward Pass & Optimize --- #
-        # Skip gradient step if we are at the last step (last step just for plotting and logging)
+
         if step != config.steps:
             total_loss.backward(retain_graph=True)
 
@@ -312,4 +315,15 @@ def optimize(
 
             optimizer.step()
 
+            if step % config.print_freq == 0:
+                # Check GNN weights are actually changing
+                for name, param in gnan.named_parameters():
+                    if param.grad is not None:
+                        tqdm.write(f"GNN {name}: grad_norm={param.grad.norm().item():.6f}, weight_norm={param.norm().item():.6f}")
+                    else:
+                        tqdm.write(f"GNN {name}: NO GRADIENT")
+
+
+        torch.save(gnan.state_dict(), out_dir / "gnan.pth")
+    logger.info(f"Saved GNAN to {out_dir / 'gnan.pth'}")
     logger.info("Finished training loop.")

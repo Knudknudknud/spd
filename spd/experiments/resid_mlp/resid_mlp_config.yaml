@@ -35,13 +35,12 @@ n_eval_steps: 100
 # --- Logging & Saving ---
 image_freq: 5_000
 image_on_first_step: true
-print_freq: 100
+print_freq: 1000
 save_freq: null
 
 # --- Pretrained model info ---
 pretrained_model_class: "spd.experiments.resid_mlp.models.ResidualMLP"
-pretrained_model_path: "C:\\Users\\Knud\\uni\\spd\\spd\\experiments\\resid_mlp\\out\\resid_mlp_identity_act_plus_resid_n-features100_d-resid1000_d-mlp25_n-layers2_seed0_p0.01_random_embedding_True_identity_embedding_False_bias_False_False_lossreadoff_20260314_180417_804\\resid_mlp.pth"
-
+pretrained_model_path: "C:\\Users\\Knud\\uni\\spd\\spd\\experiments\\resid_mlp\\out\\resid_mlp_identity_act_plus_resid_n-features102_d-resid1000_d-mlp17_n-layers3_seed0_p0.01_random_embedding_True_identity_embedding_False_bias_False_False_lossreadoff_20260314_173705_901\\resid_mlp.pth"
 # --- Task Specific ---
 task_config:
   task_name: residual_mlp
