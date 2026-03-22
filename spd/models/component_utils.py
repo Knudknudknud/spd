@@ -348,9 +348,9 @@ def calc_causal_importances(
         #since its a graph it prolly has no quick fix, i'll rewatch the youtube series.
         per_layer_means = []
         for n in pre_weight_acts:
-            acts = all_gate_outputs[n]          # (batch, pos, C)
-            flat = acts.reshape(-1, acts.shape[-1])  # (batch*pos, C)
-            mean = flat.mean(dim=0)             # (C,) — avg activation per component
+            acts = all_gate_outputs[n]                                          # (batch, pos, C)
+            flat = acts.reshape(acts.shape[0] * acts.shape[1], acts.shape[2])   # (batch*pos, C)
+            mean = flat.mean(dim=0)                                             # (C,) — avg activation per component
             per_layer_means.append(mean)
 
         # Concatenate all layers: (C_layer0 + C_layer1 + ... ) = (total_nodes,)
