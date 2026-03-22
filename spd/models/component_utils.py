@@ -341,7 +341,7 @@ def calc_causal_importances(
 
         #Average activation over the batch, perhaps this is insufficient? Will test next week.
         #I believe it has problems with batch and GNAN as they expect different dimensions.
-        #Would matter more with multiple features? Talk to galke.
+        #Would matter more with multiple features? Talk to lukas.
         node_feats = torch.cat([
             all_gate_outputs[n].reshape(-1, all_gate_outputs[n].shape[-1]).mean(dim=0)
             for n in pre_weight_acts

@@ -7,16 +7,16 @@ from spd.models.gnan import TensorGNAN
 # Load model
 gnan = TensorGNAN(in_channels=1, out_channels=1, n_layers=2, hidden_channels=16, device='cpu')
 
-#gnan.load_state_dict(torch.load("spd\\experiments\\resid_mlp\\out\\gnan_version\\gnan.pth", map_location='cpu'))
+gnan.load_state_dict(torch.load("spd\\experiments\\resid_mlp\\out\\gnan_version\\gnan.pth", map_location='cpu'))
 
-gnan.load_state_dict(torch.load("spd\\experiments\\tms\\out\\to_show_off\\40_10_gnan_latest_2_hidden\\gnan.pth", map_location='cpu'))
+#gnan.load_state_dict(torch.load("spd\\experiments\\tms\\out\\to_show_off\\40_10_gnan_latest_2_hidden\\gnan.pth", map_location='cpu'))
 gnan.eval()
 
 n_layers = 6  # number of layers in your model
 max_distance = n_layers - 1
 
 # rho values over all distances
-y_input_values = torch.tensor([1/(1+i) for i in range(max_distance + 1)])
+y_input_values = torch.tensor([i for i in range(max_distance + 1)], dtype=torch.float32)
 rho_y_values = np.zeros(shape=(y_input_values.size(0),))
 for i, val in enumerate(y_input_values):
     rho_dist = gnan.rho.forward(val.view(-1, 1)).detach()
