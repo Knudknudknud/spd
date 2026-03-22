@@ -11,6 +11,8 @@ from spd.models.component_model import ComponentModel
 from spd.models.components import EmbeddingComponent, Gate, GateMLP, LinearComponent
 import torch.nn as nn
 from spd.utils import extract_batch_data
+import torch_geometric as pyg
+
 
 
 def calc_stochastic_masks(
@@ -156,46 +158,31 @@ def upper_leaky_relu(x: Tensor, alpha: float = 0.01) -> Tensor:
 
 #     return causal_importances, causal_importances_upper_leaky
 
+def _construct_edge_index(all_gate_outputs: dict, device: torch.device) -> Tensor:
+    total_nodes = sum(v.shape[-1] for v in all_gate_outputs.values())
+    all_nodes = torch.arange(total_nodes, device=device)
+    src = all_nodes.repeat(total_nodes)
+    dst = all_nodes.repeat_interleave(total_nodes)
+    mask = src != dst
+    edge_index = torch.stack([src[mask], dst[mask]], dim=0)
+    return edge_index
 
-# def calc_causal_importances(
-#     pre_weight_acts: dict[str, Float[Tensor, "... d_in"] | Int[Tensor, "... pos"]],
-#     As: Mapping[str, Float[Tensor, "d_in C"]],
-#     gates: Mapping[str, Gate | GateMLP],
-#     detach_inputs: bool = False,
-# ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
-#     """Calculate component activations and causal importances using GAT instead of gates."""
-#     causal_importances = {}
-#     causal_importances_upper_leaky = {}
 
-#     # For each layer
-#     for param_name in pre_weight_acts:
-#         #Extract all activations, from a given layer
-#         acts = pre_weight_acts[param_name]
+def _construct_node_distances(all_gate_outputs: dict, device: torch.device) -> Tensor:
+    layer_ids = []
+    for layer_idx, name in enumerate(all_gate_outputs.keys()):
+        C = all_gate_outputs[name].shape[-1]
+        layer_ids.extend([layer_idx] * C)
+    layer_ids = torch.tensor(layer_ids, dtype=torch.float, device=device).unsqueeze(-1)
+    node_distances = torch.cdist(layer_ids, layer_ids, p=1)
+    return node_distances
 
-#         #If the acts contain integers (is an embedding layer), then select the tensor of embeddings
-#         if not acts.dtype.is_floating_point:
-#             component_act = As[param_name][acts]
 
-#         #Otherwise we are in any linear layer in the network hW^T+b, and we can work with it directly.
-#         else:
-#             #Matrix multiplicaiton between the activations of the previous layer and the A matrix of the given layer.
-#             #This is where i would inject the graph neural network
-#             #This creates a matrix with the scalar from each component. 
-#             #As is then the matrix containing all components, hence C is the vector of c values, one for each component.
-#             component_act = einops.einsum(acts, As[param_name], "... d_in, d_in C -> ... C")
-#             #Question is if we should use a different measure for component act or not.
-        
-#         gate_input = component_act.detach() if detach_inputs else component_act
-#         #Send it into the gate!!
-
-        
-#         gate_output = gates[param_name](gate_input)
-#         causal_importances[param_name] = lower_leaky_relu(gate_output)
-#         causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
-#         #prev_gate_output = gate_output.detach() if detach_inputs else gate_output
-
-#     return causal_importances, causal_importances_upper_leaky
-
+def _remove_same_layer_edges(edge_index: Tensor, node_distances: Tensor) -> Tensor:
+    edge_src, edge_dst = edge_index[0], edge_index[1]
+    layer_diff = node_distances[edge_src, edge_dst]
+    cross_layer_mask = layer_diff > 0
+    return edge_index[:, cross_layer_mask]
 
 
 def calc_causal_importances(
@@ -204,11 +191,15 @@ def calc_causal_importances(
     gates: Mapping[str, Gate | GateMLP],
     detach_inputs: bool = False,
     device: str = "cpu",
+    allow_same_layer_connections: bool = True,
 ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
+
     causal_importances = {}
     causal_importances_upper_leaky = {}
 
     # First pass: collect all gate outputs
+    #Here we take that the dimension is 1, the inner product.
+    #Otherwise we would need ot add inner products between layers! as feature dim differ.
     all_gate_outputs = {}
     for param_name in pre_weight_acts:
         acts = pre_weight_acts[param_name]
@@ -219,50 +210,51 @@ def calc_causal_importances(
         gate_input = component_act.detach() if detach_inputs else component_act
         all_gate_outputs[param_name] = gates[param_name](gate_input)
 
-    device = next(iter(all_gate_outputs.values())).device
 
-    #Creates an edge index of the form [2,num_edges] without self loops
+    #Construct the edge index [2,num_edges], with self loops removed
     edge_index = _construct_edge_index(all_gate_outputs, device)
-    #Set the distance between every two nodes, 0 if they are on the same layer
+    #Creates an N x N matrix, with distance 0 for same layer nodes
     node_distances = _construct_node_distances(all_gate_outputs, device)
 
-    #If we dont want the connections within the same layer, remove them
+    #Remove self_layer_connections and set their distance to infinity.
     if not allow_same_layer_connections:
         edge_index = _remove_same_layer_edges(edge_index, node_distances)
-        same_layer_mask = node_distances == 0
-        node_distances = node_distances.masked_fill(same_layer_mask, float('inf'))
+        node_distances = node_distances.masked_fill(node_distances == 0, float('inf'))
 
-    # Second pass: run GNN and produce importances
+  
     gnn = gates.get("active_module", None)
+    assert gnn is None, "No active_module found in gates — make sure to add TensorGNAN to gates in run_spd.py"
 
     if gnn is not None:
-        # Build node features: mean over batch -> (total_nodes, 1)
-        node_feats = torch.cat([
-            all_gate_outputs[n].reshape(-1, all_gate_outputs[n].shape[-1]).mean(dim=0)
-            for n in pre_weight_acts
-        ], dim=0).unsqueeze(-1)  # (total_nodes, 1)
-
+        batch_size = next(iter(all_gate_outputs.values())).shape[0]
         normalization_matrix = node_distances.sum(dim=-1, keepdim=True).clamp(min=1e-6).expand_as(node_distances)
 
-        graph_data = pyg.data.Data(
-            x=node_feats,
-            edge_index=edge_index,
-            node_distances=node_distances,
-            normalization_matrix=normalization_matrix,
-        )
+        gnn_outs = []
+        for b in range(batch_size):
+            node_feats = torch.cat([
+                all_gate_outputs[n][b].flatten()
+                for n in pre_weight_acts
+            ], dim=0).unsqueeze(-1)  # (total_nodes, 1)
 
-        gnn_out = gnn(graph_data)  # (total_nodes, 1)
+            graph_data = pyg.data.Data(
+                x=node_feats,
+                edge_index=edge_index,
+                node_distances=node_distances,
+                normalization_matrix=normalization_matrix,
+            )
+            gnn_outs.append(gnn(graph_data))  # (total_nodes, 1)
 
-        # Split back per layer and add as residual
+        gnn_out = torch.stack(gnn_outs, dim=0)  # (batch, total_nodes, 1)
+
         offset = 0
         for param_name in pre_weight_acts:
             C = all_gate_outputs[param_name].shape[-1]
-            layer_out = gnn_out[offset:offset + C].squeeze(-1)  # (C,)
-            gate_output = all_gate_outputs[param_name] + layer_out  # broadcast over batch
+            layer_out = gnn_out[:, offset:offset + C, 0]  # (batch, C)
+            gate_output = all_gate_outputs[param_name] + layer_out
             causal_importances[param_name] = lower_leaky_relu(gate_output)
             causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
             offset += C
-    else:
+        
         for param_name, gate_output in all_gate_outputs.items():
             causal_importances[param_name] = lower_leaky_relu(gate_output)
             causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
