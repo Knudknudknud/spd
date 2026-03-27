@@ -1,0 +1,16 @@
+# Fdb version 4
+["pdflatex"] 1774611354.77632 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1774611355.57717 2
+  "arxiv.sty" 0 -1 0 ""
+  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1774611352 213 ba1b4998efcbcc423eb2863c6c5b1b73 ""
+  "c:/texlive/2024/texmf-dist/tex/latex/base/article.cls" 1722947866 20144 67a5f8e0f9e445e8ec6834e595cebdc9 ""
+  "c:/texlive/2024/texmf-dist/tex/latex/base/size10.clo" 1722947866 8448 358bf3de18513f057a13bdc6e6770c41 ""
+  "c:/texlive/2024/texmf-dist/web2c/texmf.cnf" 1722945226 42007 0b741a3c21a5ca32b40e3846e75b3548 ""
+  "c:/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1722959163 6879081 fdeace8d7504e29902b33a8915f1b7e1 ""
+  "c:/texlive/2024/texmf.cnf" 1722958746 713 e69b156964470283e0530f5060668171 ""
+  "thesis.aux" 1774611354 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "thesis.tex" 1774611352 213 ba1b4998efcbcc423eb2863c6c5b1b73 ""
+  (generated)
+  "thesis.aux"
+  "thesis.log"
+  "thesis.pdf"
+  (rewritten before read)

@@ -204,6 +204,8 @@ def _construct_node_distances(all_gate_outputs: dict, device: torch.device) -> T
 
 def _remove_same_layer_edges(edge_index: Tensor, node_distances: Tensor) -> Tensor:
     edge_src, edge_dst = edge_index[0], edge_index[1]
+    #iterate both src and dst together and check if they are in the same layer using node_distances
+    #if the result is 0, then they are in the same layer and we want to remove that edge
     layer_diff = node_distances[edge_src, edge_dst]
     cross_layer_mask = layer_diff > 0
     return edge_index[:, cross_layer_mask]
