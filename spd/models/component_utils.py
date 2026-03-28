@@ -354,9 +354,28 @@ def calc_causal_importances(
         #     mean = flat.mean(dim=0)                                             # (C,) — avg activation per component
         #     per_layer_means.append(mean)
 
-        node_feats = torch.cat([all_gate_outputs[n].squeeze(0) for n in pre_weight_acts], dim=0).unsqueeze(-1)
-        print(f"[GNAN] node_feats shape = {node_feats.shape}")
-      
+        # Collect the activations from each layer into a list
+        per_layer = []
+        for n in pre_weight_acts:
+            acts = all_gate_outputs[n]   # (1, C) for this layer
+            acts = acts.squeeze(0)       # (C,) — remove the pos dimension
+            per_layer.append(acts)
+
+
+        # Glue all the (C,) vectors end to end into one long vector
+        # e.g. if layers have C=64, C=32, C=64 this gives (160,)
+        node_feats = torch.cat(per_layer, dim=0)
+
+        # Add a feature dimension so each node has 1 feature
+        # (160,) -> (160, 1), which is what PyG expects: (num_nodes, num_features)
+        node_feats = node_feats.unsqueeze(-1)
+
+        # squeeze:    (0.5, 0.8, 0.2)          # shape (3,)
+
+        # unsqueeze:  [[0.5],                   # shape (3, 1)
+            #         [0.8],                   # node 0: feature = 0.5
+            #         [0.2]]                   # node 1: feature = 0.8
+        #                                 # node 2: feature = 0.2
 
         print(f"[GNAN] node_feats shape = {node_feats.shape}")
         print(f"[GNAN] node_feats min={node_feats.min().item():.4f}, max={node_feats.max().item():.4f}, mean={node_feats.mean().item():.4f}")
