@@ -168,7 +168,7 @@ def _construct_edge_index(all_gate_outputs: dict, device: torch.device) -> Tenso
     return edge_index
 
 
-def _construct_edge_index_forward_only(all_gate_outputs: dict, device: torch.device) -> Tensor:
+def _construct_edge_index_backwards_only(all_gate_outputs: dict, device: torch.device) -> Tensor:
     total_nodes = sum(v.shape[-1] for v in all_gate_outputs.values())
     all_nodes = torch.arange(total_nodes, device=device)
     src = all_nodes.repeat(total_nodes)
@@ -178,7 +178,7 @@ def _construct_edge_index_forward_only(all_gate_outputs: dict, device: torch.dev
     return edge_index
 
 
-def _construct_node_distances_forward_only(all_gate_outputs: dict, device: torch.device) -> Tensor:
+def _construct_node_distances_backwards_only(all_gate_outputs: dict, device: torch.device) -> Tensor:
     layer_ids = []
     for layer_idx, name in enumerate(all_gate_outputs.keys()):
         C = all_gate_outputs[name].shape[-1]
@@ -198,7 +198,8 @@ def _construct_node_distances(all_gate_outputs: dict, device: torch.device) -> T
         C = all_gate_outputs[name].shape[-1]
         layer_ids.extend([layer_idx] * C)
     layer_ids = torch.tensor(layer_ids, dtype=torch.float, device=device).unsqueeze(-1)
-    node_distances = torch.cdist(layer_ids, layer_ids, p=1)
+    node_distances = layer_ids.unsqueeze(0) - layer_ids.unsqueeze(1)
+
     return node_distances
 
 
@@ -211,88 +212,6 @@ def _remove_same_layer_edges(edge_index: Tensor, node_distances: Tensor) -> Tens
     return edge_index[:, cross_layer_mask]
 
 
-# def calc_causal_importances(
-#     pre_weight_acts: dict[str, Float[Tensor, "... d_in"] | Int[Tensor, "... pos"]],
-#     As: Mapping[str, Float[Tensor, "d_in C"]],
-#     gates: Mapping[str, Gate | GateMLP],
-#     detach_inputs: bool = False,
-#     allow_same_layer_connections: bool = True,
-#     use_gnn: bool = True,
-# ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
-#     causal_importances = {}
-#     causal_importances_upper_leaky = {}
-
-#     # First pass: collect activations
-#     all_gate_outputs = {}
-#     for param_name in pre_weight_acts:
-#         acts = pre_weight_acts[param_name]
-#         if not acts.dtype.is_floating_point:
-#             component_act = As[param_name][acts]
-#         else:
-#             component_act = einops.einsum(acts, As[param_name], "... d_in, d_in C -> ... C")
-#         gate_input = component_act.detach() if detach_inputs else component_act
-
-#         if use_gnn:
-#             all_gate_outputs[param_name] = gate_input  # raw activations
-#         else:
-#             all_gate_outputs[param_name] = gates[param_name](gate_input)  # original gate
-
-#     # GNN pass — runs once over all layers
-#     if use_gnn:
-#         #had device issues, so just infer it...
-#         device = next(iter(all_gate_outputs.values())).device
-#         #Bidirectional edges
-#         edge_index = _construct_edge_index(all_gate_outputs, device)
-#         node_distances = _construct_node_distances(all_gate_outputs, device)
-
-#         #Forward only edges
-#         #edge_index = _construct_edge_index_forward_only(all_gate_outputs, device)
-#         #node_distances = _construct_node_distances_forward_only(all_gate_outputs, device)
-
-#         if not allow_same_layer_connections:
-#             edge_index = _remove_same_layer_edges(edge_index, node_distances)
-#             node_distances = node_distances.masked_fill(node_distances == 0, 1e6)
-
-#         gnn = gates.get("active_module", None)
-#         if gnn is None:
-#             raise ValueError("GNN gate not found in gates dictionary under key 'active_module'")
-
-#         normalization_matrix = node_distances.sum(dim=-1, keepdim=True).clamp(min=1e-6).expand_as(node_distances)
-#         node_distances = node_distances.requires_grad_(True)
-#         node_feats = torch.cat([
-#             all_gate_outputs[n].reshape(-1, all_gate_outputs[n].shape[-1]).mean(dim=0)
-#             for n in pre_weight_acts
-#         ], dim=0).unsqueeze(-1)
-
-#         # Normalize so inputs aren't near-zero
-#         node_feats = (node_feats - node_feats.mean()) / (node_feats.std() + 1e-8)
-
-#         # print("node_feats requires_grad:", node_feats.requires_grad)
-#         # print("node_feats grad_fn:", node_feats.grad_fn)
-
-#         graph_data = pyg.data.Data(
-#             x=node_feats,
-#             edge_index=edge_index,
-#             node_distances=node_distances,
-#             normalization_matrix=normalization_matrix,
-#         )
-
-#         gnn_out = gnn(graph_data)  # (total_nodes, 1)
-
-#         offset = 0
-#         for param_name in pre_weight_acts:
-#             C = all_gate_outputs[param_name].shape[-1]
-#             layer_out = gnn_out[offset:offset + C].squeeze(-1)  # (C,)
-#             #Residual, f(x) + x - might be dumb?
-#             all_gate_outputs[param_name] = all_gate_outputs[param_name] + layer_out
-#             offset += C
-
-#     for param_name, gate_output in all_gate_outputs.items():
-#         causal_importances[param_name] = lower_leaky_relu(gate_output)
-#         causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
-
-#     return causal_importances, causal_importances_upper_leaky
-
 
 def calc_causal_importances(
     pre_weight_acts: dict[str, Float[Tensor, "... d_in"] | Int[Tensor, "... pos"]],
@@ -302,36 +221,47 @@ def calc_causal_importances(
     allow_same_layer_connections: bool = True,
     use_gnn: bool = True,
 ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
+
+
+
     causal_importances = {}
     causal_importances_upper_leaky = {}
 
     # First pass: collect activations
     all_gate_outputs = {}
+    all_gate_feats = {}   #added to get the features too.
+
     for param_name in pre_weight_acts:
         acts = pre_weight_acts[param_name]
         if not acts.dtype.is_floating_point:
             component_act = As[param_name][acts]
         else:
-            component_act = einops.einsum(acts, As[param_name], "... d_in, d_in C -> ... C")
+        
+        #If you kept k dimensions in the importance, you'd have separate importance per direction
+        #  — (batch, C, k). But then you're just doing C×k rank-1 components with extra steps. 
+        # The whole point of rank-k is that the k directions are one unit — they get gated together.
+            A = As[param_name]
+            component_act_k = einops.einsum(acts, A, "... d_in, d_in C k -> ... C k")
+            component_act = component_act_k.mean(dim=-1)
+
         gate_input = component_act.detach() if detach_inputs else component_act
+        gate_feats = component_act_k.detach() if detach_inputs else component_act_k
 
         if use_gnn:
-            all_gate_outputs[param_name] = gate_input  # raw activations
+            all_gate_outputs[param_name] = gate_input    # (batch, C) — for gating
+            all_gate_feats[param_name] = gate_feats      # (batch, C, k) — for GNAN
         else:
-            all_gate_outputs[param_name] = gates[param_name](gate_input)  # original gate
+            all_gate_outputs[param_name] = gates[param_name](gate_input)
 
     if use_gnn:
-        #had device issues, so just infer it...
         device = next(iter(all_gate_outputs.values())).device
 
-        #Bidirectional edges
         edge_index = _construct_edge_index(all_gate_outputs, device)
         node_distances = _construct_node_distances(all_gate_outputs, device)
 
-        #Forward only edges
-        #edge_index = _construct_edge_index_forward_only(all_gate_outputs, device)
-        #node_distances = _construct_node_distances_forward_only(all_gate_outputs, device)
-
+        #only backward connections
+        #edge_index = _construct_edge_index_backwards_only(all_gate_outputs, device)
+        #node_distances = _construct_node_distances_backwards_only(all_gate_outputs, device)
         if not allow_same_layer_connections:
             edge_index = _remove_same_layer_edges(edge_index, node_distances)
             node_distances = node_distances.masked_fill(node_distances == 0, 1e6)
@@ -340,64 +270,26 @@ def calc_causal_importances(
         if gnn is None:
             raise ValueError("GNN gate not found in gates dictionary under key 'active_module'")
 
+        per_layer_feats = [all_gate_feats[n] for n in pre_weight_acts]
+        all_feats = torch.cat(per_layer_feats, dim=-2)
+        node_distances = 1.0 / (1.0 + node_distances.abs())
 
-        #Average activation over the batch, perhaps this is insufficient? Will test next week.
-        #I believe it has problems with batch and GNAN as they expect different dimensions.
-        #Would matter more with multiple features? Talk to lukas.
-        # Build one feature per node (component) for the GNAN
-        #Idk some issue with gnan not taking batches, and 
-        #since its a graph it prolly has no quick fix, i'll rewatch the youtube series.
-        # per_layer_means = []
-        # for n in pre_weight_acts:
-        #     acts = all_gate_outputs[n]                                          # (batch, pos, C)
-        #     flat = acts.reshape(acts.shape[0] * acts.shape[1], acts.shape[2])   # (batch*pos, C)
-        #     mean = flat.mean(dim=0)                                             # (C,) — avg activation per component
-        #     per_layer_means.append(mean)
-
-        # Collect the activations from each layer into a list
-        per_layer = []
-        for n in pre_weight_acts:
-            acts = all_gate_outputs[n]   # (1, C) for this layer
-            acts = acts.squeeze(0)       # (C,) — remove the pos dimension
-            per_layer.append(acts)
-
-
-        # Glue all the (C,) vectors end to end into one long vector
-        # e.g. if layers have C=64, C=32, C=64 this gives (160,)
-        node_feats = torch.cat(per_layer, dim=0)
-
-        # Add a feature dimension so each node has 1 feature
-        # (160,) -> (160, 1), which is what PyG expects: (num_nodes, num_features)
-        node_feats = node_feats.unsqueeze(-1)
-
-        # squeeze:    (0.5, 0.8, 0.2)          # shape (3,)
-
-        # unsqueeze:  [[0.5],                   # shape (3, 1)
-            #         [0.8],                   # node 0: feature = 0.5
-            #         [0.2]]                   # node 1: feature = 0.8
-        #                                 # node 2: feature = 0.2
-
-        print(f"[GNAN] node_feats shape = {node_feats.shape}")
-        print(f"[GNAN] node_feats min={node_feats.min().item():.4f}, max={node_feats.max().item():.4f}, mean={node_feats.mean().item():.4f}")
-        print(f"[GNAN] edge_index shape = {edge_index.shape}, num edges = {edge_index.shape[1]}")
-        print(f"[GNAN] node_distances shape = {node_distances.shape}")
-
-        graph_data = pyg.data.Data(
-        x=node_feats,
-        edge_index=edge_index,
-        node_distances=node_distances,
-        )
-
-        gnn_out = gnn(graph_data)
-        print(f"[GNAN] gnn_out shape = {gnn_out.shape}")
-        print(f"[GNAN] gnn_out min={gnn_out.min().item():.4f}, max={gnn_out.max().item():.4f}, mean={gnn_out.mean().item():.4f}")
+        gnn_out = gnn.forward_batched(
+            x_batch=all_feats,
+            dist_batch=node_distances,
+        ).squeeze(-1)                 # (2048, 600)eze(-1)                          # (batch, total_nodes)
 
         offset = 0
         for param_name in pre_weight_acts:
             C = all_gate_outputs[param_name].shape[-1]
-            layer_out = gnn_out[offset:offset + C].squeeze(-1)
-            print(f"[GNAN] Residual '{param_name}': layer_out shape = {layer_out.shape}, pre-residual acts shape = {all_gate_outputs[param_name].shape}")
-            all_gate_outputs[param_name] = all_gate_outputs[param_name] + layer_out
-            print(f"[GNAN] Residual '{param_name}': post-residual shape = {all_gate_outputs[param_name].shape}")
+            layer_out = gnn_out[:, offset:offset + C]  # (batch, C)
+            #Changed it to be just the gnn not as a residual, as a test. worked horribly.
+            all_gate_outputs[param_name] =  all_gate_outputs[param_name] + layer_out
             offset += C
-        return causal_importances, causal_importances_upper_leaky
+
+
+    for param_name, gate_output in all_gate_outputs.items():
+        causal_importances[param_name] = lower_leaky_relu(gate_output)
+        causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
+
+    return causal_importances, causal_importances_upper_leaky

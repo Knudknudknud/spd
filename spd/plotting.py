@@ -311,7 +311,13 @@ def plot_AB_matrices(
         A_data = As[name]
         if all_perm_indices is not None:
             A_data = A_data[:, all_perm_indices[name]]
-        A_data = A_data.detach().cpu().numpy()
+        A_data = A_data.detach().cpu()
+
+        #If A has a different k, than 1 display the norm instead of direction
+        if A_data.shape[-1] > 1:
+            print("A has k > 1, plotting norm instead of direction")
+            A_data = A_data.norm(dim=-1)  # (d_in, C, k) → (d_in, C)
+        A_data = A_data.numpy()
         im = axs[2 * j, 0].matshow(A_data, aspect="auto", cmap="coolwarm")
         axs[2 * j, 0].set_ylabel("d_in index")
         axs[2 * j, 0].set_xlabel("Component index")
@@ -322,7 +328,12 @@ def plot_AB_matrices(
         B_data = Bs[name]
         if all_perm_indices is not None:
             B_data = B_data[all_perm_indices[name], :]
-        B_data = B_data.detach().cpu().numpy()
+        B_data = B_data.detach().cpu()
+
+        if B_data.shape[-1] > 1:
+            B_data = B_data.norm(dim=-2)  # (C, k, d_out) → (C, d_out)
+            print("B has k > 1, plotting norm instead of direction")
+        B_data = B_data.numpy()
         im = axs[2 * j + 1, 0].matshow(B_data, aspect="auto", cmap="coolwarm")
         axs[2 * j + 1, 0].set_ylabel("Component index")
         axs[2 * j + 1, 0].set_xlabel("d_out index")

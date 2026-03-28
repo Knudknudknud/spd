@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 class TensorGNAN(nn.Module):
     def __init__(self, in_channels, out_channels, n_layers, hidden_channels=None, bias=True, dropout=0.0,
-                 device='cpu', rho_per_feature=False, normalize_rho=True, is_graph_task=False, readout_n_layers=1):
+                 device='cpu', rho_per_feature=False, normalize_rho=False, is_graph_task=False, readout_n_layers=1):
         super().__init__()
 
         self.device = device
@@ -80,6 +80,29 @@ class TensorGNAN(nn.Module):
 
             out = torch.sum(hidden, dim=1).view(1, -1)
         return out.T
+
+        
+    def forward_batched(self, x_batch, dist_batch):
+        """x_batch: (S, N, F), dist_batch: (N, N). Same graph, different features."""
+        S, N, F = x_batch.shape
+
+        # fs: flatten batch, process, reshape back
+        fx = torch.empty(S * N, F, self.out_channels, device=self.device)
+        for feat_idx in range(F):
+            feat_col = x_batch[:, :, feat_idx].reshape(-1, 1)
+            fx[:, feat_idx, :] = self.fs[feat_idx](feat_col)
+        fx = fx.reshape(S, N, F, self.out_channels)
+
+        # rho: computed once
+        dist_embed = self.rho(dist_batch.flatten().view(-1, 1))
+        dist_embed = dist_embed.view(N, N, self.out_channels)
+
+        # batched matmul
+        fx_perm = fx.permute(0, 3, 1, 2)                    # (S, C, N, F)
+        m_dist = dist_embed.permute(2, 0, 1).unsqueeze(0)   # (1, C, N, N)
+        mf = torch.matmul(m_dist, fx_perm)                  # (S, C, N, F)
+        mf = mf.sum(dim=3).permute(0, 2, 1)                 # (S, N, C)
+        return mf
 
 
 class GNAN(nn.Module):
@@ -177,3 +200,4 @@ class GNAN(nn.Module):
     def print_rho_params(self):
         for name, param in self.rho.named_parameters():
             print(name, param)
+    

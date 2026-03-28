@@ -80,6 +80,7 @@ def optimize(
         base_model=target_model,
         target_module_patterns=config.target_module_patterns,
         C=config.C,
+        k=config.k,
         n_ci_mlp_neurons=config.n_ci_mlp_neurons,
         pretrained_model_output_attr=config.pretrained_model_output_attr,
     )
@@ -99,12 +100,22 @@ def optimize(
     model.to(device)
     init_As_and_Bs_(model=model, components=components)
 
+
+    #claude version
     if tied_weights is not None:
-        # Tie component weights. Assume that the first element is a transpose of the second element
-        # NOTE: Tying weights will make your training nondeterministic
-        for src_name, tgt_name in tied_weights:
-            components[tgt_name].B.data = components[src_name].A.data.T
-            components[tgt_name].A.data = components[src_name].B.data.T
+            for src_name, tgt_name in tied_weights:
+                # (C, k, d_out) → (d_out, C, k) as new A
+                components[tgt_name].A.data = components[src_name].B.data.permute(2, 0, 1)
+                # (d_in, C, k) → (C, k, d_in) as new B
+                components[tgt_name].B.data = components[src_name].A.data.permute(1, 2, 0)
+
+
+    # if tied_weights is not None:
+    #     # Tie component weights. Assume that the first element is a transpose of the second element
+    #     # NOTE: Tying weights will make your training nondeterministic
+    #     for src_name, tgt_name in tied_weights:
+    #         components[tgt_name].B.data = components[src_name].A.data.T
+    #         components[tgt_name].A.data = components[src_name].B.data.T
 
 
     component_params: list[torch.nn.Parameter] = []
@@ -117,12 +128,12 @@ def optimize(
     from spd.models.gnan import TensorGNAN
 
     gnan = TensorGNAN(
-        in_channels=1,
+        in_channels=config.k,
         out_channels=1,
         n_layers=2,
         hidden_channels=16,
         device=device,
-        normalize_rho=False,
+        is_graph_task=False,
     ).to(device)
 
     model.gates["active_module"] = gnan

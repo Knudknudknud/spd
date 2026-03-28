@@ -33,15 +33,17 @@ class ComponentModel(nn.Module):
         base_model: nn.Module,
         target_module_patterns: list[str],
         C: int,
+        k: int,
         n_ci_mlp_neurons: int,
         pretrained_model_output_attr: str | None,
     ):
         super().__init__()
         self.model = base_model
         self.C = C
+        self.k = k
         self.pretrained_model_output_attr = pretrained_model_output_attr
         self.components = self.create_target_components(
-            target_module_patterns=target_module_patterns, C=C
+            target_module_patterns=target_module_patterns, C=C, k=k
         )
 
         gate_class = GateMLP if n_ci_mlp_neurons > 0 else Gate
@@ -51,7 +53,7 @@ class ComponentModel(nn.Module):
 
         self.gates = nn.ModuleDict({name: gate_class(**gate_kwargs) for name in self.components})
 
-    def create_target_components(self, target_module_patterns: list[str], C: int) -> nn.ModuleDict:
+    def create_target_components(self, target_module_patterns: list[str], C: int, k: int) -> nn.ModuleDict:
         """Create target components for the model."""
         components: dict[str, LinearComponent | EmbeddingComponent] = {}
         matched_patterns: set[str] = set()
@@ -64,7 +66,7 @@ class ComponentModel(nn.Module):
                         d_out, d_in = module.weight.shape
                         # Replace "." with "-" in the name to avoid issues with module dict keys
                         components[name.replace(".", "-")] = LinearComponent(
-                            d_in=d_in, d_out=d_out, C=C, bias=module.bias
+                            d_in=d_in, d_out=d_out, C=C, k=k, bias=module.bias
                         )
                     elif isinstance(module, nn.Embedding):
                         components[name.replace(".", "-")] = EmbeddingComponent(
@@ -289,10 +291,10 @@ def init_As_and_Bs_(
         # Make A and B have unit norm in the d_in and d_out dimensions
         A.data[:] = torch.randn_like(A.data)
         B.data[:] = torch.randn_like(B.data)
-        A.data[:] = A.data / A.data.norm(dim=-2, keepdim=True)
+        A.data[:] = A.data / A.data.norm(dim=0, keepdim=True)
         B.data[:] = B.data / B.data.norm(dim=-1, keepdim=True)
 
         # Calculate inner products
-        C_norms = einops.einsum(A, B, target_weight, "d_in C, C d_out, d_out d_in -> C")
+        C_norms = einops.einsum(A, B, target_weight, "d_in C k, C k d_out, d_out d_in -> C")
         # Scale B by the inner product.
-        B.data[:] = B.data * C_norms.unsqueeze(-1)
+        B.data[:] = B.data * C_norms.unsqueeze(-1).unsqueeze(-1)

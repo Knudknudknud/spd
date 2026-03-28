@@ -24,7 +24,7 @@
 # output_loss_type: mse
 
 # # --- Training ---
-# batch_size: 9999999
+# batch_size: 2048
 # steps: 40_000
 # lr: 1e-3
 # lr_schedule: cosine
@@ -56,7 +56,8 @@ wandb_run_name_prefix: ""
 
 # --- General ---
 seed: 0
-C: 200
+C: 100
+k: 1
 n_mask_samples: 1
 n_ci_mlp_neurons: 16
 # n_ci_mlp_neurons: 0
@@ -74,7 +75,7 @@ stochastic_recon_layerwise_coeff: 1.0
 output_loss_type: "mse"
 
 # --- Training ---
-batch_size: 9999999
+batch_size: 2048
 steps: 40_000
 image_freq: 5_000
 print_freq: 1000

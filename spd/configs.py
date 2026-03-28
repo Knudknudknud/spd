@@ -105,6 +105,10 @@ class Config(BaseModel):
         ...,
         description="The number of subcomponents per layer",
     )
+    k: PositiveInt = Field(
+        ...,
+        description="The rank of of each component, i.e the number of columns in A. The SPD paper uses k=1",
+    )
     n_mask_samples: PositiveInt = Field(
         ...,
         description="Number of stochastic masks to sample when using stochastic recon losses",
