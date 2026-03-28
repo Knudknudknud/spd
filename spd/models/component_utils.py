@@ -323,6 +323,7 @@ def calc_causal_importances(
     if use_gnn:
         #had device issues, so just infer it...
         device = next(iter(all_gate_outputs.values())).device
+
         #Bidirectional edges
         edge_index = _construct_edge_index(all_gate_outputs, device)
         node_distances = _construct_node_distances(all_gate_outputs, device)
@@ -339,48 +340,45 @@ def calc_causal_importances(
         if gnn is None:
             raise ValueError("GNN gate not found in gates dictionary under key 'active_module'")
 
-        #normalization_matrix = node_distances.sum(dim=-1, keepdim=True).clamp(min=1e-6).expand_as(node_distances)
 
         #Average activation over the batch, perhaps this is insufficient? Will test next week.
         #I believe it has problems with batch and GNAN as they expect different dimensions.
         #Would matter more with multiple features? Talk to lukas.
         # Build one feature per node (component) for the GNAN
-
         #Idk some issue with gnan not taking batches, and 
         #since its a graph it prolly has no quick fix, i'll rewatch the youtube series.
-        per_layer_means = []
-        for n in pre_weight_acts:
-            acts = all_gate_outputs[n]                                          # (batch, pos, C)
-            flat = acts.reshape(acts.shape[0] * acts.shape[1], acts.shape[2])   # (batch*pos, C)
-            mean = flat.mean(dim=0)                                             # (C,) — avg activation per component
-            per_layer_means.append(mean)
+        # per_layer_means = []
+        # for n in pre_weight_acts:
+        #     acts = all_gate_outputs[n]                                          # (batch, pos, C)
+        #     flat = acts.reshape(acts.shape[0] * acts.shape[1], acts.shape[2])   # (batch*pos, C)
+        #     mean = flat.mean(dim=0)                                             # (C,) — avg activation per component
+        #     per_layer_means.append(mean)
 
-        # Concatenate all layers: (C_layer0 + C_layer1 + ... ) = (total_nodes,)
-        node_feats = torch.cat(per_layer_means, dim=0)
+        node_feats = torch.cat([all_gate_outputs[n].squeeze(0) for n in pre_weight_acts], dim=0).unsqueeze(-1)
+        print(f"[GNAN] node_feats shape = {node_feats.shape}")
+      
 
-        # GNAN expects (total_nodes, 1) — one feature per node
-        node_feats = node_feats.unsqueeze(-1)
-
+        print(f"[GNAN] node_feats shape = {node_feats.shape}")
+        print(f"[GNAN] node_feats min={node_feats.min().item():.4f}, max={node_feats.max().item():.4f}, mean={node_feats.mean().item():.4f}")
+        print(f"[GNAN] edge_index shape = {edge_index.shape}, num edges = {edge_index.shape[1]}")
+        print(f"[GNAN] node_distances shape = {node_distances.shape}")
 
         graph_data = pyg.data.Data(
-            x=node_feats,
-            edge_index=edge_index,
-            node_distances=node_distances
-            #normalization_matrix=normalization_matrix,
+        x=node_feats,
+        edge_index=edge_index,
+        node_distances=node_distances,
         )
 
-        gnn_out = gnn(graph_data)  # (total_nodes, 1)
+        gnn_out = gnn(graph_data)
+        print(f"[GNAN] gnn_out shape = {gnn_out.shape}")
+        print(f"[GNAN] gnn_out min={gnn_out.min().item():.4f}, max={gnn_out.max().item():.4f}, mean={gnn_out.mean().item():.4f}")
 
         offset = 0
         for param_name in pre_weight_acts:
             C = all_gate_outputs[param_name].shape[-1]
-            layer_out = gnn_out[offset:offset + C].squeeze(-1)  # (C,)
-            #Residual, x+ gnan(mean(x)) - over the batch? I feel like this is what to look at.
+            layer_out = gnn_out[offset:offset + C].squeeze(-1)
+            print(f"[GNAN] Residual '{param_name}': layer_out shape = {layer_out.shape}, pre-residual acts shape = {all_gate_outputs[param_name].shape}")
             all_gate_outputs[param_name] = all_gate_outputs[param_name] + layer_out
+            print(f"[GNAN] Residual '{param_name}': post-residual shape = {all_gate_outputs[param_name].shape}")
             offset += C
-
-    for param_name, gate_output in all_gate_outputs.items():
-        causal_importances[param_name] = lower_leaky_relu(gate_output)
-        causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
-
-    return causal_importances, causal_importances_upper_leaky
+        return causal_importances, causal_importances_upper_leaky

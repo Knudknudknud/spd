@@ -24,7 +24,7 @@
 # output_loss_type: mse
 
 # # --- Training ---
-# batch_size: 4096
+# batch_size: 9999999
 # steps: 40_000
 # lr: 1e-3
 # lr_schedule: cosine
@@ -74,7 +74,7 @@ stochastic_recon_layerwise_coeff: 1.0
 output_loss_type: "mse"
 
 # --- Training ---
-batch_size: 4096
+batch_size: 9999999
 steps: 40_000
 image_freq: 5_000
 print_freq: 1000
