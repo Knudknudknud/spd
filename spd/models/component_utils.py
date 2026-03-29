@@ -220,9 +220,12 @@ def calc_causal_importances(
     detach_inputs: bool = False,
     allow_same_layer_connections: bool = True,
     use_gnn: bool = True,
+    negative_distance: bool = True,
 ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
 
-
+        #If you kept k dimensions in the importance, you'd have separate importance per direction
+        #  — (batch, C, k). But then you're just doing C×k rank-1 components with extra steps. 
+        # The whole point of rank-k is that the k directions are one unit — they get gated together.
 
     causal_importances = {}
     causal_importances_upper_leaky = {}
@@ -230,55 +233,97 @@ def calc_causal_importances(
     # First pass: collect activations
     all_gate_outputs = {}
     all_gate_feats = {}   #added to get the features too.
-
+    #Pre_weight_acts is the dictionary of the outputs of the given layer
     for param_name in pre_weight_acts:
         acts = pre_weight_acts[param_name]
         if not acts.dtype.is_floating_point:
             component_act = As[param_name][acts]
         else:
-        
-        #If you kept k dimensions in the importance, you'd have separate importance per direction
-        #  — (batch, C, k). But then you're just doing C×k rank-1 components with extra steps. 
-        # The whole point of rank-k is that the k directions are one unit — they get gated together.
+            #The A matrix components, for each layer (C, d_in, k)
             A = As[param_name]
+            #Take the products (A * features),
+            #spits out a tensor of shape (batch, C, k)
             component_act_k = einops.einsum(acts, A, "... d_in, d_in C k -> ... C k")
+            #For now collapse over the k, might still be a hack,
+            #ask Lukas.
             component_act = component_act_k.mean(dim=-1)
 
         gate_input = component_act.detach() if detach_inputs else component_act
         gate_feats = component_act_k.detach() if detach_inputs else component_act_k
 
         if use_gnn:
+            #ad the gate (mean output over k) and the features to their respective dictionaries.
             all_gate_outputs[param_name] = gate_input    # (batch, C) — for gating
             all_gate_feats[param_name] = gate_feats      # (batch, C, k) — for GNAN
         else:
+            #Otherwise default to the papers implementation.
+            assert As.shape(-1) != 1, "If not using GNN, A should not have a k dimension"
             all_gate_outputs[param_name] = gates[param_name](gate_input)
 
     if use_gnn:
         device = next(iter(all_gate_outputs.values())).device
 
+        #This implementation is highly inefficient for these models,
+        #As the graph is fully determined on the irst iteration
+        #And as such we could cache it instead of reconstructing it every time. But it works for now, and it's easier to read.
+        #Likewise we dont even use the edge index, lol.
         edge_index = _construct_edge_index(all_gate_outputs, device)
+        
+        #Below gives an option to allow negative distances,
+        #That way the gnn can learn to ignore one direction of edges
+        #If it proves to be beneficial.
         node_distances = _construct_node_distances(all_gate_outputs, device)
+
 
         #only backward connections
         #edge_index = _construct_edge_index_backwards_only(all_gate_outputs, device)
         #node_distances = _construct_node_distances_backwards_only(all_gate_outputs, device)
+        
+        #Gnn requires distance normalization, move it into the gnn code later.
+        
+        #Allow negative distances, but keep the sign, by doing sign(x) * 1/(1+|x|)
+        if negative_distance:
+            print("Using negative distances with sign preservation for GNN")
+            sign = torch.sign(node_distances)
+            sign[node_distances == 0] = 1.0  # convert 0 to 1, to give it distance 1.
+            node_distances = sign * 1.0 / (1.0 + node_distances.abs())
+
+        else:
+            node_distances =  1.0 / (1.0 + node_distances.abs())
+
+
+
         if not allow_same_layer_connections:
             edge_index = _remove_same_layer_edges(edge_index, node_distances)
             node_distances = node_distances.masked_fill(node_distances == 0, 1e6)
 
+
+
+
+        #Temporary hack, to add the gnn without changing the rest of the code.
         gnn = gates.get("active_module", None)
         if gnn is None:
             raise ValueError("GNN gate not found in gates dictionary under key 'active_module'")
 
+        #List[Batch, C, k]
         per_layer_feats = [all_gate_feats[n] for n in pre_weight_acts]
+        #Concatenate C dimensions together, to get a tensor of shape (batch, sum_C, k)
         all_feats = torch.cat(per_layer_feats, dim=-2)
-        node_distances = 1.0 / (1.0 + node_distances.abs())
-
+        #This ofcourse requires that the order is always the same, of both distances
+        #and iteration and so fourth. Ive assumed that it is the case.
         gnn_out = gnn.forward_batched(
             x_batch=all_feats,
             dist_batch=node_distances,
-        ).squeeze(-1)                 # (2048, 600)eze(-1)                          # (batch, total_nodes)
+        ).squeeze(-1)
+        #Squeeze folds it into [batch, sum_C], instead of [batch, sum_C, 1]
+        #The 1 is the output dimension of the gnn, which is always 1
 
+        #This part still has a fairly large issue,
+        #There is an outblock where the x + gnn_out was changed to just gnn_out.
+        #The problem is that every neuron in the gnn layer, gets the exact same output
+        #We should add another linear layer only for the x value, to distinguish them.
+        #Likewise only adding x, does not currently give a percentage value between 0 and 1,
+        #And is fundamentally different from the paper.
         offset = 0
         for param_name in pre_weight_acts:
             C = all_gate_outputs[param_name].shape[-1]
