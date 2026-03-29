@@ -70,12 +70,13 @@ class LinearComponent(nn.Module):
     The weight matrix W is decomposed as W = B^T @ A^T, where A and B are learned parameters.
     """
 
-    def __init__(self, d_in: int, d_out: int, C: int, bias: Tensor | None):
+    def __init__(self, d_in: int, d_out: int, C: int, k: int, bias: Tensor | None):
         super().__init__()
         self.C = C
+        self.k = k
 
-        self.A = nn.Parameter(torch.empty(d_in, C))
-        self.B = nn.Parameter(torch.empty(C, d_out))
+        self.A = nn.Parameter(torch.empty(d_in, C, k))
+        self.B = nn.Parameter(torch.empty(C, k, d_out))
         self.bias = bias
 
         init_param_(self.A, fan_val=d_out, nonlinearity="linear")
@@ -86,7 +87,7 @@ class LinearComponent(nn.Module):
     @property
     def weight(self) -> Float[Tensor, "d_out d_in"]:
         """B^T @ A^T"""
-        return einops.einsum(self.A, self.B, "d_in C, C d_out -> d_out d_in")
+        return einops.einsum(self.A, self.B, "d_in C k, C k d_out -> d_out d_in")
 
     # @torch.compile
     def forward(self, x: Float[Tensor, "... d_in"]) -> Float[Tensor, "... d_out"]:
@@ -98,13 +99,16 @@ class LinearComponent(nn.Module):
         Returns:
             output: The summed output across all components
         """
-        component_acts = einops.einsum(x, self.A, "... d_in, d_in C -> ... C")
+        component_acts = einops.einsum(x, self.A, "... d_in, d_in C k -> ... C k")
 
         if self.mask is not None:
-            component_acts *= self.mask
+            
+            #component_acts *= self.mask
+            component_acts = component_acts * self.mask.unsqueeze(-1)
 
-        out = einops.einsum(component_acts, self.B, "... C, C d_out -> ... d_out")
 
+        #out = einops.einsum(component_acts, self.B, "... C, C d_out -> ... d_out")
+        out = einops.einsum(component_acts, self.B, "... C k, C k d_out -> ... d_out")
         if self.bias is not None:
             out += self.bias
 
