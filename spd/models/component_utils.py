@@ -400,4 +400,4 @@ def calc_causal_importances(
             all_gate_outputs[param_name] = all_gate_outputs[param_name] + layer_out
             print(f"[GNAN] Residual '{param_name}': post-residual shape = {all_gate_outputs[param_name].shape}")
             offset += C
-        return causal_importances, causal_importances_upper_leaky
+    return causal_importances, causal_importances_upper_leaky
