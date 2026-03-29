@@ -223,10 +223,10 @@ def calc_causal_importances(
     negative_distance: bool = True,
 ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
 
-        #If you kept k dimensions in the importance, you'd have separate importance per direction
-        #  — (batch, C, k). But then you're just doing C×k rank-1 components with extra steps. 
-        # The whole point of rank-k is that the k directions are one unit — they get gated together.
-
+    #Big note:
+    #The batching solution is okay, because we always sample all
+    #nodes i think? If not it could still work as we always calculate the distances anew,
+    #We dont actually use the graph structure for anything but the distances.
     causal_importances = {}
     causal_importances_upper_leaky = {}
 
