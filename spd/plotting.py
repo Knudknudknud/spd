@@ -314,6 +314,7 @@ def plot_AB_matrices(
         A_data = A_data.detach().cpu()
 
         #If A has a different k, than 1 display the norm instead of direction
+        #some kind of bug here, but will fix later.
         if A_data.shape[-1] > 1:
             print("A has k > 1, plotting norm instead of direction")
             A_data = A_data.norm(dim=-1)  # (d_in, C, k) → (d_in, C)

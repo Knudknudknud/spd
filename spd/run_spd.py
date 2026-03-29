@@ -38,7 +38,7 @@ from spd.utils import (
     get_lr_schedule_fn,
     get_lr_with_warmup,
 )
-
+wandb.init(mode="online")
 
 def get_common_run_name_suffix(config: Config) -> str:
     """Generate a run suffix based on Config that is common to all experiments."""

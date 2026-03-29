@@ -256,8 +256,6 @@ def calc_causal_importances(
             all_gate_outputs[param_name] = gate_input    # (batch, C) — for gating
             all_gate_feats[param_name] = gate_feats      # (batch, C, k) — for GNAN
         else:
-            #Otherwise default to the papers implementation.
-            assert As.shape(-1) != 1, "If not using GNN, A should not have a k dimension"
             all_gate_outputs[param_name] = gates[param_name](gate_input)
 
     if use_gnn:
@@ -283,7 +281,7 @@ def calc_causal_importances(
         
         #Allow negative distances, but keep the sign, by doing sign(x) * 1/(1+|x|)
         if negative_distance:
-            print("Using negative distances with sign preservation for GNN")
+            #print("Using negative distances with sign preservation for GNN")
             sign = torch.sign(node_distances)
             sign[node_distances == 0] = 1.0  # convert 0 to 1, to give it distance 1.
             node_distances = sign * 1.0 / (1.0 + node_distances.abs())
