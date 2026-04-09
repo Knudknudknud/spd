@@ -17,3 +17,53 @@
       primaryClass={cs.LG},
       url={https://arxiv.org/abs/2501.14926}, 
 }
+
+
+
+
+#Sparse Auto encoders
+@misc{sparseautoencodershighlyinterpretable,
+      title={Sparse Autoencoders Find Highly Interpretable Features in Language Models}, 
+      author={Hoagy Cunningham and Aidan Ewart and Logan Riggs and Robert Huben and Lee Sharkey},
+      year={2023},
+      eprint={2309.08600},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2309.08600}, 
+}
+
+@article{bricken2023monosemanticity,
+       title={Towards Monosemanticity: Decomposing Language Models With Dictionary Learning},
+       author={Bricken, Trenton and Templeton, Adly and Batson, Joshua and Chen, Brian and Jermyn, Adam and Conerly, Tom and Turner, Nick and Anil, Cem and Denison, Carson and Askell, Amanda and Lasenby, Robert and Wu, Yifan and Kravec, Shauna and Schiefer, Nicholas and Maxwell, Tim and Joseph, Nicholas and Hatfield-Dodds, Zac and Tamkin, Alex and Nguyen, Karina and McLean, Brayden and Burke, Josiah E and Hume, Tristan and Carter, Shan and Henighan, Tom and Olah, Christopher},
+       year={2023},
+       journal={Transformer Circuits Thread},
+       note={https://transformer-circuits.pub/2023/monosemantic-features/index.html}
+    }
+
+## Issues with autoencoders
+### Canonical units
+@misc{sparseautoencoderscanonicalunits,
+      title={Sparse Autoencoders Do Not Find Canonical Units of Analysis}, 
+      author={Patrick Leask and Bart Bussmann and Michael Pearce and Joseph Bloom and Curt Tigges and Noura Al Moubayed and Lee Sharkey and Neel Nanda},
+      year={2025},
+      eprint={2502.04878},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2502.04878}, 
+}
+#Feature asbsorption - i.e that lesser components steal credit from more general ones.
+Sparse autoencoders can appear to encode a general feature, but under sparsity, other more specific latents take over some inputs, “absorbing” them. This causes the general latent to miss cases, giving high precision but low recall and limiting interpretability.
+@misc{absorptionstudyingfeaturesplitting,
+      title={A is for Absorption: Studying Feature Splitting and Absorption in Sparse Autoencoders}, 
+      author={David Chanin and James Wilken-Smith and Tomáš Dulka and Hardik Bhatnagar and Satvik Golechha and Joseph Bloom},
+      year={2025},
+      eprint={2409.14507},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2409.14507}, 
+}
+
+
+### Feature geometry
+#The idea is that it decomposes features into independent directions, however they may be naturally organized into subspaces
+or similar?
