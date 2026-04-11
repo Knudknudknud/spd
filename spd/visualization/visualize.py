@@ -5,10 +5,10 @@ import seaborn as sns
 from spd.models.gnan import TensorGNAN
 
 # Load model
-n_components = 2
+n_components = 1
 
 gnan = TensorGNAN(in_channels=n_components, out_channels=1, n_layers=2, hidden_channels=16, device='cpu')
-gnan.load_state_dict(torch.load(r"spd\\experiments\\resid_mlp\\out\\nmasks1_stochrecon1.00e+00_stochreconlayer1.00e+00_p2.00e+00_impmin1.00e-05_C100_sd0_lr2.00e-03_bs2048_ft102_lay3_resid1000_mlp17_20260329_213639_034\\gnan.pth", map_location='cpu'))
+gnan.load_state_dict(torch.load(r"C:\\Users\\Knud\\uni\\spd\\spd\\experiments\\resid_mlp\\out\\nmasks1_stochrecon1.00e+00_stochreconlayer1.00e+00_p2.00e+00_impmin1.00e-05_C100_sd0_lr2.00e-03_bs2048_ft102_lay3_resid1000_mlp17_20260405_133756_929\\gnan.pth", map_location='cpu'))
 gnan.eval()
 
 n_layers = 6

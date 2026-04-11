@@ -21,11 +21,17 @@ class TensorGNAN(nn.Module):
         self.normalize_rho = normalize_rho
         self.fs = nn.ModuleList()
         self.is_graph_task = is_graph_task
+        
 
-        #Create n fully connected layers, one for each input feature.
-        #This is one fully connected model for each input feature.
-        #hidden_channels is the number of neurons in the "middle" layers. 
-        #Output the amount of values to be returned.
+        self.self_mlp = nn.Sequential(
+            nn.Linear(in_channels, hidden_channels),
+            nn.ReLU(),
+            nn.Linear(hidden_channels, out_channels),)
+        
+        # Create n fully connected layers, one for each input feature.
+        # This is one fully connected model for each input feature.
+        # hidden_channels is the number of neurons in the "middle" layers. 
+        # Output the amount of values to be returned.
         for _ in range(in_channels):
             if n_layers == 1:
                 curr_f = [nn.Linear(1, self.out_channels, bias=bias)]
@@ -177,7 +183,8 @@ class TensorGNAN(nn.Module):
 
         #We however expect a single output per out_channel, so we sum the features together
         mf = mf.sum(dim=3).permute(0, 2, 1)                 # (B, N, out_channels)
-        return mf
+    
+        return mf + self.self_mlp(x_batch)
 
 
 class GNAN(nn.Module):

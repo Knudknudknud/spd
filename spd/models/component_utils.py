@@ -192,15 +192,40 @@ def _construct_node_distances_backwards_only(all_gate_outputs: dict, device: tor
     
     return node_distances
 
-def _construct_node_distances(all_gate_outputs: dict, device: torch.device) -> Tensor:
-    layer_ids = []
-    for layer_idx, name in enumerate(all_gate_outputs.keys()):
-        C = all_gate_outputs[name].shape[-1]
-        layer_ids.extend([layer_idx] * C)
-    layer_ids = torch.tensor(layer_ids, dtype=torch.float, device=device).unsqueeze(-1)
-    node_distances = layer_ids.unsqueeze(0) - layer_ids.unsqueeze(1)
+# def _construct_node_distances(all_gate_outputs: dict, device: torch.device) -> Tensor:
+#     layer_ids = []
+#     for layer_idx, name in enumerate(all_gate_outputs.keys()):
+#         C = all_gate_outputs[name].shape[-1]
+#         layer_ids.extend([layer_idx] * C)
+#     layer_ids = torch.tensor(layer_ids, dtype=torch.float, device=device).unsqueeze(-1)
+#     node_distances = layer_ids.unsqueeze(0) - layer_ids.unsqueeze(1)
 
-    return node_distances
+#     return node_distances
+
+def _construct_node_distances(all_gate_outputs: dict, device: torch.device):
+    node_vectors = []
+
+    for name in all_gate_outputs:
+        x = all_gate_outputs[name]  # shape: (..., C)
+
+        # Move channels to first dimension → (C, ...)
+        x = x.movedim(-1, 0)
+
+        # Flatten everything except channel → (C, feature_dim)
+        x = x.flatten(1)
+
+        node_vectors.append(x)
+
+    # Concatenate all nodes across layers
+    node_vectors = torch.cat(node_vectors, dim=0).to(device)  # (num_nodes, feature_dim)
+
+    # Normalize for cosine similarity
+    node_vectors = F.normalize(node_vectors, p=2, dim=1)
+
+    # Cosine similarity matrix
+    node_similarities = node_vectors @ node_vectors.T  # (num_nodes, num_nodes)
+
+    return node_similarities
 
 
 def _remove_same_layer_edges(edge_index: Tensor, node_distances: Tensor) -> Tensor:
@@ -253,6 +278,7 @@ def calc_causal_importances(
 
         if use_gnn:
             #ad the gate (mean output over k) and the features to their respective dictionaries.
+            #Now we take the gate mechanism and add gnn on top. 
             all_gate_outputs[param_name] = gate_input    # (batch, C) — for gating
             all_gate_feats[param_name] = gate_feats      # (batch, C, k) — for GNAN
         else:
@@ -326,8 +352,7 @@ def calc_causal_importances(
         for param_name in pre_weight_acts:
             C = all_gate_outputs[param_name].shape[-1]
             layer_out = gnn_out[:, offset:offset + C]  # (batch, C)
-            #Changed it to be just the gnn not as a residual, as a test. worked horribly.
-            all_gate_outputs[param_name] =  all_gate_outputs[param_name] + layer_out
+            all_gate_outputs[param_name] = all_gate_outputs[param_name] + layer_out
             offset += C
 
 
