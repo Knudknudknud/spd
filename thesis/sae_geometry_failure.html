@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Sparse Autoencoders Fail to Respect Feature Geometry</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400&display=swap');
+
+  :root {
+    --bg: #faf9f6;
+    --fg: #1a1a1a;
+    --fg-muted: #555;
+    --accent: #8b2500;
+    --accent-light: #f4ebe6;
+    --border: #ddd;
+    --highlight: #fffbe6;
+    --blue: #1a4a7a;
+    --blue-light: #e8f0fa;
+    --green: #1a5a3a;
+    --green-light: #e6f4ec;
+    --red-light: #fdf0ed;
+    --max-w: 700px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--fg);
+    background: var(--bg);
+    padding: 3rem 1.5rem 6rem;
+  }
+
+  main {
+    max-width: var(--max-w);
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: var(--fg-muted);
+    font-style: italic;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2.8rem;
+    margin-bottom: 0.8rem;
+    color: var(--fg);
+    letter-spacing: -0.01em;
+  }
+
+  h2 .num {
+    color: var(--accent);
+    margin-right: 0.3em;
+  }
+
+  p { margin-bottom: 1rem; }
+
+  .math-block {
+    margin: 1.2rem 0;
+    padding: 1rem 1.2rem;
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  .math-block-blue {
+    background: var(--blue-light);
+    border-left-color: var(--blue);
+  }
+
+  .math-block-green {
+    background: var(--green-light);
+    border-left-color: var(--green);
+  }
+
+  .math-block-plain {
+    background: transparent;
+    border-left: none;
+    padding: 0.8rem 0;
+  }
+
+  .failure-box {
+    margin: 1.5rem 0;
+    padding: 1.2rem 1.4rem;
+    border-radius: 8px;
+    border: 1px solid;
+  }
+
+  .failure-box.a { background: var(--red-light); border-color: #e0c4bc; }
+  .failure-box.b { background: var(--red-light); border-color: #e0c4bc; }
+  .failure-box.c { background: var(--red-light); border-color: #e0c4bc; }
+
+  .failure-box h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+  }
+
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.2rem 0;
+  }
+
+  .comparison > div {
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .comparison .option-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .comparison .wins { background: var(--green-light); border-color: #b5d6c5; }
+  .comparison .loses { background: var(--red-light); border-color: #e0c4bc; }
+
+  .key-point {
+    background: var(--highlight);
+    padding: 1rem 1.2rem;
+    border-radius: 6px;
+    border: 1px solid #e8e0b0;
+    margin: 1.5rem 0;
+    font-style: italic;
+  }
+
+  .error-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+  }
+
+  .error-table th, .error-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .error-table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fg-muted);
+    border-bottom: 2px solid var(--fg);
+  }
+
+  .error-table tr:last-child td { border-bottom: none; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    background: #eee;
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+  }
+
+  .katex { font-size: 1.05em; }
+  .math-block .katex { font-size: 1.15em; }
+
+  .qed {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--fg-muted);
+    font-style: italic;
+  }
+
+  @media (max-width: 600px) {
+    body { font-size: 16px; padding: 2rem 1rem 4rem; }
+    h1 { font-size: 1.5rem; }
+    .comparison { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Why sparse autoencoders fail to respect feature geometry</h1>
+<p class="subtitle">A mathematical account of the representational limitations of rank-1 dictionary learning</p>
+
+<!-- Section 1 -->
+<h2><span class="num">1.</span> The SAE setup</h2>
+
+<p>Given activations $\mathbf{a} \in \mathbb{R}^n$ from a neural network, a sparse autoencoder learns an encoder and decoder:</p>
+
+<div class="math-block">
+  $$z_i = \text{ReLU}(\vec{w}_i^\top \mathbf{a} + b_i), \qquad \hat{\mathbf{a}} = \sum_{i=1}^{d} z_i \, \vec{d}_i$$
+</div>
+
+<p>trained to minimise:</p>
+
+<div class="math-block">
+  $$\mathcal{L} = \|\mathbf{a} - \hat{\mathbf{a}}\|^2 + \lambda \sum_{i=1}^{d} |z_i|$$
+</div>
+
+<p>The first term demands accurate reconstruction. The second demands that as few coefficients $z_i$ are active as possible. Each dictionary element $\vec{d}_i$ is a fixed unit vector in $\mathbb{R}^n$, and each $z_i \geq 0$ is its scalar coefficient.</p>
+
+<!-- Section 2 -->
+<h2><span class="num">2.</span> The assumption baked in</h2>
+
+<p>The reconstruction $\hat{\mathbf{a}} = \sum_i z_i \vec{d}_i$ says: the activation is a sparse sum of scaled directions. The contribution of dictionary element $i$ is always:</p>
+
+<div class="math-block">
+  $$z_i \, \vec{d}_i \;\in\; \text{span}(\vec{d}_i)$$
+</div>
+
+<p>This is a point on a one-dimensional ray through the origin (a ray because $z_i \geq 0$). No matter what $z_i$ is, the contribution can only slide along $\vec{d}_i$. Each atom is rank-1 by construction.</p>
+
+<p>This embodies the <strong>linear representation hypothesis</strong>: every feature is a direction, every activation is a sparse superposition of those directions. When true — for example, if the model represents "is French" as one direction and "is code" as another — the SAE recovers those directions cleanly.</p>
+
+<!-- Section 3 -->
+<h2><span class="num">3.</span> Features with geometry</h2>
+
+<p>Some features are not directions. They have internal structure — a set of related values that live on a manifold within a multi-dimensional subspace.</p>
+
+<p>Consider "day of the week." A model represents the seven days as points on a circle in a 2D plane spanned by two orthogonal directions $\vec{e}_1, \vec{e}_2 \in \mathbb{R}^n$:</p>
+
+<div class="math-block math-block-blue">
+  $$\mathbf{a}_{\text{day}}(\theta) = \cos(\theta)\,\vec{e}_1 + \sin(\theta)\,\vec{e}_2, \qquad \theta = \frac{2\pi \cdot d}{7}, \quad d = 0, \ldots, 6$$
+</div>
+
+<p>This is one feature (which day it is) but it has a 2-dimensional geometric structure (a circle). The two components are coupled by the constraint $\cos^2\theta + \sin^2\theta = 1$. No single direction $\vec{d}_i$ can capture this — a ray cannot approximate a circle.</p>
+
+<!-- Section 4 -->
+<h2><span class="num">4.</span> Three failures</h2>
+
+<div class="failure-box a">
+<h3>Failure 1 — The ReLU forces non-negative coefficients</h3>
+<p>Even if the SAE learns $\vec{d}_1 = \vec{e}_1$ and $\vec{d}_2 = \vec{e}_2$, the reconstruction can only reach the first quadrant:</p>
+
+<div class="math-block math-block-plain">
+  $$\hat{\mathbf{a}} = z_1 \vec{e}_1 + z_2 \vec{e}_2, \qquad z_1 \geq 0, \; z_2 \geq 0$$
+</div>
+
+<p>But the circle passes through all four quadrants. Monday might sit at $(\cos\theta, \sin\theta) = (-0.22, -0.97)$. To reach negative coordinates, the SAE needs additional elements $\vec{d}_3 = -\vec{e}_1$ and $\vec{d}_4 = -\vec{e}_2$. One 2D feature has already been split into four dictionary elements, and representing any point on the circle requires two of these four active simultaneously.</p>
+</div>
+
+<div class="failure-box b">
+<h3>Failure 2 — The sparsity penalty punishes co-activation</h3>
+<p>Suppose the activation is at angle $\theta = \pi/4$:</p>
+
+<div class="math-block math-block-plain">
+  $$\mathbf{a} = \tfrac{\sqrt{2}}{2}\,\vec{e}_1 + \tfrac{\sqrt{2}}{2}\,\vec{e}_2$$
+</div>
+
+<div class="comparison">
+  <div class="loses">
+    <p class="option-label">Option A: two basis elements</p>
+    <p>$z_1 = z_2 = \frac{\sqrt{2}}{2}$</p>
+    <p>Sparsity cost: $\lambda(z_1 + z_2) = \lambda\sqrt{2}$</p>
+  </div>
+  <div class="wins">
+    <p class="option-label">Option B: one dedicated element</p>
+    <p>Learn $\vec{d}_5 = \frac{\sqrt{2}}{2}\vec{e}_1 + \frac{\sqrt{2}}{2}\vec{e}_2$, then $z_5 = 1$</p>
+    <p>Sparsity cost: $\lambda \cdot 1 = \lambda$</p>
+  </div>
+</div>
+
+<p>Option B always wins. More precisely, for any unit-norm point $\mathbf{a}$, using a single aligned dictionary element costs $\lambda$. Using any two non-aligned elements at angle $\alpha$ apart costs at least:</p>
+
+<div class="math-block math-block-plain">
+  $$\lambda(z_1 + z_2) \;\geq\; \frac{\lambda}{\cos(\alpha/2)} \;>\; \lambda$$
+</div>
+
+<p>The $L_1$ penalty is minimised along dictionary directions and penalises any interpolation between them. So the SAE is driven to learn a separate dictionary element for every angle it frequently encounters — tiling the circle with discrete directions.</p>
+</div>
+
+<div class="failure-box c">
+<h3>Failure 3 — The geometry is destroyed</h3>
+<p>The SAE tiles the circle with $d'$ dictionary elements at evenly spaced angles:</p>
+
+<div class="math-block math-block-plain">
+  $$\vec{d}_j \approx \cos(\theta_j)\,\vec{e}_1 + \sin(\theta_j)\,\vec{e}_2, \qquad j = 1, \ldots, d'$$
+</div>
+
+<p>This destroys the geometry in three ways:</p>
+
+<p><strong>(a) Topological structure is lost.</strong> On the circle, Sunday is adjacent to Monday — the circle wraps around. In the SAE's representation, "Sunday-direction" and "Monday-direction" are unrelated dictionary elements. The adjacency is not encoded.</p>
+
+<p><strong>(b) Metric structure is lost.</strong> On the circle, Thursday is closer to Friday than to Monday. In SAE space, each day fires a different element with $z_j \approx 1$ and all others near zero. The representations of Thursday and Friday are as different as Thursday and Monday — both are approximately one-hot in different coordinates.</p>
+
+<p><strong>(c) The feature count is wrong.</strong> There is one feature ("day of the week") but the SAE reports $d'$ features. Each day appears as a separate learned direction. Downstream analysis that counts features, measures polysemanticity, or studies feature interactions is systematically wrong — it is counting fragments of one geometric object as independent features.</p>
+</div>
+
+<!-- Section 5 -->
+<h2><span class="num">5.</span> The root cause</h2>
+
+<p>The SAE's representation space is:</p>
+
+<div class="math-block">
+  $$\mathcal{R} = \left\{\sum_{i=1}^{d} z_i \vec{d}_i \;\Big|\; z_i \geq 0\right\}$$
+</div>
+
+<p>This is a <strong>convex polyhedral cone</strong> — a union of flat faces. Its geometry is always piecewise linear: each face is a simplex spanned by a subset of dictionary elements, and moving continuously through $\mathcal{R}$ means linearly interpolating between faces.</p>
+
+<div class="key-point">
+  Any curved manifold — a circle, a sphere, a rotation group, a torus — cannot be faithfully embedded in a polyhedral cone. The SAE can only approximate curved geometry by adding more flat faces, which means more dictionary elements, which means more splitting.
+</div>
+
+<p>The worst-case approximation error for a unit circle with $d'$ evenly spaced dictionary elements is:</p>
+
+<div class="math-block">
+  $$\max_\theta \min_j \|\mathbf{a}(\theta) - \vec{d}_j\| = 2\sin\!\left(\frac{\pi}{d'}\right) \approx \frac{2\pi}{d'}$$
+</div>
+
+<table class="error-table">
+  <thead>
+    <tr>
+      <th>Dictionary elements $d'$</th>
+      <th>Max error</th>
+      <th>Features reported</th>
+      <th>True features</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>4</td><td>1.414</td><td>4</td><td>1</td></tr>
+    <tr><td>7</td><td>0.868</td><td>7</td><td>1</td></tr>
+    <tr><td>12</td><td>0.518</td><td>12</td><td>1</td></tr>
+    <tr><td>24</td><td>0.261</td><td>24</td><td>1</td></tr>
+    <tr><td>$\infty$</td><td>0</td><td>$\infty$</td><td>1</td></tr>
+  </tbody>
+</table>
+
+<p>Reducing error requires more elements, which inflates the feature count without bound. This is not a training failure or a hyperparameter issue. It is a representational limitation of the architecture.</p>
+
+<p class="qed">The sparse autoencoder assumes all features are rank-1. When they are not, it shatters them into fragments, loses their geometry, and conflates representational capacity with feature count. No amount of scaling, tuning, or training resolves this — it is structural.</p>
+
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>

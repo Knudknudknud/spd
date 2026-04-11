@@ -143,10 +143,12 @@ class TensorGNAN(nn.Module):
         #Batch size, num nodes, num features
         S, N, F = x_batch.shape
 
-        # fs: flatten batch, process, reshape back
 
         #Create an empty tensor of dimension (Batch*nodes, feature, out_channels)
         fx = torch.empty(S * N, F, self.out_channels, device=self.device)
+
+        #can it not just do it directly without unpacking?
+    
 
         for feat_idx in range(F):
             #Take all feature values for the k'th feature, 

@@ -19,6 +19,51 @@
 
 \refsection{0}
   \datalist[entry]{anyt/global//global/global/global}
+    \entry{stochasticparameterdecomposition}{misc}{}{}
+      \name{author}{3}{}{%
+        {{hash=9c1f60ef07d490aed136933c65e14aa4}{%
+           family={Bushnaq},
+           familyi={B\bibinitperiod},
+           given={Lucius},
+           giveni={L\bibinitperiod}}}%
+        {{hash=375c93d04783a8b8c5887d391db14e08}{%
+           family={Braun},
+           familyi={B\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod}}}%
+        {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
+           family={Sharkey},
+           familyi={S\bibinitperiod},
+           given={Lee},
+           giveni={L\bibinitperiod}}}%
+      }
+      \strng{namehash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{fullhash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{fullhashraw}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{bibnamehash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{authorbibnamehash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{authornamehash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{authorfullhash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{authorfullhashraw}{24c2f3d1b406bf4db61bd01103dd5547}
+      \field{labelalpha}{BBS25}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.LG}
+      \field{eprinttype}{arXiv}
+      \field{title}{Stochastic Parameter Decomposition}
+      \field{year}{2025}
+      \verb{eprint}
+      \verb 2506.20790
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2506.20790
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2506.20790
+      \endverb
+    \endentry
     \entry{AttributionBasedParameterDecomposition}{misc}{}{}
       \name{author}{5}{}{%
         {{hash=375c93d04783a8b8c5887d391db14e08}{%
@@ -74,7 +119,193 @@
       \verb https://arxiv.org/abs/2501.14926
       \endverb
     \endentry
+    \entry{absorptionstudyingfeaturesplitting}{misc}{}{}
+      \name{author}{6}{}{%
+        {{hash=2bea3bb85f278ca404bf4e68abe9ea17}{%
+           family={Chanin},
+           familyi={C\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod}}}%
+        {{hash=ef3dbdbcf677c8bbc452ca36d437503f}{%
+           family={Wilken-Smith},
+           familyi={W\bibinithyphendelim S\bibinitperiod},
+           given={James},
+           giveni={J\bibinitperiod}}}%
+        {{hash=2ca75cf2a91890707c9c532756e1eeaf}{%
+           family={Dulka},
+           familyi={D\bibinitperiod},
+           given={Tomáš},
+           giveni={T\bibinitperiod}}}%
+        {{hash=8fa6950de004f28913b8a119f6da0a6f}{%
+           family={Bhatnagar},
+           familyi={B\bibinitperiod},
+           given={Hardik},
+           giveni={H\bibinitperiod}}}%
+        {{hash=d477c6e54da1b08df8995592fd5e3ff6}{%
+           family={Golechha},
+           familyi={G\bibinitperiod},
+           given={Satvik},
+           giveni={S\bibinitperiod}}}%
+        {{hash=8bffc8ca92e4f0cd665c6a61ca7bca32}{%
+           family={Bloom},
+           familyi={B\bibinitperiod},
+           given={Joseph},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{dddfc9644b53cdd1363280a0cdac9d5d}
+      \strng{fullhash}{adfdb13d4905335fc06f6898b72c4a34}
+      \strng{fullhashraw}{adfdb13d4905335fc06f6898b72c4a34}
+      \strng{bibnamehash}{dddfc9644b53cdd1363280a0cdac9d5d}
+      \strng{authorbibnamehash}{dddfc9644b53cdd1363280a0cdac9d5d}
+      \strng{authornamehash}{dddfc9644b53cdd1363280a0cdac9d5d}
+      \strng{authorfullhash}{adfdb13d4905335fc06f6898b72c4a34}
+      \strng{authorfullhashraw}{adfdb13d4905335fc06f6898b72c4a34}
+      \field{labelalpha}{Cha+25}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.CL}
+      \field{eprinttype}{arXiv}
+      \field{title}{A is for Absorption: Studying Feature Splitting and Absorption in Sparse Autoencoders}
+      \field{year}{2025}
+      \verb{eprint}
+      \verb 2409.14507
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2409.14507
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2409.14507
+      \endverb
+    \endentry
+    \entry{sparseautoencodershighlyinterpretable}{misc}{}{}
+      \name{author}{5}{}{%
+        {{hash=81adc00b4f07e3a2483bd1326a644b10}{%
+           family={Cunningham},
+           familyi={C\bibinitperiod},
+           given={Hoagy},
+           giveni={H\bibinitperiod}}}%
+        {{hash=e71ac44c9aaf2232d36526bd1fc9f22b}{%
+           family={Ewart},
+           familyi={E\bibinitperiod},
+           given={Aidan},
+           giveni={A\bibinitperiod}}}%
+        {{hash=07a344d1e172b27b5541f6930d7dc44e}{%
+           family={Riggs},
+           familyi={R\bibinitperiod},
+           given={Logan},
+           giveni={L\bibinitperiod}}}%
+        {{hash=2b60ef9b6422798c6873b6ab23d63a16}{%
+           family={Huben},
+           familyi={H\bibinitperiod},
+           given={Robert},
+           giveni={R\bibinitperiod}}}%
+        {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
+           family={Sharkey},
+           familyi={S\bibinitperiod},
+           given={Lee},
+           giveni={L\bibinitperiod}}}%
+      }
+      \strng{namehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{fullhash}{71542c9b3d8bb54096acc4edb13b192c}
+      \strng{fullhashraw}{71542c9b3d8bb54096acc4edb13b192c}
+      \strng{bibnamehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authorbibnamehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authornamehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authorfullhash}{71542c9b3d8bb54096acc4edb13b192c}
+      \strng{authorfullhashraw}{71542c9b3d8bb54096acc4edb13b192c}
+      \field{labelalpha}{Cun+23}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.LG}
+      \field{eprinttype}{arXiv}
+      \field{title}{Sparse Autoencoders Find Highly Interpretable Features in Language Models}
+      \field{year}{2023}
+      \verb{eprint}
+      \verb 2309.08600
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2309.08600
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2309.08600
+      \endverb
+    \endentry
+    \entry{sparseautoencoderscanonicalunits}{misc}{}{}
+      \name{author}{8}{}{%
+        {{hash=8f8e9b8d82198f627d03b1124af6f0e6}{%
+           family={Leask},
+           familyi={L\bibinitperiod},
+           given={Patrick},
+           giveni={P\bibinitperiod}}}%
+        {{hash=f555a13965ffb118677c14b6e19f9ed0}{%
+           family={Bussmann},
+           familyi={B\bibinitperiod},
+           given={Bart},
+           giveni={B\bibinitperiod}}}%
+        {{hash=25ca8c9526c5e34856fdc8cd624e0a80}{%
+           family={Pearce},
+           familyi={P\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=8bffc8ca92e4f0cd665c6a61ca7bca32}{%
+           family={Bloom},
+           familyi={B\bibinitperiod},
+           given={Joseph},
+           giveni={J\bibinitperiod}}}%
+        {{hash=423194b5cba9ee34352c2934e019bfb3}{%
+           family={Tigges},
+           familyi={T\bibinitperiod},
+           given={Curt},
+           giveni={C\bibinitperiod}}}%
+        {{hash=49a1fc90a8497eb966900cb1a26a5213}{%
+           family={Moubayed},
+           familyi={M\bibinitperiod},
+           given={Noura\bibnamedelima Al},
+           giveni={N\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
+           family={Sharkey},
+           familyi={S\bibinitperiod},
+           given={Lee},
+           giveni={L\bibinitperiod}}}%
+        {{hash=d2f8bae99d9538a95287ac272f977fc4}{%
+           family={Nanda},
+           familyi={N\bibinitperiod},
+           given={Neel},
+           giveni={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{f0ccd1e0ff6bf32cbb2a57479f33a088}
+      \strng{fullhash}{ddaec44b722a21f532810ea081627188}
+      \strng{fullhashraw}{ddaec44b722a21f532810ea081627188}
+      \strng{bibnamehash}{f0ccd1e0ff6bf32cbb2a57479f33a088}
+      \strng{authorbibnamehash}{f0ccd1e0ff6bf32cbb2a57479f33a088}
+      \strng{authornamehash}{f0ccd1e0ff6bf32cbb2a57479f33a088}
+      \strng{authorfullhash}{ddaec44b722a21f532810ea081627188}
+      \strng{authorfullhashraw}{ddaec44b722a21f532810ea081627188}
+      \field{labelalpha}{Lea+25}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.LG}
+      \field{eprinttype}{arXiv}
+      \field{title}{Sparse Autoencoders Do Not Find Canonical Units of Analysis}
+      \field{year}{2025}
+      \verb{eprint}
+      \verb 2502.04878
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2502.04878
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2502.04878
+      \endverb
+    \endentry
   \enddatalist
+  \missing{ToyModelsSuperposition}
 \endrefsection
 \endinput
 

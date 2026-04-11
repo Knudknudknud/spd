@@ -271,6 +271,7 @@ def calc_causal_importances(
             component_act_k = einops.einsum(acts, A, "... d_in, d_in C k -> ... C k")
             #For now collapse over the k, might still be a hack,
             #ask Lukas.
+            #Probably just feed both values into the gnn -> change input dim to k
             component_act = component_act_k.mean(dim=-1)
 
         gate_input = component_act.detach() if detach_inputs else component_act
