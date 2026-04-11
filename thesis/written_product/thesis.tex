@@ -151,89 +151,136 @@ each pair of vectors is replaced with a pair of matrices:
 \]
 Each subcomponent $U_{c}^{l} V_{c}^{l\top} \in 
 \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$ is a matrix of 
-rank at most $k$. Setting $k = 1$ recovers the original SPD 
-formulation.
-
-As a result of this change, the inner activation used in the importance function becomes a $k$-dimensional vector instead of a single scalar:
+rank at most $k$. Setting $k = 1$ yields the original SPD 
+definition.
+As a result of this change, the inner activation used in the importance function becomes a $k$-dimensional vector:
 \[
-    \mathbf{h}_{c}^{l}(x) = V_{c}^{l\top} \, 
+\mathbf{h}_{c}^{l}(x) = V_{c}^{l\top} \, 
     \vec{a}^{\,l}(x) \in \mathbb{R}^{k}
 \]
 The extension from SPD follows naturally: the importance function
 is no longer derived from a single inner activation,
-but from $k$ inner activations, which are then processed jointly to
-determine whether the mechanism should remain active.
+but from $k$ inner activations, which are processed jointly to produce an overall importance value for the subcomponent.
 
-
-\subsubsection{GNaN-based importance functions}
-
+\subsubsection{GNAN-based importance functions}
 In SPD, each importance function $\gamma_{c}^{l}$ is an 
 independent MLP that receives only its own inner activation. 
-Even with the richer $k$-dimensional inner activations introduced 
-in Section~3.3.1, this independence prevents subcomponents from 
-using cross-component information to disambiguate signal from 
-interference. We replace the independent MLPs with a Graph Neural 
-Additive Network (GNaN) that operates over the set of 
-subcomponents.
+Intuitively, however, causal importance is relational: whether 
+a subcomponent can be ablated without affecting the output may 
+well depend on which other subcomponents are active alongside it.
+
+To address this, the independent MLPs are replaced with a Graph Neural Additive Network (GNAN)
+that can relate each subcomponent to its neighbourhood.
 
 The $C$ subcomponents are treated as nodes in a graph, with node 
 features given by their inner activation vectors 
 $\mathbf{h}_{c}^{l}(x) \in \mathbb{R}^{k}$. The GNaN updates 
-each node's representation through an additive aggregation. For 
-node $i$ and feature dimension $k$:
+each node's representation through an additive neighbourhood 
+aggregation. For node $i$ in layer $l$ and feature dimension $k$ \footnote{I am very open to alternative equations, i.e perhaps we delete the layer distance inside rho, however it seemed necessary to use cosine similarity, as otherwise the signal was useless as described in some earlier section}:
 \[
-    [\mathbf{h}_{i}]_{k} = \sum_{j=1}^{N} 
-    \frac{1}{\#\mathrm{dist}_{i}(j, i)} \cdot 
-    \rho\!\left(\frac{1}{1 + \mathrm{dist}(j, i)}\right) \cdot 
-    f_{k}\!\left([\mathbf{x}_{j}]_{k}\right)
+    [\mathbf{z}_{i}]_{k} = \sum_{j=1}^{N} 
+    \frac{1}{|\mathcal{L}(j)|} \cdot 
+   \rho\!\left(\frac{1}{1 + \mathrm{dist}(j, i)},\; 
+\mathrm{cos}(j, i)\right) \cdot 
+    f_{k}\!\left([\mathbf{h}_{j}]_{k}\right)
 \]
-where $f_{k}$ is a learned per-feature function applied to the 
-$k$-th inner activation of neighbour $j$; 
-$\mathrm{dist}(j, i)$ is a distance function computed from 
-the layer distance between subcomponents $j$ and $i$ and the 
-cosine similarity of their parameter vectors; $\rho$ is a learned 
-function that maps the distance kernel to a scalar weight; and 
-$\#\mathrm{dist}_{i}(j, i)$ normalises by the number of nodes at 
-the same distance from $i$ as $j$. The update is residual:
-\[
-    \mathbf{h}_{i} \leftarrow \mathbf{h}_{i} + 
-    \mathrm{GNaN}(\mathbf{h}_{i}, 
-    \{\mathbf{h}_{j}\}_{j \neq i})
-\]
-The additive structure is a deliberate choice. Each feature 
-dimension $k$ is processed independently by $f_{k}$, and each 
-neighbour's contribution is weighted independently by the 
-distance function. This preserves interpretability of the 
-importance computation: the contribution of each neighbour to 
-each feature dimension can be inspected individually.
+where $f_{k}$ is a learned function applied to the $k$-th inner 
+activation of each neighbouring node $j$; $|\mathcal{L}(j)|$ is 
+the number of nodes in the same layer as $j$, which normalises 
+the contribution of each 
+layer; $\mathrm{dist}(j, i)$ is the layer distance between 
+nodes $j$ and $i$\footnote{The layer distance, could later be signed to differentiate between
+previous and future layers}; $\mathrm{cos}(j, i)$ is the cosine similarity 
+between their parameter vectors; and $\rho$ is a learned function 
+that maps both the distance kernel and the cosine similarity to a 
+scalar weight.
 
-After the GNaN update, the per-dimension importance values are 
+A separate MLP is applied to the node's own inner activation, 
+and the final representation is formed as a residual sum of the 
+two:
+\[
+    \mathbf{h}_{i} \leftarrow f_{\text{self}}(\mathbf{h}_{i}) 
+    + \mathbf{z}_{i}
+\]
+The self-connection through $f_{\text{self}}$ ensures that each 
+node retains its own identity after aggregation, mitigating 
+the oversmoothing that can occur in GNNs. \{Clever cite here, i.e gnn book\}
+
+
+\textbf{Two alternative formulations, i cant seem to figure which would be most logical?} \\
+
+After the GNAN update, the per-dimension importance values are 
 computed from the updated representation and passed through a 
 leaky hard sigmoid, following 
-SPD~\autocite{stochasticparameterdecomposition}:
+SPD \autocite{stochasticparameterdecomposition}:
 \[
-    \mathbf{g}_{c}^{l}(x) = \sigma_{H}\!\left(
-    \gamma_{c}\!\left(\mathbf{h}_{c}^{l}(x)\right)\right) 
+    \mathbf{g}_{c}^{l}(x) = \sigma_{H}\!\left(\mathbf{h}_{c}^{l}(x)\right)
     \in [0, 1]^{k}
 \]
+in other words, the importance function becomes multidimensional,
+and each column can be masked independently
+\textbf{Alternative two:} \\
 
-This architecture addresses both limitations of SPD 
-simultaneously. The rank-$k$ subcomponents eliminate the need for 
-post-hoc clustering by capturing multi-dimensional mechanisms as 
-single units. The per-dimension ablation learns the effective rank 
-of each mechanism automatically. And the GNaN enables importance 
-decisions to be conditioned on the full neighbourhood, allowing 
-subcomponents to reject interference from other active mechanisms 
-and to coordinate their importance values when they participate 
-in shared computations.
+After the GNAN update, the updated representation is aggregated 
+into a single importance value per subcomponent and passed through 
+a leaky hard sigmoid, following 
+SPD \autocite{stochasticparameterdecomposition}:
+\[
+    g_{c}^{l}(x) = \sigma_{H}\!\left(
+    \mathrm{AGG}\!\left(\mathbf{h}_{c}^{l}(x)\right)\right) 
+    \in [0, 1]
+\]
+where $\mathrm{AGG}$ is an aggregation function that maps 
+$\mathbf{h}_{c}^{l}(x) \in \mathbb{R}^{k}$ to a scalar, i.e mean,max,sum?.
+\\
 
-\subsubsection{Per-dimension ablation and implicit rank selection}
+\textbf{Remarks:} \\
+For now the edge set construction is left as the fully connected graph,
+which remains reasonably computationally expensive for small models.
+However it could very easily be made more efficient, for other architectures,
+or by considering only the k-hop neighbourhood of each node, or only considering prior neighbours or later neighbourhoods.
+Likewise we could store both distances as sparse structures as they are symmetric. $\cos (j,i) = \cos (i,j)$
+\\
+\textbf{Remark 2:} \\
+The choice of edge set construction and distance function is a very important design choice,
+e.g using the layer distance on a fully connected graph encodes the same signal for all nods in a layer:
+For nodes $i_1, i_2$ in the same layer $l$:
+\[
+    \forall\, j \colon \quad 
+    \mathrm{dist}(j, i_1) = \mathrm{dist}(j, i_2) = |k_j - l|
+\]
+and therefore
+\[
+    [\mathbf{h}_{i_1}]_k = \sum_{j=1}^{N} 
+    \frac{1}{\#\mathrm{dist}_{i_1}(j, i_1)} \cdot 
+    \rho\!\left(\frac{1}{1 + |k_j - l|}\right) \cdot 
+    f_k([\mathbf{x}_j]_k) 
+    = [\mathbf{h}_{i_2}]_k
+\]
+since no term in the sum depends on the identity of $i$ 
+within layer $l$, only on the layer index $l$ itself.
+\\
+Additionally this produces a counterproductive signal,
+the gnan tries to boost or suppress all nodes in a layer together, instead
+of learning to differentiate between them.
 
-A natural concern with rank-$k$ subcomponents is the choice of 
-$k$: if $k$ is smaller than the true rank of a mechanism, the 
-subcomponent cannot capture it fully; if $k$ is larger, the 
-subcomponent has excess capacity that could absorb unrelated 
-computations.
+
+
+\subsubsection{ Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}
+Following the extension to rank-$k$ subcomponents, and the alternative formulation of the GNAN,
+the output $g^{l}_{c} \in [0, 1]^{k}$ is a per feature importance value, and thus the masking can be applied independently to each feature.
+The intuition behind this is that if a mechanism captures a 1 dimensional feature, it would only need of the $k$ dimensions to be active.
+\\
+Likewise if this actually ends up working, k can be considered an upper bound or a so called "capacity" of a mechanism,
+it also follows nicely with the descriptive length principle found in the appendix of APD.
+
+To determine the effective rank of each subcomponent, the stochastic masking becomes:
+\[
+    [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
+\]
+for each j in $1,\dots,k$
+The
+
 
 We resolve this by allowing the training objective to determine 
 the effective rank of each subcomponent automatically. Rather than 
@@ -255,6 +302,12 @@ for $j = 1, \ldots, k$. The masked weight matrix becomes:
     U_{c}^{l} \, \mathrm{diag}\!\left(
     \mathbf{m}_{c}^{l}(x, r)\right) V_{c}^{l\top}
 \]
+
+\[
+    W^{\prime l}(x, r) = \sum_{c=1}^{C} \sum_{j=1}^{k}
+    [m_{c}^{l}(x, r)]_{j} \cdot 
+    \vec{u}_{c,j}^{\,l} \, \vec{v}_{c,j}^{\,l\top}
+\]
 The importance minimality loss penalises all $k$ dimensions of 
 all subcomponents toward zero:
 \[
@@ -274,6 +327,29 @@ This makes $k$ a soft upper bound rather than a sensitive
 hyperparameter. In practice, $k$ can be set conservatively large 
 and the effective rank of each subcomponent is learned from the 
 data.
+
+
+\section{Benefits}
+
+This architecture addresses both limitations of SPD 
+simultaneously. The rank-$k$ subcomponents eliminate the need for 
+post-hoc clustering by capturing multi-dimensional mechanisms as 
+single units. The per-dimension ablation learns the effective rank 
+of each mechanism automatically. And the GNaN enables importance 
+decisions to be conditioned on the full neighbourhood, allowing 
+subcomponents to reject interference from other active mechanisms 
+and to coordinate their importance values when they participate 
+in shared computations.
+
+
+
+
+Pros: Forces all kk
+k dimensions to be treated as a unit. If two dependent features end up in the same block, they are always ablated together — the stochastic masking will produce high reconstruction error whenever they're separated across blocks, pushing them together. This is the strongest pressure for grouping.
+
+Cons: You lose implicit rank selection entirely. If k=8k = 8
+k=8 and the true rank is 2, the other 6 dimensions are dead weight but can't be pruned — they ride along with the block. kk
+k becomes a sensitive hyperparameter again.
 
 
 \subsubsection{Training objective}
