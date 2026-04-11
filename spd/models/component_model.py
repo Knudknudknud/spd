@@ -14,7 +14,7 @@ from torch import Tensor, nn
 from wandb.apis.public import Run
 
 from spd.configs import Config
-from spd.models.components import EmbeddingComponent, Gate, GateMLP, LinearComponent
+from spd.models.components import EmbeddingComponent, LinearComponent, TensorGNAN
 from spd.spd_types import WANDB_PATH_PREFIX, ModelPath
 from spd.utils import load_pretrained
 from spd.wandb_utils import download_wandb_file, fetch_latest_wandb_checkpoint, fetch_wandb_run_dir
@@ -34,7 +34,7 @@ class ComponentModel(nn.Module):
         target_module_patterns: list[str],
         C: int,
         k: int,
-        n_ci_mlp_neurons: int,
+        #n_ci_mlp_neurons: int,
         pretrained_model_output_attr: str | None,
     ):
         super().__init__()
@@ -45,14 +45,10 @@ class ComponentModel(nn.Module):
         self.components = self.create_target_components(
             target_module_patterns=target_module_patterns, C=C, k=k
         )
-
-        gate_class = GateMLP if n_ci_mlp_neurons > 0 else Gate
-        gate_kwargs = {"C": C}
-        if n_ci_mlp_neurons > 0:
-            gate_kwargs["n_ci_mlp_neurons"] = n_ci_mlp_neurons
-
-        self.gates = nn.ModuleDict({name: gate_class(**gate_kwargs) for name in self.components})
-
+        
+        #Consider changing out_channels to be k and then adding an mlp on top.
+        self.gnan = TensorGNAN(in_channels=C, out_channels=1, n_layers=2, hidden_channels=4, bias=True, dropout=0.0, is_graph_task=False)
+        
     def create_target_components(self, target_module_patterns: list[str], C: int, k: int) -> nn.ModuleDict:
         """Create target components for the model."""
         components: dict[str, LinearComponent | EmbeddingComponent] = {}

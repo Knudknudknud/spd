@@ -26,7 +26,7 @@ from spd.models.component_utils import (
     calc_ci_l_zero,
     component_activation_statistics,
 )
-from spd.models.components import EmbeddingComponent, Gate, GateMLP, LinearComponent
+from spd.models.components import EmbeddingComponent, LinearComponent
 from spd.plotting import (
     create_embed_ci_sample_table,
     plot_ci_histograms,
@@ -89,10 +89,7 @@ def optimize(
         param.requires_grad = False
     logger.info("Target model parameters frozen.")
 
-    # We used "-" instead of "." as module names can't have "." in them
-    gates: dict[str, Gate | GateMLP] = {
-        k.removeprefix("gates.").replace("-", "."): v for k, v in model.gates.items()
-    }  # type: ignore
+     # type: ignore
     components: dict[str, LinearComponent | EmbeddingComponent] = {
         k.removeprefix("components.").replace("-", "."): v for k, v in model.components.items()
     }  # type: ignore
@@ -119,30 +116,14 @@ def optimize(
 
 
     component_params: list[torch.nn.Parameter] = []
-    gate_params: list[torch.nn.Parameter] = []
+    gnan_params = list(model.gnan.parameters())
+
     for name, component in components.items():
         component_params.extend(list(component.parameters()))
-        gate_params.extend(list(gates[name].parameters()))
-
-
-    from spd.models.gnan import TensorGNAN
-
-    gnan = TensorGNAN(
-        in_channels=config.k,
-        out_channels=1,
-        n_layers=2,
-        hidden_channels=16,
-        device=device,
-        is_graph_task=False,
-    ).to(device)
-
-    model.gates["active_module"] = gnan
-    gates["active_module"] = gnan      
-    gate_params.extend(list(gnan.parameters()))
-    
     assert len(component_params) > 0, "No parameters found in components to optimize"
-
-    optimizer = optim.AdamW(component_params + gate_params, lr=config.lr, weight_decay=0)
+    assert len(gnan_params) > 0, "No parameters found in GNAN to optimize"
+    
+    optimizer = optim.AdamW(component_params + gnan_params, lr=config.lr, weight_decay=0)
 
     lr_schedule_fn = get_lr_schedule_fn(config.lr_schedule, config.lr_exponential_halflife)
     logger.info(f"Base LR scheduler created: {config.lr_schedule}")
@@ -187,7 +168,7 @@ def optimize(
         As = {module_name: components[module_name].A for module_name in components}
 
         causal_importances, causal_importances_upper_leaky = calc_causal_importances(
-        pre_weight_acts=pre_weight_acts, As=As, gates=gates, detach_inputs=False)
+            pre_weight_acts=pre_weight_acts, As=As, gnan=model.gnan, detach_inputs=False)
 
         for layer_name, ci in causal_importances.items():
             alive_components[layer_name] = alive_components[layer_name] | (ci > 0.1).any(dim=(0, 1))
@@ -272,7 +253,7 @@ def optimize(
                     fig_dict = plot_results_fn(
                         model=model,
                         components=components,
-                        gates=gates,
+                        gnan = model.gnan,
                         batch_shape=batch.shape,
                         device=device,
                     )

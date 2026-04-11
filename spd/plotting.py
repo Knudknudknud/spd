@@ -14,7 +14,7 @@ from torch import Tensor
 
 from spd.models.component_model import ComponentModel
 from spd.models.component_utils import calc_causal_importances
-from spd.models.components import EmbeddingComponent, Gate, GateMLP, LinearComponent
+from spd.models.components import EmbeddingComponent, LinearComponent, TensorGNAN
 
 
 def permute_to_identity(
@@ -132,7 +132,7 @@ def _plot_causal_importances_figure(
 def plot_causal_importance_vals(
     model: ComponentModel,
     components: Mapping[str, LinearComponent | EmbeddingComponent],
-    gates: Mapping[str, Gate | GateMLP],
+    gnan: TesnorGNAN,
     batch_shape: tuple[int, ...],
     device: str | torch.device,
     input_magnitude: float,
@@ -172,7 +172,7 @@ def plot_causal_importance_vals(
     As = {module_name: v.A for module_name, v in components.items()}
 
     ci_raw, ci_upper_leaky_raw = calc_causal_importances(
-        pre_weight_acts=pre_weight_acts, As=As, gates=gates, detach_inputs=False
+        pre_weight_acts=pre_weight_acts, As=As, gnan=gnan, detach_inputs=False
     )
 
     ci = {}
@@ -453,7 +453,7 @@ def plot_ci_histograms(
 def create_toy_model_plot_results(
     model: ComponentModel,
     components: dict[str, LinearComponent | EmbeddingComponent],
-    gates: dict[str, Gate | GateMLP],
+    gnan: TensorGNAN,
     batch_shape: tuple[int, ...],
     device: str | torch.device,
     **_,
@@ -479,7 +479,7 @@ def create_toy_model_plot_results(
     figures, all_perm_indices = plot_causal_importance_vals(
         model=model,
         components=components,
-        gates=gates,
+        gnan=gnan,
         batch_shape=batch_shape,
         device=device,
         input_magnitude=0.75,
@@ -492,3 +492,84 @@ def create_toy_model_plot_results(
         components=components, all_perm_indices=all_perm_indices
     )
     return fig_dict
+
+def create_gnan_plots(gnan: TensorGNAN) -> dict[str, plt.Figure]:
+    return {
+        "gnan_features": create_gnan_feature_weights(gnan),
+        "gnan_distances": create_gnan_distance_weights(gnan),
+        "gnan_feature_distances": create_gnan_feature_distance_weights(gnan),
+    }
+
+def create_gnan_feature_weights(
+    gnan: TensorGNAN,
+) -> plt.Figure:
+    """Plot f(1.0) for each per-feature MLP in the GNAN."""
+    n_features = len(gnan.fs)
+    f_scores = np.zeros(n_features)
+    for i in range(n_features):
+        with torch.inference_mode():
+            f_scores[i] = gnan.fs[i](torch.tensor([[1.0]])).detach().flatten()[0]
+
+    fig, ax = plt.subplots(figsize=(max(4, n_features * 0.5), 3))
+    ax.bar([f"{i}" for i in range(n_features)], f_scores)
+    ax.set_xlabel("Feature index")
+    ax.set_ylabel("f(1.0)")
+    ax.set_title("GNAN per-feature function outputs")
+    fig.tight_layout()
+    return fig
+
+
+def create_gnan_distance_weights(
+    gnan: TensorGNAN,
+    n_steps: int = 50,
+) -> plt.Figure:
+    """Plot rho(s) across cosine similarity range [-1, 1]."""
+    sim_values = np.linspace(-1, 1, n_steps)
+
+    rho_values = np.zeros(n_steps)
+    with torch.inference_mode():
+        for i, val in enumerate(sim_values):
+            rho_values[i] = gnan.rho(torch.tensor([[val]])).detach().flatten()[0]
+
+    fig, ax = plt.subplots(figsize=(5, 3))
+    ax.plot(sim_values, rho_values)
+    ax.set_xlabel("Cosine similarity")
+    ax.set_ylabel("rho output")
+    ax.set_title("GNAN distance function")
+    fig.tight_layout()
+    return fig
+
+
+
+def create_gnan_feature_distance_weights(
+    gnan: TensorGNAN,
+    n_steps: int = 50,
+) -> plt.Figure:
+    """Plot heatmap of f(1.0) x rho(s) over cosine similarity range."""
+    from matplotlib.colors import LinearSegmentedColormap
+
+    n_features = len(gnan.fs)
+    sim_values = np.linspace(-1, 1, n_steps)
+
+    with torch.inference_mode():
+        f_scores = np.zeros(n_features)
+        for i in range(n_features):
+            f_scores[i] = gnan.fs[i](torch.tensor([[1.0]])).detach().flatten()[0]
+
+        rho_values = np.zeros(n_steps)
+        for i, val in enumerate(sim_values):
+            rho_values[i] = gnan.rho(torch.tensor([[val]])).detach().flatten()[0]
+
+    z = np.outer(f_scores, rho_values)
+    cmap = LinearSegmentedColormap.from_list("custom", ["red", "white", "green"], N=100)
+
+    fig, ax = plt.subplots(figsize=(8, max(3, n_features * 0.5)))
+    im = ax.imshow(z, aspect="auto", cmap=cmap, interpolation="nearest",
+                   extent=[-1, 1, n_features - 0.5, -0.5])
+    im.set_clim(vmin=-abs(z).max(), vmax=abs(z).max())
+    ax.set_xlabel("Cosine similarity")
+    ax.set_ylabel("Feature index")
+    ax.set_title("GNAN: f(1.0) x rho(similarity)")
+    fig.colorbar(im, ax=ax)
+    fig.tight_layout()
+    return fig
