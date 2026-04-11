@@ -90,13 +90,11 @@ class ComponentModel(nn.Module):
             )
         return nn.ModuleDict(components)
 
-    def to(self, *args: Any, **kwargs: Any) -> "ComponentModel":
-        """Move the model and components to a device."""
+    def to(self, *args, **kwargs):
         self.model.to(*args, **kwargs)
         for component in self.components.values():
             component.to(*args, **kwargs)
-        for gate in self.gates.values():
-            gate.to(*args, **kwargs)
+        self.gnan.to(*args, **kwargs)
         return self
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
@@ -217,54 +215,54 @@ class ComponentModel(nn.Module):
 
         return checkpoint_path, final_config_path
 
-    @classmethod
-    def from_pretrained(cls, path: ModelPath) -> tuple["ComponentModel", Config, Path]:
-        """Load a trained ComponentModel checkpoint along with its original config.
+    # @classmethod
+    # def from_pretrained(cls, path: ModelPath) -> tuple["ComponentModel", Config, Path]:
+    #     """Load a trained ComponentModel checkpoint along with its original config.
 
-        The method supports two storage schemes:
-        1.  A direct local path to the checkpoint file (plus `final_config.yaml` in
-            the same directory).
-        2.  A WandB reference of the form ``wandb:<entity>/<project>/runs/<run_id>``.
-        """
+    #     The method supports two storage schemes:
+    #     1.  A direct local path to the checkpoint file (plus `final_config.yaml` in
+    #         the same directory).
+    #     2.  A WandB reference of the form ``wandb:<entity>/<project>/runs/<run_id>``.
+    #     """
 
-        if isinstance(path, str) and path.startswith(WANDB_PATH_PREFIX):
-            wandb_path = path.removeprefix(WANDB_PATH_PREFIX)
-            api = wandb.Api()
-            run: Run = api.run(wandb_path)
-            model_path, config_path = cls._download_wandb_files(wandb_path)
-            out_dir = fetch_wandb_run_dir(run.id)
-        else:
-            model_path = Path(path)
-            config_path = Path(path).parent / "final_config.yaml"
-            out_dir = Path(path).parent
+    #     if isinstance(path, str) and path.startswith(WANDB_PATH_PREFIX):
+    #         wandb_path = path.removeprefix(WANDB_PATH_PREFIX)
+    #         api = wandb.Api()
+    #         run: Run = api.run(wandb_path)
+    #         model_path, config_path = cls._download_wandb_files(wandb_path)
+    #         out_dir = fetch_wandb_run_dir(run.id)
+    #     else:
+    #         model_path = Path(path)
+    #         config_path = Path(path).parent / "final_config.yaml"
+    #         out_dir = Path(path).parent
 
-        model_weights = torch.load(model_path, map_location="cpu", weights_only=True)
-        with open(config_path) as f:
-            config = Config(**yaml.safe_load(f))
+    #     model_weights = torch.load(model_path, map_location="cpu", weights_only=True)
+    #     with open(config_path) as f:
+    #         config = Config(**yaml.safe_load(f))
 
-        assert (
-            config.pretrained_model_path is not None and config.pretrained_model_class is not None
-        ), (
-            "pretrained_model_name and pretrained_model_class must be specified in the config to "
-            "reload a ComponentModel."
-        )
+    #     assert (
+    #         config.pretrained_model_path is not None and config.pretrained_model_class is not None
+    #     ), (
+    #         "pretrained_model_name and pretrained_model_class must be specified in the config to "
+    #         "reload a ComponentModel."
+    #     )
 
-        base_model_raw = load_pretrained(
-            path_to_class=config.pretrained_model_class,
-            model_path=config.pretrained_model_path,
-            model_name_hf=config.pretrained_model_name_hf,
-        )
-        base_model = base_model_raw[0] if isinstance(base_model_raw, tuple) else base_model_raw
+    #     base_model_raw = load_pretrained(
+    #         path_to_class=config.pretrained_model_class,
+    #         model_path=config.pretrained_model_path,
+    #         model_name_hf=config.pretrained_model_name_hf,
+    #     )
+    #     base_model = base_model_raw[0] if isinstance(base_model_raw, tuple) else base_model_raw
 
-        comp_model = ComponentModel(
-            base_model=base_model,
-            target_module_patterns=config.target_module_patterns,
-            C=config.C,
-            n_ci_mlp_neurons=config.n_ci_mlp_neurons,
-            pretrained_model_output_attr=config.pretrained_model_output_attr,
-        )
-        comp_model.load_state_dict(model_weights)
-        return comp_model, config, out_dir
+    #     comp_model = ComponentModel(
+    #         base_model=base_model,
+    #         target_module_patterns=config.target_module_patterns,
+    #         C=config.C,
+    #         n_ci_mlp_neurons=config.n_ci_mlp_neurons,
+    #         pretrained_model_output_attr=config.pretrained_model_output_attr,
+    #     )
+    #     comp_model.load_state_dict(model_weights)
+    #     return comp_model, config, out_dir
 
 
 def init_As_and_Bs_(

@@ -185,8 +185,6 @@ def calc_causal_importances(
     As: Mapping[str, Float[Tensor, "d_in C"]],
     gnan: TensorGNAN,
     detach_inputs: bool = False,
-    allow_same_layer_connections: bool = True,
-    negative_distance: bool = True,
 ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
 
     #Big note:
@@ -245,10 +243,7 @@ def calc_causal_importances(
 
 
 
-    if not allow_same_layer_connections:
-        #We just set a very large distance, as the paper suggests.
-        node_distances = node_distances.masked_fill(node_distances == 0, 1e6)
-
+   
 
     #List[Batch, C, k]
     per_layer_feats = [all_gate_feats[n] for n in pre_weight_acts]
