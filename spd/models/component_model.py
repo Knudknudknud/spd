@@ -47,7 +47,7 @@ class ComponentModel(nn.Module):
         )
         
         #Consider changing out_channels to be k and then adding an mlp on top.
-        self.gnan = TensorGNAN(in_channels=k, out_channels=1, n_layers=2, hidden_channels=4, bias=True, dropout=0.0, is_graph_task=False, rho_per_feature=True)
+        self.gnan = TensorGNAN(in_channels=k, out_channels=1, n_layers=2, hidden_channels=4, bias=True, dropout=0.0, is_graph_task=False, rho_per_feature=False)
         
     def create_target_components(self, target_module_patterns: list[str], C: int, k: int) -> nn.ModuleDict:
         """Create target components for the model."""

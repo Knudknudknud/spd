@@ -170,7 +170,7 @@ class TensorGNAN(nn.Module):
 
         # --- rho: (N, N, 2) → (N, N) ---
         else:
-            dist_weights = rho_input.view(N, N)
+            dist_weights = self.rhos[0](rho_input).view(N, N)
 
         # --- aggregation: (1, N, N) @ (S, N, F) → (S, N, F) ---
             mf = torch.matmul(dist_weights.unsqueeze(0), fx)

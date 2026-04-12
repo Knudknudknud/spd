@@ -2,6 +2,9 @@ Ive had to add a standard MLP for the aggregation between the nodes own feature 
 this is not seen anywhere in the plots
 
 Ask lukas about distance function
+    - Only layer distance made it degenerate and learn nothing,
+    - Only cosine failed too
+    - Both allow to reproduce..
 experimented with different architectures:
 
     (self.mlp(x) + neighbourhood aggregation)
@@ -11,9 +14,13 @@ experimented with different architectures:
     
     best so far:
         raw activation, neighbourhood aggregation
+
+
 Discuss with lukas the ideas:
     -What experiemnts, what do we want to test? Ideally we show equivalent performance, and then also improvement on something new
         -Show idea with per feature ablation
+    - Currently i can reproduce their outputs, but im not really "improving on them" as their models they already do well on.
+
 
 
 THE BiG problem:
@@ -26,3 +33,8 @@ THE BiG problem:
 Played with dependent data sets;
     - What is the  ground truth solution [1,2,3] [2,3,4] [3,4,5]
     - What should be the proper grouping? One component per feature or one feature per actual grouping feature?
+
+
+
+https://wandb.ai/knsoe24-syddansk-universitetsforlag-university-press-of-/spd/runs/109pslci?nw=nwuserknsoe24
+https://wandb.ai/knsoe24-syddansk-universitetsforlag-university-press-of-/spd/runs/yi6oc3t7?nw=nwuserknsoe24
