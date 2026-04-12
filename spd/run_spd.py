@@ -31,6 +31,7 @@ from spd.plotting import (
     create_embed_ci_sample_table,
     plot_ci_histograms,
     plot_mean_component_activation_counts,
+    create_gnan_plots,
 )
 from spd.utils import (
     calc_kl_divergence_lm,
@@ -257,7 +258,8 @@ def optimize(
                         batch_shape=batch.shape,
                         device=device,
                     )
-
+                
+                fig_dict.update(create_gnan_plots(model.gnan))
                 ci_histogram_figs = plot_ci_histograms(causal_importances=causal_importances)
                 fig_dict.update(ci_histogram_figs)
 
@@ -309,13 +311,11 @@ def optimize(
 
             if step % config.print_freq == 0:
                 # Check GNN weights are actually changing
-                for name, param in gnan.named_parameters():
+                for name, param in model.gnan.named_parameters():
                     if param.grad is not None:
                         tqdm.write(f"GNN {name}: grad_norm={param.grad.norm().item():.6f}, weight_norm={param.norm().item():.6f}")
                     else:
                         tqdm.write(f"GNN {name}: NO GRADIENT")
 
 
-        torch.save(gnan.state_dict(), out_dir / "gnan.pth")
-    logger.info(f"Saved GNAN to {out_dir / 'gnan.pth'}")
     logger.info("Finished training loop.")

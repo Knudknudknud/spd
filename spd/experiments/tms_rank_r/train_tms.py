@@ -16,11 +16,11 @@ from matplotlib import collections as mc
 from pydantic import BaseModel, ConfigDict, PositiveInt, model_validator
 from tqdm import tqdm, trange
 
-from spd.data_utils import DatasetGeneratedDataLoader, SparseFeatureDataset
+from spd.data_utils import DatasetGeneratedDataLoader
 from spd.experiments.tms.models import TMSModel, TMSModelConfig
 from spd.log import logger
 from spd.utils import set_seed
-
+from circularfeatureset import SharedCircuitDataset as CircularFeatureDataset
 wandb.require("core")
 
 
@@ -197,14 +197,11 @@ def get_model_and_dataloader(
                 )
             model.hidden_layers[i].weight.requires_grad = False
 
-    dataset = SparseFeatureDataset(
-        n_features=config.tms_model_config.n_features,
-        feature_probability=config.feature_probability,
-        device=device,
-        data_generation_type=config.data_generation_type,
-        value_range=(0.0, 1.0),
-        synced_inputs=config.synced_inputs,
-    )
+    dataset = CircularFeatureDataset(
+    n_independent=config.tms_model_config.n_features,
+    feature_probability=config.feature_probability,
+    device=device,
+)
     dataloader = DatasetGeneratedDataLoader(dataset, batch_size=config.batch_size)
     return model, dataloader
 
@@ -380,32 +377,32 @@ def run_train(config: TMSTrainConfig, device: str) -> None:
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # NOTE: Training TMS is very finnicky, you may need to adjust hyperparams to get it working
-    # TMS 5-2
-    # config = TMSTrainConfig(
-    #     wandb_project="spd-train-tms",
-    #     tms_model_config=TMSModelConfig(
-    #         n_features=5,
-    #         n_hidden=2,
-    #         n_hidden_layers=0,
-    #         tied_weights=True,
-    #         device=device,
-    #         init_bias_to_zero=False,
-    #     ),
-    #     feature_probability=0.05,
-    #     batch_size=1024,
-    #     steps=10000,
-    #     seed=0,
-    #     lr=5e-3,
-    #     lr_schedule="constant",
-    #     data_generation_type="at_least_zero_active",
-    #     fixed_identity_hidden_layers=False,
-    #     fixed_random_hidden_layers=False,
-    # )
+    #TMS 5-2
+    config = TMSTrainConfig(
+        wandb_project="spd-train-tms",
+        tms_model_config=TMSModelConfig(
+            n_features=6,
+            n_hidden=4,
+            n_hidden_layers=0,
+            tied_weights=True,
+            device=device,
+            init_bias_to_zero=False,
+        ),
+        feature_probability=0.05,
+        batch_size=1024,
+        steps=10000,
+        seed=0,
+        lr=5e-3,
+        lr_schedule="constant",
+        data_generation_type="at_least_zero_active",
+        fixed_identity_hidden_layers=False,
+        fixed_random_hidden_layers=False,
+    )
     # # TMS 5-2 w/ identity
     # config = TMSTrainConfig(
     #     wandb_project="spd-train-tms",
     #     tms_model_config=TMSModelConfig(
-    #         n_features=5,
+    #         n_features=2,
     #         n_hidden=2,
     #         n_hidden_layers=1,
     #         tied_weights=True,
@@ -422,28 +419,6 @@ if __name__ == "__main__":
     #     fixed_identity_hidden_layers=True,
     #     fixed_random_hidden_layers=False,
     # )
-
-    #tms 5-2 with hidden non identity
-    config = TMSTrainConfig(
-        wandb_project="spd-train-tms",
-        tms_model_config=TMSModelConfig(
-            n_features=5,
-            n_hidden=3,
-            n_hidden_layers=1,
-            tied_weights=False,
-            device=device,
-            init_bias_to_zero=False,
-        ),
-        feature_probability=0.05,
-        batch_size=1024,
-        steps=10000,
-        seed=0,
-        lr=5e-3,
-        lr_schedule="constant",
-        data_generation_type="at_least_zero_active",
-        fixed_identity_hidden_layers=False,
-        fixed_random_hidden_layers=False,
-    )
     # TMS 40-10
     # config = TMSTrainConfig(
     #     wandb_project="spd-train-tms",

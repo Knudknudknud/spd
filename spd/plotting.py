@@ -10,7 +10,7 @@ from jaxtyping import Float
 from matplotlib import pyplot as plt
 from matplotlib.colors import CenteredNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from torch import Tensor
+from torch import Tensor, device
 
 from spd.models.component_model import ComponentModel
 from spd.models.component_utils import calc_causal_importances
@@ -132,7 +132,7 @@ def _plot_causal_importances_figure(
 def plot_causal_importance_vals(
     model: ComponentModel,
     components: Mapping[str, LinearComponent | EmbeddingComponent],
-    gnan: TesnorGNAN,
+    gnan: TensorGNAN,
     batch_shape: tuple[int, ...],
     device: str | torch.device,
     input_magnitude: float,
@@ -494,21 +494,98 @@ def create_toy_model_plot_results(
     return fig_dict
 
 def create_gnan_plots(gnan: TensorGNAN) -> dict[str, plt.Figure]:
-    return {
-        "gnan_features": create_gnan_feature_weights(gnan),
-        "gnan_distances": create_gnan_distance_weights(gnan),
-        "gnan_feature_distances": create_gnan_feature_distance_weights(gnan),
-    }
+    fig_dict = {"gnan_features": create_gnan_feature_weights(gnan)}
 
-def create_gnan_feature_weights(
-    gnan: TensorGNAN,
-) -> plt.Figure:
-    """Plot f(1.0) for each per-feature MLP in the GNAN."""
+    for i, fig in enumerate(create_gnan_distance_weights(gnan)):
+        fig_dict[f"gnan_distances_{i}"] = fig
+
+    for i, fig in enumerate(create_gnan_feature_distance_weights(gnan)):
+        fig_dict[f"gnan_feature_distances_{i}"] = fig
+
+    return fig_dict
+
+# def create_gnan_feature_weights(gnan: TensorGNAN) -> plt.Figure:
+#     n_features = len(gnan.fs)
+#     f_scores = np.zeros(n_features)
+#     device = next(gnan.parameters()).device
+#     with torch.inference_mode():
+#         for i in range(n_features):
+#             f_scores[i] = gnan.fs[i](torch.tensor([[1.0]], device=device, dtype=torch.float32)).detach().cpu().flatten()[0]
+
+#     fig, ax = plt.subplots(figsize=(max(4, n_features * 0.5), 3))
+#     ax.bar([f"{i}" for i in range(n_features)], f_scores)
+#     ax.set_xlabel("Feature index")
+#     ax.set_ylabel("f(1.0)")
+#     ax.set_title("GNAN per-feature function outputs")
+#     fig.tight_layout()
+#     return fig
+
+
+# def create_gnan_distance_weights(gnan: TensorGNAN, n_steps: int = 50) -> plt.Figure:
+#     """Plot rho output as heatmap over (layer_distance, cosine_similarity)."""
+#     device = next(gnan.parameters()).device
+#     layer_dists = np.linspace(-5, 5, n_steps).astype(np.float32)
+#     cos_sims = np.linspace(-1, 1, n_steps).astype(np.float32)
+
+#     rho_grid = np.zeros((n_steps, n_steps))
+#     with torch.inference_mode():
+#         for i, ld in enumerate(layer_dists):
+#             for j, cs in enumerate(cos_sims):
+#                 rho_grid[i, j] = gnan.rho(torch.tensor([[ld, cs]], device=device)).detach().cpu().item()
+
+#     fig, ax = plt.subplots(figsize=(6, 5))
+#     im = ax.imshow(rho_grid, aspect="auto", origin="lower",
+#                    extent=[-1, 1, -5, 5], cmap="coolwarm")
+#     im.set_clim(vmin=-abs(rho_grid).max(), vmax=abs(rho_grid).max())
+#     ax.set_xlabel("Cosine similarity")
+#     ax.set_ylabel("Layer distance")
+#     ax.set_title("GNAN rho(layer_dist, cos_sim)")
+#     fig.colorbar(im, ax=ax)
+#     fig.tight_layout()
+#     return fig
+
+
+# def create_gnan_feature_distance_weights(gnan: TensorGNAN, n_steps: int = 30) -> plt.Figure:
+#     """Plot f(1.0) * rho(layer_dist, cos_sim) summed over features."""
+#     from matplotlib.colors import LinearSegmentedColormap
+
+#     device = next(gnan.parameters()).device
+#     n_features = len(gnan.fs)
+#     layer_dists = np.linspace(-5, 5, n_steps).astype(np.float32)
+#     cos_sims = np.linspace(-1, 1, n_steps).astype(np.float32)
+
+#     with torch.inference_mode():
+#         f_scores = np.zeros(n_features)
+#         for i in range(n_features):
+#             f_scores[i] = gnan.fs[i](torch.tensor([[1.0]], device=device)).detach().cpu().item()
+
+#         rho_grid = np.zeros((n_steps, n_steps))
+#         for i, ld in enumerate(layer_dists):
+#             for j, cs in enumerate(cos_sims):
+#                 rho_grid[i, j] = gnan.rho(torch.tensor([[ld, cs]], device=device)).detach().cpu().item()
+
+#     # Sum f_scores * rho for total contribution
+#     total = f_scores.sum() * rho_grid
+#     cmap = LinearSegmentedColormap.from_list("custom", ["red", "white", "green"], N=100)
+
+#     fig, ax = plt.subplots(figsize=(6, 5))
+#     im = ax.imshow(total, aspect="auto", origin="lower",
+#                    extent=[-1, 1, -5, 5], cmap=cmap)
+#     im.set_clim(vmin=-abs(total).max(), vmax=abs(total).max())
+#     ax.set_xlabel("Cosine similarity")
+#     ax.set_ylabel("Layer distance")
+#     ax.set_title("GNAN: sum(f) × rho(layer_dist, cos_sim)")
+#     fig.colorbar(im, ax=ax)
+#     fig.tight_layout()
+#     return fig
+
+def create_gnan_feature_weights(gnan: TensorGNAN) -> plt.Figure:
     n_features = len(gnan.fs)
     f_scores = np.zeros(n_features)
-    for i in range(n_features):
-        with torch.inference_mode():
-            f_scores[i] = gnan.fs[i](torch.tensor([[1.0]])).detach().flatten()[0]
+    device = next(gnan.parameters()).device
+    with torch.inference_mode():
+        for i in range(n_features):
+            f_scores[i] = gnan.fs[i](torch.tensor([[1.0]], device=device)).detach().cpu().item()
 
     fig, ax = plt.subplots(figsize=(max(4, n_features * 0.5), 3))
     ax.bar([f"{i}" for i in range(n_features)], f_scores)
@@ -519,57 +596,83 @@ def create_gnan_feature_weights(
     return fig
 
 
-def create_gnan_distance_weights(
-    gnan: TensorGNAN,
-    n_steps: int = 50,
-) -> plt.Figure:
-    """Plot rho(s) across cosine similarity range [-1, 1]."""
-    sim_values = np.linspace(-1, 1, n_steps)
-
-    rho_values = np.zeros(n_steps)
+def _eval_rho(rho, device, n_steps=50):
+    """Evaluate a single rho over a 2D grid. Returns (grid, layer_dists, cos_sims)."""
+    layer_dists = np.linspace(-5, 5, n_steps).astype(np.float32)
+    cos_sims = np.linspace(-1, 1, n_steps).astype(np.float32)
+    ld_grid, cs_grid = np.meshgrid(layer_dists, cos_sims, indexing="ij")
+    pairs = np.stack([ld_grid.flatten(), cs_grid.flatten()], axis=1)
     with torch.inference_mode():
-        for i, val in enumerate(sim_values):
-            rho_values[i] = gnan.rho(torch.tensor([[val]])).detach().flatten()[0]
-
-    fig, ax = plt.subplots(figsize=(5, 3))
-    ax.plot(sim_values, rho_values)
-    ax.set_xlabel("Cosine similarity")
-    ax.set_ylabel("rho output")
-    ax.set_title("GNAN distance function")
-    fig.tight_layout()
-    return fig
+        out = rho(torch.tensor(pairs, device=device)).detach().cpu().numpy().flatten()
+    return out.reshape(n_steps, n_steps), layer_dists, cos_sims
 
 
+def create_gnan_distance_weights(gnan: TensorGNAN, n_steps: int = 50) -> list[plt.Figure]:
+    """Heatmap + 1D slices for each rho."""
+    device = next(gnan.parameters()).device
+    figs = []
 
-def create_gnan_feature_distance_weights(
-    gnan: TensorGNAN,
-    n_steps: int = 50,
-) -> plt.Figure:
-    """Plot heatmap of f(1.0) x rho(s) over cosine similarity range."""
+    for rho_idx, rho in enumerate(gnan.rhos):
+        label = f"rho_{rho_idx}" if gnan.rho_per_feature else "rho (shared)"
+        rho_grid, layer_dists, cos_sims = _eval_rho(rho, device, n_steps)
+
+        # --- 2D heatmap ---
+        fig, ax = plt.subplots(figsize=(6, 5))
+        im = ax.imshow(rho_grid, aspect="auto", origin="lower",
+                       extent=[-1, 1, -5, 5], cmap="coolwarm")
+        im.set_clim(vmin=-abs(rho_grid).max(), vmax=abs(rho_grid).max())
+        ax.set_xlabel("Cosine similarity")
+        ax.set_ylabel("Layer distance")
+        ax.set_title(f"GNAN {label}(layer_dist, cos_sim)")
+        fig.colorbar(im, ax=ax)
+        fig.tight_layout()
+        figs.append(fig)
+
+    return figs
+
+
+def create_gnan_feature_distance_weights(gnan: TensorGNAN, n_steps: int = 30) -> list[plt.Figure]:
+    """Plot f(1.0) * rho for each rho (or summed if shared)."""
     from matplotlib.colors import LinearSegmentedColormap
 
+    device = next(gnan.parameters()).device
     n_features = len(gnan.fs)
-    sim_values = np.linspace(-1, 1, n_steps)
+    cmap = LinearSegmentedColormap.from_list("custom", ["red", "white", "green"], N=100)
+    figs = []
 
     with torch.inference_mode():
         f_scores = np.zeros(n_features)
         for i in range(n_features):
-            f_scores[i] = gnan.fs[i](torch.tensor([[1.0]])).detach().flatten()[0]
+            f_scores[i] = gnan.fs[i](torch.tensor([[1.0]], device=device)).detach().cpu().item()
 
-        rho_values = np.zeros(n_steps)
-        for i, val in enumerate(sim_values):
-            rho_values[i] = gnan.rho(torch.tensor([[val]])).detach().flatten()[0]
+    if gnan.rho_per_feature:
+        for feat_idx, rho in enumerate(gnan.rhos):
+            rho_grid, layer_dists, cos_sims = _eval_rho(rho, device, n_steps)
+            total = f_scores[feat_idx] * rho_grid
 
-    z = np.outer(f_scores, rho_values)
-    cmap = LinearSegmentedColormap.from_list("custom", ["red", "white", "green"], N=100)
+            fig, ax = plt.subplots(figsize=(6, 5))
+            im = ax.imshow(total, aspect="auto", origin="lower",
+                           extent=[-1, 1, -5, 5], cmap=cmap)
+            im.set_clim(vmin=-abs(total).max(), vmax=abs(total).max())
+            ax.set_xlabel("Cosine similarity")
+            ax.set_ylabel("Layer distance")
+            ax.set_title(f"f_{feat_idx}(1) × rho_{feat_idx}")
+            fig.colorbar(im, ax=ax)
+            fig.tight_layout()
+            figs.append(fig)
+    else:
+        rho_grid, layer_dists, cos_sims = _eval_rho(gnan.rhos[0], device, n_steps)
+        total = f_scores.sum() * rho_grid
 
-    fig, ax = plt.subplots(figsize=(8, max(3, n_features * 0.5)))
-    im = ax.imshow(z, aspect="auto", cmap=cmap, interpolation="nearest",
-                   extent=[-1, 1, n_features - 0.5, -0.5])
-    im.set_clim(vmin=-abs(z).max(), vmax=abs(z).max())
-    ax.set_xlabel("Cosine similarity")
-    ax.set_ylabel("Feature index")
-    ax.set_title("GNAN: f(1.0) x rho(similarity)")
-    fig.colorbar(im, ax=ax)
-    fig.tight_layout()
-    return fig
+        fig, ax = plt.subplots(figsize=(6, 5))
+        im = ax.imshow(total, aspect="auto", origin="lower",
+                       extent=[-1, 1, -5, 5], cmap=cmap)
+        im.set_clim(vmin=-abs(total).max(), vmax=abs(total).max())
+        ax.set_xlabel("Cosine similarity")
+        ax.set_ylabel("Layer distance")
+        ax.set_title("sum(f) × rho(layer_dist, cos_sim)")
+        fig.colorbar(im, ax=ax)
+        fig.tight_layout()
+        figs.append(fig)
+
+    return figs

@@ -223,24 +223,27 @@ def calc_causal_importances(
 
     device = next(iter(all_gate_outputs.values())).device
     
-    #Below gives an option to allow negative distances,
-    #That way the gnn can learn to ignore one direction of edges
-    #If it proves to be beneficial.
-    node_distances = _construct_node_distances(all_gate_outputs, device)
 
-    #Gnn requires distance normalization, move it into the gnn code later.
-    #Allow negative distances, but keep the sign, by doing sign(x) * 1/(1+|x|)
 
-    #For now its commented out as cosine similairty is used as distnace, i.e is already -1 to 1
-    # if negative_distance:
-    #     #print("Using negative distances with sign preservation for GNN")
-    #     sign = torch.sign(node_distances)
-    #     sign[node_distances == 0] = 1.0  # convert 0 to 1, to give it distance 1.
-    #     node_distances = sign * 1.0 / (1.0 + node_distances.abs())
+    # Layer distances
+    layer_ids = []
+    for layer_idx, name in enumerate(all_gate_outputs):
+        C = all_gate_outputs[name].shape[-1]
+        layer_ids.extend([layer_idx] * C)
+    layer_ids = torch.tensor(layer_ids, dtype=torch.float32, device=device)
+    layer_distances = layer_ids.unsqueeze(1) - layer_ids.unsqueeze(0)  # (N, N)
 
-    # else:
-    #     node_distances =  1.0 / (1.0 + node_distances.abs())
+    # Cosine similarity
+    node_vectors = []
+    for name in all_gate_outputs:
+        x = all_gate_outputs[name].movedim(-1, 0).flatten(1)
+        node_vectors.append(x)
+    node_vectors = torch.cat(node_vectors, dim=0)
+    node_vectors = F.normalize(node_vectors, p=2, dim=1)
+    cosine_sim = node_vectors @ node_vectors.T  # (N, N)
 
+    # Stack into (N, N, 2)
+    node_distances = torch.stack([layer_distances, cosine_sim], dim=-1)
 
 
    
@@ -265,15 +268,16 @@ def calc_causal_importances(
     #Likewise only adding x, does not currently give a percentage value between 0 and 1,
     #And is fundamentally different from the paper.
     offset = 0
-    for param_name in pre_weight_acts:
-        C = all_gate_outputs[param_name].shape[-1]
-        layer_out = gnn_out[:, offset:offset + C]  # (batch, C)
-        all_gate_outputs[param_name] = all_gate_outputs[param_name] + layer_out
-        offset += C
+    
+    
 
 
-    for param_name, gate_output in all_gate_outputs.items():
-        causal_importances[param_name] = lower_leaky_relu(gate_output)
-        causal_importances_upper_leaky[param_name] = upper_leaky_relu(gate_output)
+    C = all_gate_outputs[next(iter(all_gate_outputs))].shape[-1]
+    layer_wise = torch.split(gnn_out, C, dim=-1)
+
+    for idx, param_name in enumerate(pre_weight_acts):
+        layer_out = layer_wise[idx]
+        causal_importances[param_name] = lower_leaky_relu(layer_out)
+        causal_importances_upper_leaky[param_name] = upper_leaky_relu(layer_out)
 
     return causal_importances, causal_importances_upper_leaky

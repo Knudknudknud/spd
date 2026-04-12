@@ -1,0 +1,28 @@
+Ive had to add a standard MLP for the aggregation between the nodes own feature and its neighbourhood aggregation
+this is not seen anywhere in the plots
+
+Ask lukas about distance function
+experimented with different architectures:
+
+    (self.mlp(x) + neighbourhood aggregation)
+        -bad
+    mlp((self.mlp(x),neigh..))
+        -also not great
+    
+    best so far:
+        raw activation, neighbourhood aggregation
+Discuss with lukas the ideas:
+    -What experiemnts, what do we want to test? Ideally we show equivalent performance, and then also improvement on something new
+        -Show idea with per feature ablation
+
+
+THE BiG problem:
+    the graph structure,
+        -requires the cosine requirement such that every input in the same layer does not get identical feedback
+
+
+
+
+Played with dependent data sets;
+    - What is the  ground truth solution [1,2,3] [2,3,4] [3,4,5]
+    - What should be the proper grouping? One component per feature or one feature per actual grouping feature?
