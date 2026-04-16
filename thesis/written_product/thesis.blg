@@ -1,0 +1,19 @@
+[0] Config.pm:308> INFO - This is Biber 2.20
+[5] Config.pm:311> INFO - Logfile is 'thesis.blg'
+[176] biber-MSWIN64:340> INFO - === 
+[220] Biber.pm:420> INFO - Reading 'thesis.bcf'
+[360] Biber.pm:994> INFO - Found 5 citekeys in bib section 0
+[383] Biber.pm:4463> INFO - Processing section 0
+[400] Biber.pm:4654> INFO - Looking for bibtex file 'references.bib' for section 0
+[467] bibtex.pm:1713> INFO - LaTeX decoding ...
+[484] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[635] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[635] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[636] Biber.pm:4283> INFO - Sorting list 'anyt/global//global/global/global' of type 'entry' with template 'anyt' and locale 'en-US'
+[636] Biber.pm:4289> INFO - No sort tailoring available for locale 'en-US'
+[660] bbl.pm:676> INFO - Writing 'thesis.bbl' with encoding 'UTF-8'
+[670] bbl.pm:779> INFO - Output to thesis.bbl
+[670] Biber.pm:131> WARN - BibTeX subsystem: C:\Users\bruger\AppData\Local\Temp\biber_tmp_rCrY\33e59b5ca9ec342068223d604c3f8d55_12108.utf8, line 25, warning: 19 characters of junk seen at toplevel
+[670] Biber.pm:131> WARN - BibTeX subsystem: C:\Users\bruger\AppData\Local\Temp\biber_tmp_rCrY\33e59b5ca9ec342068223d604c3f8d55_12108.utf8, line 45, warning: 41 characters of junk seen at toplevel
+[671] Biber.pm:131> WARN - BibTeX subsystem: C:\Users\bruger\AppData\Local\Temp\biber_tmp_rCrY\33e59b5ca9ec342068223d604c3f8d55_12108.utf8, line 56, warning: 302 characters of junk seen at toplevel
+[671] Biber.pm:133> INFO - WARNINGS: 3

@@ -6,6 +6,31 @@ from torch.nn import functional as F
 from spd.module_utils import init_param_
 
 
+class Transformer(nn.Module):
+    def __init__(self, in_channels, out_channels, hidden_channels):
+        super().__init__()
+        self.W_q = nn.Linear(in_channels, hidden_channels)
+        self.W_k = nn.Linear(in_channels, hidden_channels)
+        self.W_v = nn.Linear(in_channels, hidden_channels)
+
+        self.out_projection = nn.Sequential(
+            nn.Linear(in_channels + hidden_channels, hidden_channels),
+            nn.ReLU(),
+            nn.Linear(hidden_channels, out_channels),
+        )
+
+    def forward_batched(self, x_batch):
+
+        Q = self.W_q(x_batch)  # (S, N, d)
+        K = self.W_k(x_batch)  # (S, N, d)
+        V = self.W_v(x_batch)  # (S, N, d)
+
+        #Compute attention
+        out = F.scaled_dot_product_attention(Q, K, V)
+
+        combined = torch.cat([x_batch, out], dim=-1)
+        return self.out_projection(combined)
+
 class TensorGNAN(nn.Module):
     def __init__(self, in_channels, out_channels, n_layers, hidden_channels=None, bias=True, dropout=0.0,
                  rho_per_feature=False, normalize_rho=False, is_graph_task=False, readout_n_layers=1):

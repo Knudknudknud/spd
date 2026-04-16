@@ -128,7 +128,8 @@ components are trained independently
 \subsection{Some clever name for my additions}
 This works primary purpose is to address two methological limtations of SPD, namely the rank-one constraint on subcomponents and the independence of the importance functions across subcomponents.
 The necessity of these modifications will be demonstrated in the experiments, where dependent and multi-dimensional features will be shown to be common in even simple models, and the original SPD method will be shown to fail to recover them (i hope).
-Additionally, this work also provides a first step towards a general clustering mechanism that operates during training rather than a post-hoc step, by masking features of each subcomponent independently and then allowing related features to be clustered together (again i hope).
+
+Additionally, this work also provides a first step towards a general clustering mechanism that operates during training rather than a post-hoc step, by masking features of each subcomponent independently and then allowing related features to be clustered together (again i hope - or the circuit discovery thing..? However it needs modifications).
 
 To achieve this, three modifications are introduced:
 rank-$k$ subcomponents that can natively capture multi-dimensional mechanisms,
@@ -174,7 +175,7 @@ that can relate each subcomponent to its neighbourhood.
 
 The $C$ subcomponents are treated as nodes in a graph, with node 
 features given by their inner activation vectors 
-$\mathbf{h}_{c}^{l}(x) \in \mathbb{R}^{k}$. The GNaN updates 
+$\mathbf{h}_{c}^{l}(x) \in \mathbb{R}^{k}$. The GNAN updates 
 each node's representation through an additive neighbourhood 
 aggregation. For node $i$ in layer $l$ and feature dimension $k$ \footnote{I am very open to alternative equations, i.e perhaps we delete the layer distance inside rho, however it seemed necessary to use cosine similarity, as otherwise the signal was useless as described in some earlier section}:
 \[
@@ -183,6 +184,11 @@ aggregation. For node $i$ in layer $l$ and feature dimension $k$ \footnote{I am 
    \rho\!\left(\frac{1}{1 + \mathrm{dist}(j, i)},\; 
 \mathrm{cos}(j, i)\right) \cdot 
     f_{k}\!\left([\mathbf{h}_{j}]_{k}\right)
+\]
+OBS: Implementation ill present today is this:
+
+\[
+    \mathbf{z}_{i} = \sum_{j=1}^{N} \rho \left( \text{layer distance}, \text{cosine similarity} \right) \cdot f_{k}\left( [\mathbf{h}_{j}]_{k} \right)
 \]
 where $f_{k}$ is a learned function applied to the $k$-th inner 
 activation of each neighbouring node $j$; $|\mathcal{L}(j)|$ is 
@@ -195,19 +201,22 @@ between their parameter vectors; and $\rho$ is a learned function
 that maps both the distance kernel and the cosine similarity to a 
 scalar weight.
 
-A separate MLP is applied to the node's own inner activation, 
-and the final representation is formed as a residual sum of the 
-two:
+$z_{i}$ becomes a vector in $\mathbb{R}^{k}$, which 
+fits perfectly with the current activation vectors.
+
+A separate MLP is trained to combine the aggregated neighbourhood information and the node's own activation into an importance value in $[0, 1]$:
+Producing a single importance value per subcomponent and passing it through 
+a leaky hard sigmoid, following 
+SPD \autocite{stochasticparameterdecomposition}:
 \[
-    \mathbf{h}_{i} \leftarrow f_{\text{self}}(\mathbf{h}_{i}) 
-    + \mathbf{z}_{i}
+   g_{c}^{l} = \sigma_{H}(AGG(\mathbf{z}_{i}^l, \mathbf{h}_{i}^l))
 \]
-The self-connection through $f_{\text{self}}$ ensures that each 
+The self-connection through $f_{\text{self}}$ (or just the raw activation) ensures that each 
 node retains its own identity after aggregation, mitigating 
 the oversmoothing that can occur in GNNs. \{Clever cite here, i.e gnn book\}
 
 
-\textbf{Two alternative formulations, i cant seem to figure which would be most logical?} \\
+\textbf{Alternative formulation, that would work with the next section} \\
 
 After the GNAN update, the per-dimension importance values are 
 computed from the updated representation and passed through a 
@@ -218,21 +227,7 @@ SPD \autocite{stochasticparameterdecomposition}:
     \in [0, 1]^{k}
 \]
 in other words, the importance function becomes multidimensional,
-and each column can be masked independently
-\textbf{Alternative two:} \\
-
-After the GNAN update, the updated representation is aggregated 
-into a single importance value per subcomponent and passed through 
-a leaky hard sigmoid, following 
-SPD \autocite{stochasticparameterdecomposition}:
-\[
-    g_{c}^{l}(x) = \sigma_{H}\!\left(
-    \mathrm{AGG}\!\left(\mathbf{h}_{c}^{l}(x)\right)\right) 
-    \in [0, 1]
-\]
-where $\mathrm{AGG}$ is an aggregation function that maps 
-$\mathbf{h}_{c}^{l}(x) \in \mathbb{R}^{k}$ to a scalar, i.e mean,max,sum?.
-\\
+and each column can be masked independently.
 
 \textbf{Remarks:} \\
 For now the edge set construction is left as the fully connected graph,
@@ -264,7 +259,50 @@ Additionally this produces a counterproductive signal,
 the gnan tries to boost or suppress all nodes in a layer together, instead
 of learning to differentiate between them.
 
+\textbf{Remark 3:} \\
+The choice of distance should probably be reconsidered in general,
+I have a feeling that the function needs to be from an asymmetric metric space,
+i.e
+\[
+    dist(i, j) \neq dist(j, i)    
+\]
+Atleast if the intution is if component A in layer k, is highly active, perhaps component B in layer
+k+1 should likely be inactive, as the other component needs to handle this feature,
+thus the distance from A to B should be different, as otherwise both are boosted or suppressed together. 
 
+\textbf{Remark 4:} \\
+The current experiments are more sensitive to hyperparameters,
+than the original code seems to be, if the minimality pressure is too low, then all components are active, and doesn't "kill" any of them
+
+\textbf{Remark 5:} \\
+I haven't been able to find any "benefit" in setting k higher,
+this is ofcourse because hte ground truth of all the models we have
+are rank 1 independent features, we need to find a scenario where the dependence and or rank k is actually necessary:
+
+My ideas
+\renewcommand\labelitemi{\tiny$\bullet$}
+\begin{itemize}
+    \setlength\itemsep{0em}
+    \item Sample points from the unit circle, i.e $\cos(\theta)^2+ \sin(\theta)^2 = 1$ then
+    \begin{align*}
+        x = \sqrt{1-\sin (\theta)^2} \text{ or} -\sqrt{1-\sin(\theta)^2} \\
+    \end{align*}
+    i.e sometihng can only be expressed with a rank 2 component?
+    \item we could look for circuits, the goal is then no longer to find N independent features, but suppose we have input groups [0,1,2], [2,3,4], [3,4,5] then we want one component that activates for the first group, one for the second and one for the third
+\end{itemize}
+
+\textbf{Remark 6:} \\
+I added the gnan plots to wandB remember to show them
+
+\textbf{Remark 7:} \\
+The per feature construction with only 1 feature is rather boring, and does not utilize the expressiveness at all.
+
+\textbf{Remark 8:} \\
+I dont think its a code problem,
+as i can reproduce equivalent results to their findings.
+Im just not able to beat them.
+We need to discuss experiments where the k dimensionality and dependence
+actually matters.
 
 \subsubsection{ Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}
 Following the extension to rank-$k$ subcomponents, and the alternative formulation of the GNAN,
@@ -279,35 +317,25 @@ To determine the effective rank of each subcomponent, the stochastic masking bec
     [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
 \]
 for each j in $1,\dots,k$
-The
+\\
+Notably this treats each feature independently, which may not be desirable,
+as such we could modify it ever so slightly:
 
+\[
+        [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)][g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)][g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
+\]
+The signal becomes an importance of two factors,
+if the component is important and both features are important, it remains active,
+if only one feature is important, the other will be pushed to zero
 
-We resolve this by allowing the training objective to determine 
-the effective rank of each subcomponent automatically. Rather than 
-applying a single scalar mask to the entire rank-$k$ block, we 
-mask each of the $k$ dimensions independently. The importance 
-function outputs a $k$-dimensional vector:
-\[
-    \mathbf{g}_{c}^{l}(x) \in [0, 1]^{k}
-\]
-and each dimension receives its own stochastic mask:
-\[
-    [m_{c}^{l}(x, r)]_{j} = [g_{c}^{l}(x)]_{j} + 
-    \left(1 - [g_{c}^{l}(x)]_{j}\right) r_{c,j}^{l}, \qquad 
-    r_{c,j}^{l} \sim U(0, 1)
-\]
-for $j = 1, \ldots, k$. The masked weight matrix becomes:
+The masked weight matrix becomes:
 \[
     W^{\prime l}(x, r) = \sum_{c=1}^{C} 
     U_{c}^{l} \, \mathrm{diag}\!\left(
     \mathbf{m}_{c}^{l}(x, r)\right) V_{c}^{l\top}
 \]
+Where the diagonal matrix is the per-feature mask for subcomponent $c$.
 
-\[
-    W^{\prime l}(x, r) = \sum_{c=1}^{C} \sum_{j=1}^{k}
-    [m_{c}^{l}(x, r)]_{j} \cdot 
-    \vec{u}_{c,j}^{\,l} \, \vec{v}_{c,j}^{\,l\top}
-\]
 The importance minimality loss penalises all $k$ dimensions of 
 all subcomponents toward zero:
 \[
@@ -317,11 +345,7 @@ all subcomponents toward zero:
 This follows the same logic by which SPD selects the number of 
 active subcomponents: the minimality loss drives unused components 
 toward zero, and only those that are genuinely required to 
-reconstruct the target model's output survive. Here, the same 
-pressure is applied one level deeper — within each subcomponent. 
-If a mechanism is truly rank-$r$ with $r < k$, the remaining 
-$k - r$ dimensions will be driven to zero importance, as they 
-can be ablated without affecting the output.
+reconstruct the target model's output survive.
 
 This makes $k$ a soft upper bound rather than a sensitive 
 hyperparameter. In practice, $k$ can be set conservatively large 
@@ -331,85 +355,85 @@ data.
 
 \section{Benefits}
 
-This architecture addresses both limitations of SPD 
-simultaneously. The rank-$k$ subcomponents eliminate the need for 
-post-hoc clustering by capturing multi-dimensional mechanisms as 
-single units. The per-dimension ablation learns the effective rank 
-of each mechanism automatically. And the GNaN enables importance 
-decisions to be conditioned on the full neighbourhood, allowing 
-subcomponents to reject interference from other active mechanisms 
-and to coordinate their importance values when they participate 
-in shared computations.
+% This architecture addresses both limitations of SPD 
+% simultaneously. The rank-$k$ subcomponents eliminate the need for 
+% post-hoc clustering by capturing multi-dimensional mechanisms as 
+% single units. The per-dimension ablation learns the effective rank 
+% of each mechanism automatically. And the GNaN enables importance 
+% decisions to be conditioned on the full neighbourhood, allowing 
+% subcomponents to reject interference from other active mechanisms 
+% and to coordinate their importance values when they participate 
+% in shared computations.
 
 
 
 
-Pros: Forces all kk
-k dimensions to be treated as a unit. If two dependent features end up in the same block, they are always ablated together — the stochastic masking will produce high reconstruction error whenever they're separated across blocks, pushing them together. This is the strongest pressure for grouping.
+% Pros: Forces all kk
+% k dimensions to be treated as a unit. If two dependent features end up in the same block, they are always ablated together — the stochastic masking will produce high reconstruction error whenever they're separated across blocks, pushing them together. This is the strongest pressure for grouping.
 
-Cons: You lose implicit rank selection entirely. If k=8k = 8
-k=8 and the true rank is 2, the other 6 dimensions are dead weight but can't be pruned — they ride along with the block. kk
-k becomes a sensitive hyperparameter again.
-
-
-\subsubsection{Training objective}
-
-The full loss function retains the same structure as SPD:
-\[
-    \mathcal{L} = \mathcal{L}_{\text{faith}} + 
-    \beta_{1} \mathcal{L}_{\text{stoch}} + 
-    \beta_{2} \mathcal{L}_{\text{stoch-layer}} + 
-    \beta_{3} \mathcal{L}_{\text{import}}
-\]
-The faithfulness loss trains the sum of rank-$k$ subcomponents to 
-approximate the original weight matrices:
-\[
-    \mathcal{L}_{\text{faith}} = \frac{1}{N} \sum_{l=1}^{L} 
-    \left\| W^{l} - \sum_{c=1}^{C} U_{c}^{l} \, 
-    V_{c}^{l\top} \right\|_{F}^{2}
-\]
-The stochastic reconstruction loss trains the masked model to 
-replicate the target model's output:
-\[
-    \mathcal{L}_{\text{stoch}} = \frac{1}{S} \sum_{s=1}^{S} 
-    D\!\left(f(x \mid W'(x, r^{(s)})),\; f(x \mid W)\right)
-\]
-where $D$ is an appropriate divergence measure and $S$ is the 
-number of mask samples per training step. The layerwise variant 
-$\mathcal{L}_{\text{stoch-layer}}$ applies stochastic masking to 
-one layer at a time while keeping all other layers at their 
-original weights.
-
-The importance minimality loss operates over all $k$ dimensions 
-of all subcomponents as defined in Section~3.3.2. The 
-hyperparameters are $\beta_{1}, \beta_{2}, \beta_{3}$ (loss 
-coefficients), $p$ (the norm used in 
-$\mathcal{L}_{\text{import}}$), $S$ (mask samples per step), $k$ 
-(the maximum rank of each subcomponent), and $C$ (the number of 
-subcomponents per layer).
+% Cons: You lose implicit rank selection entirely. If k=8k = 8
+% k=8 and the true rank is 2, the other 6 dimensions are dead weight but can't be pruned — they ride along with the block. kk
+% k becomes a sensitive hyperparameter again.
 
 
-Together, the three modifications form a complementary system. 
-Rank-$k$ subcomponents provide the \emph{capacity} to represent 
-multi-dimensional mechanisms — a single subcomponent can host a 
-feature that occupies an $r$-dimensional subspace. Per-dimension 
-ablation provides the \emph{pressure} to discard unused capacity 
-— dimensions that do not contribute to the network's output are 
-suppressed, preventing a subcomponent from absorbing unrelated 
-computations. The GNaN provides the \emph{routing}: by 
-conditioning each importance decision on the activation state of 
-neighbouring subcomponents, it can learn to consolidate a 
-multi-dimensional feature into a single subcomponent whose 
-capacity is sufficient to host it, rather than fragmenting it 
-across several. In this sense, the GNaN serves as an implicit 
-clustering mechanism that operates during training rather than 
-as a post-hoc step.
+% \subsubsection{Training objective}
+
+% The full loss function retains the same structure as SPD:
+% \[
+%     \mathcal{L} = \mathcal{L}_{\text{faith}} + 
+%     \beta_{1} \mathcal{L}_{\text{stoch}} + 
+%     \beta_{2} \mathcal{L}_{\text{stoch-layer}} + 
+%     \beta_{3} \mathcal{L}_{\text{import}}
+% \]
+% The faithfulness loss trains the sum of rank-$k$ subcomponents to 
+% approximate the original weight matrices:
+% \[
+%     \mathcal{L}_{\text{faith}} = \frac{1}{N} \sum_{l=1}^{L} 
+%     \left\| W^{l} - \sum_{c=1}^{C} U_{c}^{l} \, 
+%     V_{c}^{l\top} \right\|_{F}^{2}
+% \]
+% The stochastic reconstruction loss trains the masked model to 
+% replicate the target model's output:
+% \[
+%     \mathcal{L}_{\text{stoch}} = \frac{1}{S} \sum_{s=1}^{S} 
+%     D\!\left(f(x \mid W'(x, r^{(s)})),\; f(x \mid W)\right)
+% \]
+% where $D$ is an appropriate divergence measure and $S$ is the 
+% number of mask samples per training step. The layerwise variant 
+% $\mathcal{L}_{\text{stoch-layer}}$ applies stochastic masking to 
+% one layer at a time while keeping all other layers at their 
+% original weights.
+
+% The importance minimality loss operates over all $k$ dimensions 
+% of all subcomponents as defined in Section~3.3.2. The 
+% hyperparameters are $\beta_{1}, \beta_{2}, \beta_{3}$ (loss 
+% coefficients), $p$ (the norm used in 
+% $\mathcal{L}_{\text{import}}$), $S$ (mask samples per step), $k$ 
+% (the maximum rank of each subcomponent), and $C$ (the number of 
+% subcomponents per layer).
+
+
+% Together, the three modifications form a complementary system. 
+% Rank-$k$ subcomponents provide the \emph{capacity} to represent 
+% multi-dimensional mechanisms — a single subcomponent can host a 
+% feature that occupies an $r$-dimensional subspace. Per-dimension 
+% ablation provides the \emph{pressure} to discard unused capacity 
+% — dimensions that do not contribute to the network's output are 
+% suppressed, preventing a subcomponent from absorbing unrelated 
+% computations. The GNaN provides the \emph{routing}: by 
+% conditioning each importance decision on the activation state of 
+% neighbouring subcomponents, it can learn to consolidate a 
+% multi-dimensional feature into a single subcomponent whose 
+% capacity is sufficient to host it, rather than fragmenting it 
+% across several. In this sense, the GNaN serves as an implicit 
+% clustering mechanism that operates during training rather than 
+% as a post-hoc step.
 
 
 
-The guiding principle behind these methods is one of minimum description length — a good decomposition
-should identify the fewest, simplest components needed to faithfully explain what the network is doing on
-any given input.
+% The guiding principle behind these methods is one of minimum description length — a good decomposition
+% should identify the fewest, simplest components needed to faithfully explain what the network is doing on
+% any given input.
 
 
 
@@ -421,141 +445,141 @@ any given input.
 
 \subsection{Rank-$r$ Toy Model of Superposition}
 
-To evaluate whether [METHOD\_NAME] can recover multi-dimensional 
-mechanisms and implicitly learn their rank, we introduce a 
-generalisation of the Toy Model of Superposition 
-(TMS)~\autocite{ToyModelsSuperposition} in which features are 
-$r$-dimensional vectors rather than scalars. We conduct two 
-experiments: one in which all features share the same rank, and 
-one in which features of different ranks coexist.
+% To evaluate whether [METHOD\_NAME] can recover multi-dimensional 
+% mechanisms and implicitly learn their rank, we introduce a 
+% generalisation of the Toy Model of Superposition 
+% (TMS)~\autocite{ToyModelsSuperposition} in which features are 
+% $r$-dimensional vectors rather than scalars. We conduct two 
+% experiments: one in which all features share the same rank, and 
+% one in which features of different ranks coexist.
 
-\subsubsection{Setup}
+% \subsubsection{Setup}
 
-The standard TMS reconstructs sparse scalar inputs through a 
-bottleneck:
-\[
-    \hat{\mathbf{x}} = \mathrm{ReLU}(W^{\top} W \mathbf{x} + 
-    \mathbf{b}), \quad W \in \mathbb{R}^{m \times n}, \quad m < n
-\]
-Each feature $x_i \in \mathbb{R}$ is a scalar, and each column 
-$\vec{w}_i$ of $W$ is the rank-one mechanism that encodes it. We 
-generalise this by replacing each scalar feature with a vector 
-$\mathbf{x}^{(i)} \in \mathbb{R}^{r_i}$, where $r_i$ is the 
-rank of feature $i$. The full input is the concatenation 
-$\mathbf{x} = (\mathbf{x}^{(1)}, \ldots, 
-\mathbf{x}^{(n)})^{\top} \in \mathbb{R}^{d}$, where 
-$d = \sum_{i=1}^{n} r_i$. The model becomes:
-\[
-    \hat{\mathbf{x}} = \mathrm{ReLU}(W^{\top} W \mathbf{x} + 
-    \mathbf{b}), \quad W \in \mathbb{R}^{m \times d}, \quad m < d
-\]
-The columns of $W$ are grouped into $n$ blocks:
-\[
-    W = \left[\; \underbrace{W_1}_{r_1 \text{ cols}} \;\mid\; 
-    \underbrace{W_2}_{r_2 \text{ cols}} \;\mid\; \cdots \;\mid\; 
-    \underbrace{W_n}_{r_n \text{ cols}} \;\right]
-\]
-where $W_i \in \mathbb{R}^{m \times r_i}$ is the embedding for 
-feature $i$. The ground truth mechanism for feature $i$ is the 
-rank-$r_i$ matrix $W_i W_i^{\top}$, which is active if and only 
-if $\mathbf{x}^{(i)} \neq \mathbf{0}$.
+% The standard TMS reconstructs sparse scalar inputs through a 
+% bottleneck:
+% \[
+%     \hat{\mathbf{x}} = \mathrm{ReLU}(W^{\top} W \mathbf{x} + 
+%     \mathbf{b}), \quad W \in \mathbb{R}^{m \times n}, \quad m < n
+% \]
+% Each feature $x_i \in \mathbb{R}$ is a scalar, and each column 
+% $\vec{w}_i$ of $W$ is the rank-one mechanism that encodes it. We 
+% generalise this by replacing each scalar feature with a vector 
+% $\mathbf{x}^{(i)} \in \mathbb{R}^{r_i}$, where $r_i$ is the 
+% rank of feature $i$. The full input is the concatenation 
+% $\mathbf{x} = (\mathbf{x}^{(1)}, \ldots, 
+% \mathbf{x}^{(n)})^{\top} \in \mathbb{R}^{d}$, where 
+% $d = \sum_{i=1}^{n} r_i$. The model becomes:
+% \[
+%     \hat{\mathbf{x}} = \mathrm{ReLU}(W^{\top} W \mathbf{x} + 
+%     \mathbf{b}), \quad W \in \mathbb{R}^{m \times d}, \quad m < d
+% \]
+% The columns of $W$ are grouped into $n$ blocks:
+% \[
+%     W = \left[\; \underbrace{W_1}_{r_1 \text{ cols}} \;\mid\; 
+%     \underbrace{W_2}_{r_2 \text{ cols}} \;\mid\; \cdots \;\mid\; 
+%     \underbrace{W_n}_{r_n \text{ cols}} \;\right]
+% \]
+% where $W_i \in \mathbb{R}^{m \times r_i}$ is the embedding for 
+% feature $i$. The ground truth mechanism for feature $i$ is the 
+% rank-$r_i$ matrix $W_i W_i^{\top}$, which is active if and only 
+% if $\mathbf{x}^{(i)} \neq \mathbf{0}$.
 
-\subsubsection{Data distribution}
+% \subsubsection{Data distribution}
 
-Each feature is independently active with probability $s \ll 1$. 
-When active, it is sampled uniformly from the unit sphere 
-$S^{r_i - 1}$ to ensure that all $r_i$ dimensions are necessary 
-for reconstruction:
-\[
-    \mathbf{x}^{(i)} \sim \begin{cases}
-        \mathrm{Unif}(S^{r_i - 1}) & 
-        \text{with probability } s \\
-        \mathbf{0} \in \mathbb{R}^{r_i} & 
-        \text{with probability } 1 - s
-    \end{cases}
-\]
-The target model is trained with an importance-weighted 
-reconstruction loss:
-\[
-    \mathcal{L}_{\text{target}} = \sum_{i=1}^{n} \lambda_i \, 
-    \|\hat{\mathbf{x}}^{(i)} - \mathbf{x}^{(i)}\|^2
-\]
-where $\lambda_i$ are importance weights and 
-$\hat{\mathbf{x}}^{(i)}$ is the reconstruction of the $i$-th 
-block.
+% Each feature is independently active with probability $s \ll 1$. 
+% When active, it is sampled uniformly from the unit sphere 
+% $S^{r_i - 1}$ to ensure that all $r_i$ dimensions are necessary 
+% for reconstruction:
+% \[
+%     \mathbf{x}^{(i)} \sim \begin{cases}
+%         \mathrm{Unif}(S^{r_i - 1}) & 
+%         \text{with probability } s \\
+%         \mathbf{0} \in \mathbb{R}^{r_i} & 
+%         \text{with probability } 1 - s
+%     \end{cases}
+% \]
+% The target model is trained with an importance-weighted 
+% reconstruction loss:
+% \[
+%     \mathcal{L}_{\text{target}} = \sum_{i=1}^{n} \lambda_i \, 
+%     \|\hat{\mathbf{x}}^{(i)} - \mathbf{x}^{(i)}\|^2
+% \]
+% where $\lambda_i$ are importance weights and 
+% $\hat{\mathbf{x}}^{(i)}$ is the reconstruction of the $i$-th 
+% block.
 
-\subsubsection{Experiment 1: Uniform rank}
+% \subsubsection{Experiment 1: Uniform rank}
 
-In the first experiment, all features share the same rank 
-$r_i = r$ for all $i$. We fix $n = 40$ features, hidden 
-dimension $m = 15$, sparsity $s = 0.05$, and set $k = 8$ for the 
-decomposition. We train target models for 
-$r \in \{1, 2, 4, 8\}$ and decompose each with three methods:
+% In the first experiment, all features share the same rank 
+% $r_i = r$ for all $i$. We fix $n = 40$ features, hidden 
+% dimension $m = 15$, sparsity $s = 0.05$, and set $k = 8$ for the 
+% decomposition. We train target models for 
+% $r \in \{1, 2, 4, 8\}$ and decompose each with three methods:
 
-\renewcommand\labelitemi{\tiny$\bullet$}
-\begin{itemize}
-    \setlength\itemsep{0em}
-    \item SPD (rank-one subcomponents, independent gates),
-    \item [METHOD\_NAME] without GNaN (rank-$k$ subcomponents 
-          with per-dimension ablation, independent gates),
-    \item [METHOD\_NAME] (rank-$k$ subcomponents with 
-          per-dimension ablation and GNaN).
-\end{itemize}
+% \renewcommand\labelitemi{\tiny$\bullet$}
+% \begin{itemize}
+%     \setlength\itemsep{0em}
+%     \item SPD (rank-one subcomponents, independent gates),
+%     \item [METHOD\_NAME] without GNaN (rank-$k$ subcomponents 
+%           with per-dimension ablation, independent gates),
+%     \item [METHOD\_NAME] (rank-$k$ subcomponents with 
+%           per-dimension ablation and GNaN).
+% \end{itemize}
 
-For each decomposition, we measure:
+% For each decomposition, we measure:
 
-\renewcommand\labelitemi{\tiny$\bullet$}
-\begin{itemize}
-    \setlength\itemsep{0em}
-    \item \textbf{MMCS}: Mean max cosine similarity between 
-          recovered and ground truth mechanisms, adapted to 
-          rank-$r$ subspaces by comparing the principal angles 
-          between the column spans of $W_i$ and the learned 
-          subcomponents.
-    \item \textbf{Effective rank}: The number of dimensions per 
-          subcomponent whose mean importance 
-          $\mathbb{E}_x[|[g_c^l(x)]_j|]$ exceeds a threshold 
-          $\tau = 0.5$.
-    \item \textbf{Reconstruction loss}: 
-          $D(f(x \mid W'), f(x \mid W))$ on held-out data.
-\end{itemize}
+% \renewcommand\labelitemi{\tiny$\bullet$}
+% \begin{itemize}
+%     \setlength\itemsep{0em}
+%     \item \textbf{MMCS}: Mean max cosine similarity between 
+%           recovered and ground truth mechanisms, adapted to 
+%           rank-$r$ subspaces by comparing the principal angles 
+%           between the column spans of $W_i$ and the learned 
+%           subcomponents.
+%     \item \textbf{Effective rank}: The number of dimensions per 
+%           subcomponent whose mean importance 
+%           $\mathbb{E}_x[|[g_c^l(x)]_j|]$ exceeds a threshold 
+%           $\tau = 0.5$.
+%     \item \textbf{Reconstruction loss}: 
+%           $D(f(x \mid W'), f(x \mid W))$ on held-out data.
+% \end{itemize}
 
-The prediction is that at $r = 1$, all three methods perform 
-comparably, since all mechanisms are rank-one and the extensions 
-provide no advantage. As $r$ increases, SPD should degrade 
-because its independent scalar gates must coordinate across $r$ 
-fragments, while [METHOD\_NAME] should maintain performance by 
-capturing each mechanism as a single rank-$r$ block. The 
-effective rank per subcomponent should match $r$, with the 
-remaining $k - r$ dimensions driven to zero by the importance 
-minimality loss.
+% The prediction is that at $r = 1$, all three methods perform 
+% comparably, since all mechanisms are rank-one and the extensions 
+% provide no advantage. As $r$ increases, SPD should degrade 
+% because its independent scalar gates must coordinate across $r$ 
+% fragments, while [METHOD\_NAME] should maintain performance by 
+% capturing each mechanism as a single rank-$r$ block. The 
+% effective rank per subcomponent should match $r$, with the 
+% remaining $k - r$ dimensions driven to zero by the importance 
+% minimality loss.
 
-\subsubsection{Experiment 2: Mixed rank}
+% \subsubsection{Experiment 2: Mixed rank}
 
-In the second experiment, features have heterogeneous ranks. We 
-set $n = 40$ features, of which 20 are rank-one 
-($r_i = 1$) and 20 are rank-two ($r_i = 2$). The hidden 
-dimension is $m = 15$, sparsity $s = 0.05$, and $k = 4$ for 
-the decomposition. All other settings are identical to 
-Experiment~1.
+% In the second experiment, features have heterogeneous ranks. We 
+% set $n = 40$ features, of which 20 are rank-one 
+% ($r_i = 1$) and 20 are rank-two ($r_i = 2$). The hidden 
+% dimension is $m = 15$, sparsity $s = 0.05$, and $k = 4$ for 
+% the decomposition. All other settings are identical to 
+% Experiment~1.
 
-This experiment tests whether the implicit rank selection 
-operates correctly when the true ranks vary across features 
-within the same model. The prediction is that [METHOD\_NAME] 
-learns subcomponents whose effective rank matches the ground 
-truth rank of the feature they capture: subcomponents 
-corresponding to rank-one features should have one active 
-dimension and $k - 1$ suppressed dimensions, while those 
-corresponding to rank-two features should have two active 
-dimensions and $k - 2$ suppressed dimensions.
+% This experiment tests whether the implicit rank selection 
+% operates correctly when the true ranks vary across features 
+% within the same model. The prediction is that [METHOD\_NAME] 
+% learns subcomponents whose effective rank matches the ground 
+% truth rank of the feature they capture: subcomponents 
+% corresponding to rank-one features should have one active 
+% dimension and $k - 1$ suppressed dimensions, while those 
+% corresponding to rank-two features should have two active 
+% dimensions and $k - 2$ suppressed dimensions.
 
-We visualise this by plotting the per-dimension importance 
-values $\mathbb{E}_x[|[g_c^l(x)]_j|]$ for each subcomponent, 
-sorted by magnitude. For a successful decomposition, this 
-should produce a bimodal pattern: a cluster of subcomponents 
-with one active dimension and a cluster with two, with a clear 
-gap between the active and suppressed dimensions within each 
-subcomponent.
+% We visualise this by plotting the per-dimension importance 
+% values $\mathbb{E}_x[|[g_c^l(x)]_j|]$ for each subcomponent, 
+% sorted by magnitude. For a successful decomposition, this 
+% should produce a bimodal pattern: a cluster of subcomponents 
+% with one active dimension and a cluster with two, with a clear 
+% gap between the active and suppressed dimensions within each 
+% subcomponent.
 
 \subsection{Toy model with relu}
 \subsection{Smallest possible LM}
