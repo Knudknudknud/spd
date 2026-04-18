@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Activations to Weight Space</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400&display=swap');
+
+  :root {
+    --bg: #faf9f6;
+    --fg: #1a1a1a;
+    --fg-muted: #555;
+    --accent: #1a4a7a;
+    --accent-light: #e8f0fa;
+    --border: #ddd;
+    --highlight: #fffbe6;
+    --teal: #0f6e56;
+    --teal-light: #e6f4ec;
+    --coral: #993c1d;
+    --coral-light: #faece7;
+    --purple: #534ab7;
+    --purple-light: #eeedfe;
+    --max-w: 700px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--fg);
+    background: var(--bg);
+    padding: 3rem 1.5rem 6rem;
+  }
+
+  main { max-width: var(--max-w); margin: 0 auto; }
+
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: var(--fg-muted);
+    font-style: italic;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2.8rem;
+    margin-bottom: 0.8rem;
+    color: var(--fg);
+    letter-spacing: -0.01em;
+  }
+
+  h2 .num { color: var(--accent); margin-right: 0.3em; }
+
+  p { margin-bottom: 1rem; }
+
+  .math-block {
+    margin: 1.2rem 0;
+    padding: 1rem 1.2rem;
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  .math-block-teal {
+    background: var(--teal-light);
+    border-left-color: var(--teal);
+  }
+
+  .math-block-coral {
+    background: var(--coral-light);
+    border-left-color: var(--coral);
+  }
+
+  .math-block-purple {
+    background: var(--purple-light);
+    border-left-color: var(--purple);
+  }
+
+  .math-block-plain {
+    background: transparent;
+    border-left: none;
+    padding: 0.8rem 0;
+  }
+
+  .key-point {
+    background: var(--highlight);
+    padding: 1rem 1.2rem;
+    border-radius: 6px;
+    border: 1px solid #e8e0b0;
+    margin: 1.5rem 0;
+    font-style: italic;
+  }
+
+  .box {
+    margin: 1.5rem 0;
+    padding: 1.2rem 1.4rem;
+    border-radius: 8px;
+    border: 1px solid;
+  }
+
+  .box.blue { background: var(--accent-light); border-color: #b5c8df; }
+  .box.teal { background: var(--teal-light); border-color: #b5d6c5; }
+  .box.coral { background: var(--coral-light); border-color: #e0c4bc; }
+  .box.purple { background: var(--purple-light); border-color: #c5c0e8; }
+
+  .box h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .box.blue h3 { color: var(--accent); }
+  .box.teal h3 { color: var(--teal); }
+  .box.coral h3 { color: var(--coral); }
+  .box.purple h3 { color: var(--purple); }
+
+  .pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 1.2rem 0;
+    font-size: 0.95rem;
+    flex-wrap: wrap;
+  }
+
+  .pipeline .stage {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--accent-light);
+    text-align: center;
+  }
+
+  .pipeline .arrow { color: var(--fg-muted); font-size: 1.2rem; }
+
+  .katex { font-size: 1.05em; }
+  .math-block .katex { font-size: 1.15em; }
+
+  .overlap-grid {
+    margin: 1.5rem auto;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  .overlap-grid th {
+    padding: 0.4rem 0.6rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--fg-muted);
+    border-bottom: 2px solid var(--fg);
+  }
+
+  .overlap-grid td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+  }
+
+  .overlap-grid .diag { background: #f0f0ec; color: var(--fg-muted); }
+  .overlap-grid .low { background: var(--teal-light); color: var(--teal); }
+  .overlap-grid .med { background: #faeeda; color: #854f0b; }
+  .overlap-grid .high { background: var(--coral-light); color: var(--coral); }
+
+  @media (max-width: 600px) {
+    body { font-size: 16px; padding: 2rem 1rem 4rem; }
+    h1 { font-size: 1.5rem; }
+    .pipeline { flex-direction: column; }
+    .pipeline .arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>From activations to weight space</h1>
+<p class="subtitle">Interpreting rank-$k$ parameter decomposition as input-dependent SVD, and what it reveals about individual mechanisms</p>
+
+<!-- Section 1 -->
+<h2><span class="num">1.</span> The decomposition as SVD</h2>
+
+<p>Sparse autoencoders and related methods decompose neural networks in <strong>activation space</strong> — they ask "what directions are present in this activation vector?" Our decomposition operates in <strong>weight space</strong> — it asks "what functions does this weight matrix implement, and which ones are active for this input?"</p>
+
+<p>The structural parallel to SVD makes this precise. A standard SVD of a weight matrix $W$ is:</p>
+
+<div class="math-block">
+$$W = U \Sigma V^\top$$
+</div>
+
+<p>Geometrically, the SVD says that every linear transformation $W$ can be decomposed into three operations applied in sequence:</p>
+
+<div class="pipeline">
+  <div class="stage">$\vec{x} \in \mathbb{R}^{d_\mathrm{in}}$<br><small>input</small></div>
+  <div class="arrow">→</div>
+  <div class="stage">$V^\top \vec{x}$<br><small>rotate into aligned basis</small></div>
+  <div class="arrow">→</div>
+  <div class="stage">$\Sigma (V^\top \vec{x})$<br><small>scale each axis</small></div>
+  <div class="arrow">→</div>
+  <div class="stage">$U (\Sigma V^\top \vec{x})$<br><small>rotate into output space</small></div>
+</div>
+
+<p><strong>Step 1: $V^\top$ — rotation into the aligned basis.</strong> The columns of $V$ form an orthonormal basis for $\mathbb{R}^{d_\mathrm{in}}$. Multiplying by $V^\top$ rotates the input vector from the standard basis into this new basis. In the new coordinate system, the axes are aligned with the "natural directions" of the matrix — the directions along which it acts most simply. No stretching or distortion happens here; it is a pure rotation (an isometry).</p>
+
+<p><strong>Step 2: $\Sigma$ — scaling in the aligned space.</strong> Once in the aligned basis, the matrix's action is diagonal: each axis is independently scaled by its singular value $\sigma_i$. A large $\sigma_i$ means the matrix amplifies signal along that direction; a small $\sigma_i$ means it suppresses it; $\sigma_i = 0$ means that direction is annihilated entirely. This is the core of what the matrix "does" — its effect, stripped of all rotational structure, is just a set of per-axis scalings.</p>
+
+<p><strong>Step 3: $U$ — rotation into the output space.</strong> The scaled vector now lives in the aligned basis of the output space. Multiplying by $U$ rotates it into the standard basis of $\mathbb{R}^{d_\mathrm{out}}$. The columns of $U$ are the orthonormal directions in the output space that the matrix writes to — each singular value's contribution is delivered along its corresponding column of $U$.</p>
+
+<p>The full picture is: rotate to find the natural axes, scale along each axis, rotate into the output. Every matrix, no matter how complex, reduces to this: a choice of input directions, a choice of output directions, and a set of scalings connecting them.</p>
+
+<p>Our decomposition has the same three-stage structure:</p>
+
+<div class="math-block">
+$$W'(x) = \sum_{c=1}^{C} U_c \, \mathrm{diag}(\mathbf{m}_c(x)) \, V_c^\top$$
+</div>
+
+<p>Each subcomponent reproduces the same three stages: $V_c^\top$ rotates the input into the subcomponent's aligned basis, $\mathrm{diag}(\mathbf{m}_c(x))$ scales each axis in that basis, and $U_c$ rotates the result into the output space. The geometry is identical to classical SVD, with two differences.</p>
+
+<p>First, the scaling is <strong>input-dependent</strong>. In a standard SVD, the singular values $\sigma_i$ are fixed — they are properties of the matrix. Here, the masks $[m_c(x)]_j$ change per input. The importance function decides, for each input, how much signal each axis should carry. A singular value of $[m_c]_j \approx 0$ means that axis is effectively annihilated for this input, just as $\sigma_i = 0$ annihilates a direction in classical SVD — but here it may be restored for a different input.</p>
+
+<p>Second, the decomposition has <strong>multiple blocks</strong>. A classical SVD decomposes one matrix into one set of directions. Our decomposition decomposes one matrix into $C$ separate sets of directions, each with its own rotation-scale-rotation pipeline. Different subcomponents read from different subspaces of the input ($V_c$), scale independently ($\mathrm{diag}(\mathbf{m}_c)$), and write to different subspaces of the output ($U_c$). The weight matrix is not one rotation-scale-rotation — it is a superposition of $C$ of them, selectively activated per input.</p>
+
+<div class="box blue">
+<h3>What this shift in perspective buys us</h3>
+<p>In activation space, we observe the result of a computation — the activation vector after the weight matrix has been applied. In weight space, we observe the computation itself — the reading and writing subspaces that the matrix uses, and which of them are active. This is the difference between observing a program's output and observing which subroutines were called.</p>
+</div>
+
+<!-- Section 2 -->
+<h2><span class="num">2.</span> The projection pipeline</h2>
+
+<p>For a single subcomponent $c$, the action on an input activation $\vec{a}(x)$ proceeds in three stages:</p>
+
+<div class="pipeline">
+  <div class="stage">$\vec{a}(x) \in \mathbb{R}^{d_\mathrm{in}}$<br><small>activation</small></div>
+  <div class="arrow">→</div>
+  <div class="stage">$V_c^\top \vec{a}(x) \in \mathbb{R}^k$<br><small>project</small></div>
+  <div class="arrow">→</div>
+  <div class="stage">$\mathrm{diag}(\mathbf{m}_c) \cdot V_c^\top \vec{a}(x)$<br><small>gate</small></div>
+  <div class="arrow">→</div>
+  <div class="stage">$U_c(\ldots) \in \mathbb{R}^{d_\mathrm{out}}$<br><small>lift</small></div>
+</div>
+
+<p><strong>Project.</strong> The matrix $V_c^\top$ projects the high-dimensional activation onto a $k$-dimensional subspace. This is the mechanism's reading operation — it extracts the $k$ dimensions of the input that are relevant to this particular computation, discarding everything else.</p>
+
+<p><strong>Gate.</strong> The mask $\mathrm{diag}(\mathbf{m}_c(x))$ scales each of the $k$ projected dimensions independently. Dimensions with $[m_c]_j \approx 1$ pass through; dimensions with $[m_c]_j \approx 0$ are suppressed. This is the bottleneck — the effective rank of the mechanism for this input.</p>
+
+<p><strong>Lift.</strong> The matrix $U_c$ embeds the gated result back into the high-dimensional output space, along the mechanism's writing directions.</p>
+
+<p>The inner activation $\mathbf{h}_c(x) = V_c^\top \vec{a}(x) \in \mathbb{R}^k$ is the mechanism's view of the input — the input as seen through the lens of this particular computation. Different mechanisms see different projections of the same activation. The importance function then determines, from this projected view, whether the mechanism should be active.</p>
+
+<!-- Section 3 -->
+<h2><span class="num">3.</span> Understanding individual components</h2>
+
+<p>The decomposition makes each mechanism independently inspectable. For a given subcomponent $c$, we can examine:</p>
+
+<p><strong>What it reads.</strong> The columns of $V_c \in \mathbb{R}^{d_\mathrm{in} \times k}$ span a $k$-dimensional subspace of the input activation space. By examining which input features have large projections onto this subspace, we can determine what information the mechanism uses.</p>
+
+<p><strong>What it writes.</strong> The columns of $U_c \in \mathbb{R}^{d_\mathrm{out} \times k}$ span a $k$-dimensional subspace of the output activation space. This determines where the mechanism sends its result — which downstream computations it feeds into.</p>
+
+<p><strong>When it activates.</strong> The importance values $g_c(x)$ over the training distribution reveal on which inputs the mechanism is causally important. The set $\{x : g_c(x) > \tau\}$ defines the mechanism's receptive field in data space.</p>
+
+<p><strong>Its effective rank.</strong> Under per-dimension ablation, the mean importance per dimension $\mathbb{E}_x[|[m_c(x)]_j|]$ reveals how many of the $k$ available dimensions the mechanism actually uses. A mechanism that consistently uses only $r < k$ dimensions has learned an effective rank of $r$, with the remaining $k - r$ dimensions pruned by the minimality loss.</p>
+
+<div class="key-point">
+Each subcomponent is a self-contained description of a mechanism: where it reads from, where it writes to, when it is active, and how much capacity it uses. This is a complete functional characterisation that is not available from activation-space methods, which observe the superposition of all mechanisms simultaneously.
+</div>
+
+<!-- Section 4 -->
+<h2><span class="num">4.</span> Does the model learn to group features?</h2>
+
+<p>The central empirical question is whether the decomposition recovers meaningful mechanisms — whether related features are grouped into the same subcomponent, and unrelated features are separated.</p>
+
+<p>Consider a target model that represents "day of the week" as a 2-dimensional circular feature (requiring rank 2) and "is uppercase" as a 1-dimensional linear feature (requiring rank 1). With $k = 4$, a successful decomposition would produce:</p>
+
+<div class="box teal">
+<h3>Subcomponent $c_1$: day of the week</h3>
+<p>Mean per-dimension importance: $(0.97, \; 0.95, \; 0.02, \; 0.01)$</p>
+<p>Two active dimensions, two suppressed. Effective rank: 2.</p>
+<p>The columns of $V_{c_1}$ span the 2D plane containing the circular representation. The inner activation $\mathbf{h}_{c_1}(x) \in \mathbb{R}^4$ has its first two entries tracing a circle as the day varies, and its last two entries near zero.</p>
+</div>
+
+<div class="box teal">
+<h3>Subcomponent $c_2$: is uppercase</h3>
+<p>Mean per-dimension importance: $(0.94, \; 0.03, \; 0.01, \; 0.01)$</p>
+<p>One active dimension, three suppressed. Effective rank: 1.</p>
+<p>The columns of $V_{c_2}$ align with the single direction encoding case information.</p>
+</div>
+
+<p>The effective rank is learned, not prescribed. Both subcomponents had $k = 4$ dimensions available, but the minimality loss pruned the unused ones. The decomposition has implicitly discovered that "day of the week" requires rank 2 and "is uppercase" requires rank 1.</p>
+
+<p>If the decomposition fails to group features correctly — if, for example, the $\cos$ and $\sin$ components of the circular representation end up in different subcomponents — this would manifest as two subcomponents that always co-activate. Their importance values $g_{c_1}(x)$ and $g_{c_2}(x)$ would be highly correlated across the training distribution, which is detectable and diagnostic.</p>
+
+<!-- Section 5 -->
+<h2><span class="num">5.</span> Measuring subspace overlap</h2>
+
+<p>When two subcomponents share subspace — when their reading or writing directions are not orthogonal — they interfere with each other. The degree of overlap is measurable directly from the learned parameters.</p>
+
+<p>Define the interference between mechanisms $c$ and $c'$ as:</p>
+
+<div class="math-block-coral">
+$$\mathrm{I}(c, c') = \|U_c^\top U_{c'}\|_F^2 + \|V_c^\top V_{c'}\|_F^2$$
+</div>
+
+<p>This is zero when the mechanisms occupy orthogonal subspaces and large when they share directions. Arranging these values into a $C \times C$ matrix gives a global view of how the model's mechanisms relate to each other.</p>
+
+<p>But the sum $\mathrm{I}(c, c')$ conflates two distinct relationships. Because the decomposition is a read-scale-write pipeline, the two terms have separate interpretations:</p>
+
+<div class="math-block-teal">
+$$\mathrm{I}_\mathrm{read}(c, c') = \|V_c^\top V_{c'}\|_F^2$$
+</div>
+
+<p>measures how much two mechanisms <strong>read from the same input directions</strong>. If this is large, both mechanisms extract information from the same part of the input activation. They react to the same signals — they are sensitive to the same features of the input.</p>
+
+<div class="math-block-purple">
+$$\mathrm{I}_\mathrm{write}(c, c') = \|U_c^\top U_{c'}\|_F^2$$
+</div>
+
+<p>measures how much two mechanisms <strong>write to the same output directions</strong>. If this is large, both mechanisms contribute to the same downstream computations. Their outputs add up in the same subspace — they influence the same factors in the next layer.</p>
+
+<p>These can be reported separately, and the four combinations tell different stories:</p>
+
+<div class="box teal">
+<h3>Four cases</h3>
+<p><strong>Low read, low write.</strong> The mechanisms are fully independent — different inputs, different outputs. They can be understood in complete isolation.</p>
+<p><strong>High read, low write.</strong> Both mechanisms respond to the same input features, but route their outputs to different places. They are parallel processors of the same signal, contributing to different downstream computations.</p>
+<p><strong>Low read, high write.</strong> The mechanisms respond to different inputs, but contribute to the same output directions. They are converging pathways — different sources of information that feed into the same downstream computation.</p>
+<p><strong>High read, high write.</strong> The mechanisms share both input and output subspace. They are either redundant (doing the same thing) or in genuine superposition (the model has packed more computations into this subspace than it has dimensions for).</p>
+</div>
+
+<p>The decomposition therefore reveals not only <em>what</em> each mechanism does (its reading and writing subspaces), <em>when</em> it is active (its importance values), and <em>how much capacity</em> it uses (its effective rank), but also <em>how it relates to every other mechanism</em> — and whether that relationship is on the input side, the output side, or both.</p>
+
+<h2><span class="num">6.</span> Visualising the interference matrix</h2>
+
+<p>Consider a toy model decomposed into $C = 5$ subcomponents. The interference matrix might look like this:</p>
+
+<table class="overlap-grid">
+<thead>
+<tr><th></th><th>$c_1$</th><th>$c_2$</th><th>$c_3$</th><th>$c_4$</th><th>$c_5$</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>$c_1$</strong></td><td class="diag">—</td><td class="low">0.02</td><td class="low">0.01</td><td class="high">0.71</td><td class="low">0.03</td></tr>
+<tr><td><strong>$c_2$</strong></td><td class="low">0.02</td><td class="diag">—</td><td class="med">0.34</td><td class="low">0.05</td><td class="low">0.01</td></tr>
+<tr><td><strong>$c_3$</strong></td><td class="low">0.01</td><td class="med">0.34</td><td class="diag">—</td><td class="low">0.02</td><td class="low">0.04</td></tr>
+<tr><td><strong>$c_4$</strong></td><td class="high">0.71</td><td class="low">0.05</td><td class="low">0.02</td><td class="diag">—</td><td class="low">0.01</td></tr>
+<tr><td><strong>$c_5$</strong></td><td class="low">0.03</td><td class="low">0.01</td><td class="low">0.04</td><td class="low">0.01</td><td class="diag">—</td></tr>
+</tbody>
+</table>
+
+<div class="box coral">
+<h3>Reading the matrix</h3>
+<p><strong>$c_1$ and $c_4$</strong> have high interference ($0.71$). They share substantial subspace — they are in superposition. Ablating one will affect the other. These two mechanisms are entangled and should be analysed jointly rather than in isolation.</p>
+<p><strong>$c_2$ and $c_3$</strong> have moderate interference ($0.34$). They share some subspace but are largely separable. Each can be approximately understood on its own, but with the caveat that interactions exist.</p>
+<p><strong>$c_5$</strong> has low interference with everything. It occupies its own subspace and can be studied in complete isolation. This is the cleanest kind of mechanism — fully disentangled from the rest of the model.</p>
+</div>
+
+<p>This matrix can be computed directly from the learned $U_c$ and $V_c$ matrices, with no additional training or inference. It provides an immediate, quantitative answer to the question: which mechanisms in this model can be understood independently, and which are entangled?</p>
+
+<p>Encouraging the decomposition toward orthonormality — via a regularisation loss on the cross-component terms:</p>
+
+<div class="math-block">
+$$\mathcal{L}_\mathrm{ortho} = \lambda_\mathrm{cross} \sum_{c \neq c'} \mathrm{I}(c, c')$$
+</div>
+
+<p>pushes the off-diagonal entries toward zero. The residual — the interference that remains after regularisation — measures the degree to which the model genuinely requires superposition. It cannot be eliminated by the decomposition method; it is a property of the target model itself.</p>
+
+<div class="key-point">
+The interference matrix is both a diagnostic and a measure of interpretability. Low off-diagonal values mean the decomposition has found mechanisms that can be understood in isolation. High values mean the model's computations are fundamentally entangled — not a failure of the method, but a property of the model made visible.
+</div>
+
+<!-- Section 7 -->
+<h2><span class="num">7.</span> Orthogonality as an implicit clustering force</h2>
+
+<p>The cross-component regularisation $\mathcal{L}_\mathrm{ortho}$ does more than encourage interpretability — it provides the structural force that pushes dependent features into the same subcomponent.</p>
+
+<p>Consider two dependent features — say $\cos(\theta)$ and $\sin(\theta)$ of a circular representation — that together span a 2-dimensional subspace $\mathcal{S}$ in the target model. Suppose the decomposition places them in separate subcomponents $c$ and $c'$. Then $U_c$ and $U_{c'}$ must both point into $\mathcal{S}$, because that is where the target model stores these features. But this means:</p>
+
+<div class="math-block-coral">
+$$\|U_c^\top U_{c'}\|_F^2 \gg 0$$
+</div>
+
+<p>The cross-component loss detects this overlap and penalises it. The gradient pushes the decomposition to resolve the overlap. There are only two ways to do so:</p>
+
+<div class="box teal">
+<h3>Option A: consolidate</h3>
+<p>Move both features into a single subcomponent. The overlap becomes internal — $U_c$ spans the full 2D subspace on its own — and the cross-component penalty vanishes. This is the desired outcome.</p>
+</div>
+
+<div class="box purple">
+<h3>Option B: separate into orthogonal subspaces</h3>
+<p>Rotate $U_c$ and $U_{c'}$ to be orthogonal. But this is impossible if the features are genuinely dependent — the target model stores them in the same subspace, and any rotation that makes the subcomponents orthogonal would break faithfulness. The decomposition cannot reconstruct $W$ faithfully if the subcomponents point away from where the features actually live.</p>
+</div>
+
+<p>So the faithfulness loss prevents Option B, and the cross-component loss penalises the current state. The only remaining path is Option A: consolidation. Dependent features are pushed into the same subcomponent because separating them creates cross-component overlap that cannot be resolved without violating faithfulness.</p>
+
+<div class="key-point">
+The orthogonality regulariser serves as an implicit clustering mechanism. It does not require knowing which features are dependent — the overlap structure reveals this automatically. Features that share subspace in the target model will share subspace in the decomposition, and the cross-component penalty ensures this sharing happens within a subcomponent rather than across subcomponents.
+</div>
+
+<!-- Section 8 -->
+<h2><span class="num">8.</span> The interference matrix as a clustering diagnostic</h2>
+
+<p>Before the orthogonality regulariser is applied, the interference matrix reveals which subcomponents the decomposition has failed to properly separate — and therefore which features are candidates for consolidation. After training with the regulariser, the residual interference reveals whether consolidation succeeded.</p>
+
+<p>Consider a decomposition trained <em>without</em> $\mathcal{L}_\mathrm{ortho}$. The interference matrix might show:</p>
+
+<table class="overlap-grid">
+<thead>
+<tr><th></th><th>$c_1$</th><th>$c_2$</th><th>$c_3$</th><th>$c_4$</th><th>$c_5$</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>$c_1$</strong></td><td class="diag">—</td><td class="high">0.82</td><td class="low">0.03</td><td class="low">0.01</td><td class="low">0.02</td></tr>
+<tr><td><strong>$c_2$</strong></td><td class="high">0.82</td><td class="diag">—</td><td class="low">0.04</td><td class="low">0.02</td><td class="low">0.01</td></tr>
+<tr><td><strong>$c_3$</strong></td><td class="low">0.03</td><td class="low">0.04</td><td class="diag">—</td><td class="low">0.01</td><td class="low">0.03</td></tr>
+<tr><td><strong>$c_4$</strong></td><td class="low">0.01</td><td class="low">0.02</td><td class="low">0.01</td><td class="diag">—</td><td class="low">0.02</td></tr>
+<tr><td><strong>$c_5$</strong></td><td class="low">0.02</td><td class="low">0.01</td><td class="low">0.03</td><td class="low">0.02</td><td class="diag">—</td></tr>
+</tbody>
+</table>
+
+<p>The high interference between $c_1$ and $c_2$ ($0.82$) signals that these two subcomponents occupy nearly the same subspace. They are likely fragments of a single multi-dimensional feature that was split across two subcomponents. All other pairs have low interference — they are already well-separated.</p>
+
+<p>After retraining <em>with</em> $\mathcal{L}_\mathrm{ortho}$, the regulariser drives $c_1$ and $c_2$ to consolidate. The resulting decomposition has one fewer subcomponent, and the interference matrix becomes:</p>
+
+<table class="overlap-grid">
+<thead>
+<tr><th></th><th>$c_{1}'$</th><th>$c_3$</th><th>$c_4$</th><th>$c_5$</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>$c_{1}'$</strong></td><td class="diag">—</td><td class="low">0.05</td><td class="low">0.02</td><td class="low">0.01</td></tr>
+<tr><td><strong>$c_3$</strong></td><td class="low">0.05</td><td class="diag">—</td><td class="low">0.01</td><td class="low">0.03</td></tr>
+<tr><td><strong>$c_4$</strong></td><td class="low">0.02</td><td class="low">0.01</td><td class="diag">—</td><td class="low">0.02</td></tr>
+<tr><td><strong>$c_5$</strong></td><td class="low">0.01</td><td class="low">0.03</td><td class="low">0.02</td><td class="diag">—</td></tr>
+</tbody>
+</table>
+
+<p>The merged subcomponent $c_1'$ now captures the full multi-dimensional feature as a single rank-2 block. The interference matrix is uniformly low — all mechanisms occupy approximately orthogonal subspaces.</p>
+
+<div class="box blue">
+<h3>Reading the before/after as a clustering story</h3>
+<p>The interference matrix <em>before</em> regularisation is a similarity matrix over subcomponents. High entries indicate subcomponents that share subspace and should be merged. The matrix is, in effect, an adjacency matrix for a clustering problem: connected components in the thresholded interference graph correspond to groups of features that belong together.</p>
+<p>The interference matrix <em>after</em> regularisation shows the result of that clustering. If all off-diagonal entries are low, the decomposition has successfully grouped all dependent features. If some remain high, those features are in genuine superposition in the target model — they share subspace not because the decomposition failed, but because the model requires it.</p>
+</div>
+
+<div class="key-point">
+The orthogonality regulariser transforms the decomposition from a method that must be told how to group features into one that discovers the grouping itself. The interference matrix makes this grouping visible, both as a pre-training diagnostic (which features should be grouped?) and as a post-training validation (were they?).
+</div>
+
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>
