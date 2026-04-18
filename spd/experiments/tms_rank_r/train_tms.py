@@ -20,7 +20,7 @@ from spd.data_utils import DatasetGeneratedDataLoader
 from spd.experiments.tms.models import TMSModel, TMSModelConfig
 from spd.log import logger
 from spd.utils import set_seed
-from circularfeatureset import SharedCircuitDataset as CircularFeatureDataset
+from circularfeatureset import SphericalFeatureDataset as CircularFeatureDataset
 wandb.require("core")
 
 
