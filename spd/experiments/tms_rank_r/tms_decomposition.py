@@ -15,7 +15,7 @@ import yaml
 
 from spd.configs import Config, TMSTaskConfig
 from spd.data_utils import DatasetGeneratedDataLoader, SparseFeatureDataset
-from spd.experiments.tms.models import TMSModel, TMSModelConfig
+from spd.experiments.tms_rank_r.models import TMSModel, TMSModelConfig
 from spd.log import logger
 from spd.plotting import create_toy_model_plot_results
 from spd.run_spd import get_common_run_name_suffix, optimize

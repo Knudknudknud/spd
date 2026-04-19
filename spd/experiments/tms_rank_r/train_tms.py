@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, PositiveInt, model_validator
 from tqdm import tqdm, trange
 
 from spd.data_utils import DatasetGeneratedDataLoader
-from spd.experiments.tms.models import TMSModel, TMSModelConfig
+from spd.experiments.tms_rank_r.models import TMSModel, TMSModelConfig
 from spd.log import logger
 from spd.utils import set_seed
 from circularfeatureset import SphericalFeatureDataset as CircularFeatureDataset
@@ -33,11 +33,14 @@ class TMSTrainConfig(BaseModel):
     steps: PositiveInt
     seed: int = 0
     lr: float
-    lr_schedule: Literal["linear", "cosine", "constant"] = "linear"
     data_generation_type: Literal["at_least_zero_active", "exactly_one_active"]
+    lr_schedule: Literal["linear", "cosine", "constant"] = "linear"
     fixed_identity_hidden_layers: bool = False
     fixed_random_hidden_layers: bool = False
     synced_inputs: list[list[int]] | None = None
+    ranks: list[int]
+    output_activation: Literal["relu","identity"] = "relu"
+    
 
     @model_validator(mode="after")
     def validate_model(self) -> Self:
@@ -97,7 +100,10 @@ def train(
             opt.zero_grad(set_to_none=True)
             batch, labels = next(data_iter)
             out = model(batch)
-            error = importance * (labels.abs() - out) ** 2
+            error = importance * (labels - out) ** 2
+
+            # norm_loss = ((out.norm(dim=1) - batch.norm(dim=1)) ** 2).mean()
+
             loss = error.mean()
             loss.backward()
             opt.step()
@@ -198,13 +204,57 @@ def get_model_and_dataloader(
             model.hidden_layers[i].weight.requires_grad = False
 
     dataset = CircularFeatureDataset(
-    n_independent=config.tms_model_config.n_features,
+    ranks=config.ranks,
     feature_probability=config.feature_probability,
     device=device,
-)
+    data_generation_type=config.data_generation_type,)
     dataloader = DatasetGeneratedDataLoader(dataset, batch_size=config.batch_size)
     return model, dataloader
 
+
+
+def evaluate_circle_features(model, ranks, device, n_probe=200):
+    """For each multi-rank feature, sample points from its sphere and
+    measure how well the model reconstructs them."""
+    # Build groups from ranks
+    groups = []
+    cursor = 0
+    for k in ranks:
+        groups.append(list(range(cursor, cursor + k)))
+        cursor += k
+    n_features_total = cursor
+
+    results = {}
+    for f, group in enumerate(groups):
+        k = len(group)
+
+        if k == 1:
+            # Scalar feature: sweep values in [0, 1]
+            vals = torch.linspace(0, 1, n_probe, device=device).unsqueeze(1)  # (N, 1)
+        else:
+            # Spherical feature: uniform samples on S^(k-1)
+            vals = torch.randn(n_probe, k, device=device)
+            vals = vals / vals.norm(dim=1, keepdim=True)
+
+        # Place on the feature's coordinates, zeros elsewhere
+        batch = torch.zeros(n_probe, n_features_total, device=device)
+        batch[:, group] = vals
+
+        with torch.no_grad():
+            out = model(batch)
+        out_pair = out[:, group]
+
+        recon_error = (vals - out_pair).norm(dim=1)
+        results[f] = {
+            "rank": k,
+            "coords": group,
+            "mean_error": recon_error.mean().item(),
+            "max_error": recon_error.max().item(),
+            "mean_input_norm": vals.norm(dim=1).mean().item(),
+            "mean_output_norm": out_pair.norm(dim=1).mean().item(),
+        }
+
+    return results
 
 def run_train(config: TMSTrainConfig, device: str) -> None:
     model, dataloader = get_model_and_dataloader(config, device)
@@ -374,30 +424,50 @@ def run_train(config: TMSTrainConfig, device: str) -> None:
     logger.info(f"1/sqrt(n_hidden): {1 / np.sqrt(model_cfg.n_hidden)}")
 
 
+    W = model.linear1.weight.T.detach().cpu()   # (8, 4)
+    groups = [[0,1], [2,3], [4,5], [6,7]]
+
+    for f, group in enumerate(groups):
+        W_f = W[group]   # (2, 4)
+        s = torch.linalg.svdvals(W_f)
+        ratio = s[0] / s[1] if s[1] > 0 else float('inf')
+        print(f"Feature {f}: singular values = {s.tolist()}, ratio s0/s1 = {ratio:.2f}")
+
+
+    # Usage after training:
+    results = evaluate_circle_features(model, ranks=[2,2,2,2], device=device)
+    for f, r in results.items():
+        print(f"Feature {f} (rank {r['rank']}, coords {r['coords']}): "
+            f"mean error = {r['mean_error']:.4f}, "
+            f"input norm = {r['mean_input_norm']:.3f}, "
+            f"output norm = {r['mean_output_norm']:.3f}")
+
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # NOTE: Training TMS is very finnicky, you may need to adjust hyperparams to get it working
     #TMS 5-2
     config = TMSTrainConfig(
-        wandb_project="spd-train-tms",
-        tms_model_config=TMSModelConfig(
-            n_features=6,
-            n_hidden=4,
-            n_hidden_layers=0,
-            tied_weights=True,
-            device=device,
-            init_bias_to_zero=False,
-        ),
-        feature_probability=0.05,
-        batch_size=1024,
-        steps=10000,
-        seed=0,
-        lr=5e-3,
-        lr_schedule="constant",
-        data_generation_type="at_least_zero_active",
-        fixed_identity_hidden_layers=False,
-        fixed_random_hidden_layers=False,
-    )
+    wandb_project="spd-train-tms",
+    tms_model_config=TMSModelConfig(
+        n_features=8,
+        n_hidden=6,
+        n_hidden_layers=0,
+        tied_weights=True,
+        device=device,
+        init_bias_to_zero=False,
+        output_activation="identity",
+    ),
+    ranks=[2,2,2,2],
+    feature_probability=0.05,
+    batch_size=1024,
+    steps=10000,
+    seed=0,
+    lr=5e-3,
+    lr_schedule="constant",
+    data_generation_type="at_least_zero_active",
+    fixed_identity_hidden_layers=False,
+    fixed_random_hidden_layers=False,
+)
     # # TMS 5-2 w/ identity
     # config = TMSTrainConfig(
     #     wandb_project="spd-train-tms",

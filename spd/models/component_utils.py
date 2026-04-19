@@ -8,7 +8,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader
 
 from spd.models.component_model import ComponentModel
-from spd.models.components import EmbeddingComponent, LinearComponent, TensorGNAN
+from spd.models.components import EmbeddingComponent, LinearComponent, TensorGNAN, Transformer
 import torch.nn as nn
 from spd.utils import extract_batch_data
 import torch_geometric as pyg
@@ -179,11 +179,28 @@ def _remove_same_layer_edges(edge_index: Tensor, node_distances: Tensor) -> Tens
     return edge_index[:, cross_layer_mask]
 
 
+def whiten_components(feats: torch.Tensor, eps: float = 1e-3) -> torch.Tensor:
+    """Whiten across the batch dimension so components become decorrelated.
+
+    Input:  (batch, C, k)
+    Output: same shape, components uncorrelated and unit variance.
+    """
+    B, C, k = feats.shape
+    # Flatten batch*k into sample axis, keep C as feature axis
+    x = feats.permute(0, 2, 1).reshape(B * k, C)
+    x = x - x.mean(dim=0, keepdim=True)
+
+    cov = (x.T @ x) / x.shape[0]
+    U, S, _ = torch.linalg.svd(cov + eps * torch.eye(C, device=cov.device))
+    W = U @ torch.diag(S.clamp_min(eps) ** -0.5) @ U.T
+
+    x_white = x @ W
+    return x_white.reshape(B, k, C).permute(0, 2, 1)
 
 def calc_causal_importances(
     pre_weight_acts: dict[str, Float[Tensor, "... d_in"] | Int[Tensor, "... pos"]],
     As: Mapping[str, Float[Tensor, "d_in C"]],
-    gnan: TensorGNAN,
+    gnan: Transformer,
     detach_inputs: bool = False,
 ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
 
@@ -195,13 +212,12 @@ def calc_causal_importances(
     causal_importances_upper_leaky = {}
 
     # First pass: collect activations
-    all_gate_outputs = {}
     all_gate_feats = {}   #added to get the features too.
     #Pre_weight_acts is the dictionary of the outputs of the given layer
     for param_name in pre_weight_acts:
         acts = pre_weight_acts[param_name]
         if not acts.dtype.is_floating_point:
-            component_act = As[param_name][acts]
+            component_act_k = As[param_name][acts]
         else:
             #The A matrix components, for each layer (C, d_in, k)
             A = As[param_name]
@@ -211,53 +227,51 @@ def calc_causal_importances(
             #For now collapse over the k, might still be a hack,
             #ask Lukas.
             #Probably just feed both values into the gnn -> change input dim to k
-            component_act = component_act_k.mean(dim=-1)
 
-        gate_input = component_act.detach() if detach_inputs else component_act
         gate_feats = component_act_k.detach() if detach_inputs else component_act_k
 
         #ad the gate (mean output over k) and the features to their respective dictionaries.
         #Now we take the gate mechanism and add gnn on top. 
-        all_gate_outputs[param_name] = gate_input    # (batch, C) — for gating
         all_gate_feats[param_name] = gate_feats      # (batch, C, k) — for GNAN
-
-    device = next(iter(all_gate_outputs.values())).device
     
 
 
-    # Layer distances
-    layer_ids = []
-    for layer_idx, name in enumerate(all_gate_outputs):
-        C = all_gate_outputs[name].shape[-1]
-        layer_ids.extend([layer_idx] * C)
-    layer_ids = torch.tensor(layer_ids, dtype=torch.float32, device=device)
-    layer_distances = layer_ids.unsqueeze(1) - layer_ids.unsqueeze(0)  # (N, N)
+    # # Layer distances
+    # layer_ids = []
+    # for layer_idx, name in enumerate(all_gate_outputs):
+    #     C = all_gate_outputs[name].shape[-1]
+    #     layer_ids.extend([layer_idx] * C)
+    # layer_ids = torch.tensor(layer_ids, dtype=torch.float32, device=device)
+    # layer_distances = layer_ids.unsqueeze(1) - layer_ids.unsqueeze(0)  # (N, N)
 
-    # Cosine similarity
-    node_vectors = []
-    for name in all_gate_outputs:
-        x = all_gate_outputs[name].movedim(-1, 0).flatten(1)
-        node_vectors.append(x)
-    node_vectors = torch.cat(node_vectors, dim=0)
-    node_vectors = F.normalize(node_vectors, p=2, dim=1)
-    cosine_sim = node_vectors @ node_vectors.T  # (N, N)
+    # # Cosine similarity
+    # node_vectors = []
+    # for name in all_gate_outputs:
+    #     x = all_gate_outputs[name].movedim(-1, 0).flatten(1)
+    #     node_vectors.append(x)
+    # node_vectors = torch.cat(node_vectors, dim=0)
+    # node_vectors = F.normalize(node_vectors, p=2, dim=1)
+    # cosine_sim = node_vectors @ node_vectors.T  # (N, N)
 
-    # Stack into (N, N, 2)
-    node_distances = torch.stack([layer_distances, cosine_sim], dim=-1)
+    # # Stack into (N, N, 2)
+    # node_distances = torch.stack([layer_distances, cosine_sim], dim=-1)
 
 
    
 
-    #List[Batch, C, k]
+    # #List[Batch, C, k]
     per_layer_feats = [all_gate_feats[n] for n in pre_weight_acts]
-    #Concatenate C dimensions together, to get a tensor of shape (batch, sum_C, k)
+    # #Concatenate C dimensions together, to get a tensor of shape (batch, sum_C, k)
     all_feats = torch.cat(per_layer_feats, dim=-2)
-    #This ofcourse requires that the order is always the same, of both distances
-    #and iteration and so fourth. Ive assumed that it is the case.
-    gnn_out = gnan.forward_batched(
-        x_batch=all_feats,
-        dist_batch=node_distances,
-    ).squeeze(-1)
+    #all_feats = whiten_components(all_feats)
+    # #This ofcourse requires that the order is always the same, of both distances
+    # #and iteration and so fourth. Ive assumed that it is the case.
+    # gnn_out = gnan.forward_batched(
+    #     x_batch=all_feats,
+    #     dist_batch=node_distances,
+    # ).squeeze(-1)
+
+    gnn_out = gnan.forward_batched(all_feats).squeeze(-1)
     #Squeeze folds it into [batch, sum_C], instead of [batch, sum_C, 1]
     #The 1 is the output dimension of the gnn, which is always 1
 
@@ -267,12 +281,9 @@ def calc_causal_importances(
     #We should add another linear layer only for the x value, to distinguish them.
     #Likewise only adding x, does not currently give a percentage value between 0 and 1,
     #And is fundamentally different from the paper.
-    offset = 0
-    
     
 
-
-    C = all_gate_outputs[next(iter(all_gate_outputs))].shape[-1]
+    C = all_gate_feats[next(iter(all_gate_feats))].shape[-2]
     layer_wise = torch.split(gnn_out, C, dim=-1)
 
     for idx, param_name in enumerate(pre_weight_acts):
@@ -281,3 +292,5 @@ def calc_causal_importances(
         causal_importances_upper_leaky[param_name] = upper_leaky_relu(layer_out)
 
     return causal_importances, causal_importances_upper_leaky
+
+

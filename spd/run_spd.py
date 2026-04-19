@@ -259,19 +259,19 @@ def optimize(
                         device=device,
                     )
                 
-                fig_dict.update(create_gnan_plots(model.gnan))
                 ci_histogram_figs = plot_ci_histograms(causal_importances=causal_importances)
                 fig_dict.update(ci_histogram_figs)
 
-                mean_component_activation_counts = component_activation_statistics(
-                    model=model, dataloader=eval_loader, n_steps=n_eval_steps, device=device
-                )[1]
-                assert mean_component_activation_counts is not None
-                fig_dict["mean_component_activation_counts"] = (
-                    plot_mean_component_activation_counts(
-                        mean_component_activation_counts=mean_component_activation_counts,
-                    )
-                )
+                if step > 0:
+                    mean_component_activation_counts = component_activation_statistics(
+                        model=model, dataloader=eval_loader, n_steps=n_eval_steps, device=device
+                    )[1]
+                    assert mean_component_activation_counts is not None
+                    fig_dict["mean_component_activation_counts"] = (
+                        plot_mean_component_activation_counts(
+                            mean_component_activation_counts=mean_component_activation_counts,
+                        )
+    )
 
                 if config.wandb_project:
                     wandb.log(
@@ -309,13 +309,13 @@ def optimize(
 
             optimizer.step()
 
-            if step % config.print_freq == 0:
-                # Check GNN weights are actually changing
-                for name, param in model.gnan.named_parameters():
-                    if param.grad is not None:
-                        tqdm.write(f"GNN {name}: grad_norm={param.grad.norm().item():.6f}, weight_norm={param.norm().item():.6f}")
-                    else:
-                        tqdm.write(f"GNN {name}: NO GRADIENT")
+            # if step % config.print_freq == 0:
+            #     # Check GNN weights are actually changing
+            #     for name, param in model.gnan.named_parameters():
+            #         if param.grad is not None:
+            #             tqdm.write(f"GNN {name}: grad_norm={param.grad.norm().item():.6f}, weight_norm={param.norm().item():.6f}")
+            #         else:
+            #             tqdm.write(f"GNN {name}: NO GRADIENT")
 
 
     logger.info("Finished training loop.")

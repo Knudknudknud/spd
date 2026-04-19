@@ -6,6 +6,179 @@ from torch.nn import functional as F
 from spd.module_utils import init_param_
 
 
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+
+#Temp code, used to see if we can use fast attention that is linear in N https://arxiv.org/abs/2009.14794
+# class PerformerAttention(nn.Module):
+#     def __init__(self, in_channels, out_channels, hidden_channels, n_features=None, dropout=0.0):
+#         """
+#         Args:
+#             in_channels:     input feature dim (F in your x_batch)
+#             out_channels:    output dim
+#             hidden_channels: dim of Q/K/V (d)
+#             n_features:      number of random features (m). Defaults to hidden_channels.
+#         """
+#         super().__init__()
+#         self.hidden_channels = hidden_channels
+#         self.n_features = n_features if n_features is not None else hidden_channels
+
+#         self.W_q = nn.Linear(in_channels, hidden_channels)
+#         self.W_k = nn.Linear(in_channels, hidden_channels)
+#         self.W_v = nn.Linear(in_channels, hidden_channels)
+
+#         # Random projection matrix — fixed, not trained
+#         # Shape: (m, d)
+#         self.register_buffer(
+#             "random_features",
+#             torch.randn(self.n_features, hidden_channels) / (hidden_channels ** 0.25),
+#         )
+
+#         self.out_projection = nn.Sequential(
+#             nn.Linear(in_channels + hidden_channels, hidden_channels),
+#             nn.ReLU(),
+#             nn.Dropout(p=dropout),
+#             nn.Linear(hidden_channels, out_channels),
+#         )
+
+#     def favor_plus(self, x):
+#         """Positive random features approximating exp(q·k).
+#         x: (S, N, d) → (S, N, m)
+#         """
+#         # Shift for numerical stability: subtract max before exp
+#         projected = x @ self.random_features.T  # (S, N, m)
+#         norm = (x ** 2).sum(dim=-1, keepdim=True) / 2  # (S, N, 1)
+#         # Subtract max across features for stability
+#         stabilizer = projected.max(dim=-1, keepdim=True).values
+#         return torch.exp(projected - norm - stabilizer) / (self.n_features ** 0.5)
+
+#     def forward_batched(self, x_batch):
+#         # x_batch: (S, N, F)
+#         Q = self.W_q(x_batch)  # (S, N, d)
+#         K = self.W_k(x_batch)
+#         V = self.W_v(x_batch)
+
+#         # Scale Q by 1/sqrt(d) to match softmax convention
+#         Q = Q / (self.hidden_channels ** 0.25)
+#         K = K / (self.hidden_channels ** 0.25)
+
+#         # Apply positive random features
+#         phi_Q = self.favor_plus(Q)  # (S, N, m)
+#         phi_K = self.favor_plus(K)  # (S, N, m)
+
+#         # Compute S = sum_j phi(K_j) V_j^T, shape (S, m, d)
+#         KV = phi_K.transpose(-2, -1) @ V  # (S, m, d)
+
+#         # Compute z = sum_k phi(K_k), shape (S, m)
+#         z = phi_K.sum(dim=1)  # (S, m)
+
+#         # Numerator: phi(Q) @ KV, shape (S, N, d)
+#         numerator = phi_Q @ KV
+
+#         # Denominator: phi(Q) @ z, shape (S, N)
+#         denominator = (phi_Q @ z.unsqueeze(-1)).squeeze(-1) + 1e-6
+
+#         out = numerator / denominator.unsqueeze(-1)  # (S, N, d)
+
+#         combined = torch.cat([x_batch, out], dim=-1)
+#         return self.out_projection(combined)
+
+
+from performer_pytorch import SelfAttention
+
+# class PerformerAttention(nn.Module):
+#     def __init__(self, in_channels, out_channels, hidden_channels, nb_features=None, dropout=0.0):
+#         super().__init__()
+#         Performer expects dim = input dim, and projects internally
+#         self.attn = SelfAttention(
+#             dim=in_channels,
+#             heads=1,
+#             dim_head=hidden_channels,
+#             nb_features=nb_features,  # None defaults to d*log(d)
+#             causal=False,
+#         )
+
+#         self.out_projection = nn.Sequential(
+#             nn.Linear(2 * in_channels, hidden_channels),
+#             nn.ReLU(),
+#             nn.Dropout(p=dropout),
+#             nn.Linear(hidden_channels, out_channels),
+#         )
+
+#     def forward_batched(self, x_batch):
+#         x_batch: (S, N, F)
+#         out = self.attn(x_batch)  # (S, N, F) — same shape
+#         combined = torch.cat([x_batch, out], dim=-1)  # (S, N, 2F)
+#         return self.out_projection(combined)  # (S, N, 1)
+
+from performer_pytorch import FastAttention
+
+# class PerformerAttention(nn.Module):
+#     def __init__(self, in_channels, out_channels, hidden_channels, nb_features=None):
+#         super().__init__()
+#         self.W_q = nn.Linear(in_channels, hidden_channels)
+#         self.W_k = nn.Linear(in_channels, hidden_channels)
+#         self.W_v = nn.Linear(in_channels, hidden_channels)
+
+#         self.fast_attn = FastAttention(
+#             dim_heads=hidden_channels,
+#             nb_features=nb_features,
+#             causal=False,
+#         )
+
+#         self.out_projection = nn.Sequential(
+#             nn.Linear(in_channels + hidden_channels, hidden_channels),
+#             nn.ReLU(),
+#             nn.Linear(hidden_channels, out_channels),
+#         )
+        
+
+#     def forward_batched(self, x_batch):
+#         Q = self.W_q(x_batch).unsqueeze(1)  # (S, 1, N, d)
+#         K = self.W_k(x_batch).unsqueeze(1)
+#         V = self.W_v(x_batch).unsqueeze(1)
+
+#         out = self.fast_attn(Q, K, V).squeeze(1)  # (S, N, d)
+
+#         combined = torch.cat([x_batch, out], dim=-1)
+#         return self.out_projection(combined)
+    
+
+
+class PerformerAttention(nn.Module):
+    def __init__(self, in_channels, out_channels, hidden_channels, nb_features=None):
+        super().__init__()
+        self.W_q = nn.Linear(in_channels, hidden_channels)
+        self.W_k = nn.Linear(in_channels, hidden_channels)
+        self.W_v = nn.Linear(in_channels, hidden_channels)
+
+        self.fast_attn = FastAttention(
+            dim_heads=hidden_channels,
+            nb_features=nb_features,
+            causal=False,
+        )
+
+        # Passthrough path: in_channels -> 1
+        self.x_proj = nn.Linear(in_channels, out_channels)
+
+        # Attention correction: hidden_channels -> 1, zero-init
+        self.attn_proj = nn.Linear(hidden_channels, out_channels)
+        nn.init.zeros_(self.attn_proj.weight)
+        nn.init.zeros_(self.attn_proj.bias)
+
+    def forward_batched(self, x_batch):
+        Q = self.W_q(x_batch).unsqueeze(1)
+        K = self.W_k(x_batch).unsqueeze(1)
+        V = self.W_v(x_batch).unsqueeze(1)
+
+        attn_out = self.fast_attn(Q, K, V).squeeze(1)
+
+        return self.x_proj(x_batch) + self.attn_proj(attn_out)
+
 class Transformer(nn.Module):
     def __init__(self, in_channels, out_channels, hidden_channels):
         super().__init__()
@@ -31,6 +204,7 @@ class Transformer(nn.Module):
         combined = torch.cat([x_batch, out], dim=-1)
         return self.out_projection(combined)
 
+    
 class TensorGNAN(nn.Module):
     def __init__(self, in_channels, out_channels, n_layers, hidden_channels=None, bias=True, dropout=0.0,
                  rho_per_feature=False, normalize_rho=False, is_graph_task=False, readout_n_layers=1):

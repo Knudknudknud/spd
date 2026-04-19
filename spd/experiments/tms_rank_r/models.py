@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, Self, Literal
 
 import torch
 import wandb
@@ -29,6 +29,7 @@ class TMSModelConfig(BaseModel):
     tied_weights: bool
     init_bias_to_zero: bool
     device: str
+    output_activation: Literal["relu","identity"] = "relu"
 
 
 class TMSModel(nn.Module):
@@ -68,8 +69,9 @@ class TMSModel(nn.Module):
         if self.hidden_layers is not None:
             for layer in self.hidden_layers:
                 hidden = layer(hidden)
-        out_pre_relu = self.linear2(hidden)
-        out = F.relu(out_pre_relu)
+        out = self.linear2(hidden)
+        if self.config.output_activation == "relu":
+            out = F.relu(out)
         return out
 
     @staticmethod

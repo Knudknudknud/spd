@@ -11,8 +11,9 @@ k: 1
 n_mask_samples: 1
 n_ci_mlp_neurons: 16
 # n_ci_mlp_neurons: 0
-#target_module_patterns: ["linear1", "linear2"]
-target_module_patterns: ["linear1", "linear2", "hidden_layers.0"]
+target_module_patterns: ["linear1", "linear2"]
+data_generation_type: "exactly_one_active"
+#target_module_patterns: ["linear1", "linear2", "hidden_layers.0"]
 
 # --- Loss Coefficients ---
 faithfulness_coeff: 1.0
@@ -40,7 +41,7 @@ save_freq: null
 # --- Pretrained model info ---
 pretrained_model_class: "spd.experiments.tms.models.TMSModel"
 # pretrained_model_path: "wandb:spd-train-tms/runs/bohlithe"
-pretrained_model_path: "C:\\Users\\Knud\\uni\\spd\\spd\\experiments\\tms\\out\\5_3_hidden_1_no_freeze_identity\\tms.pth"
+pretrained_model_path: "C:\\Users\\Knud\\uni\\spd\\spd\\experiments\\tms\\out\\tms_n-features5_n-hidden2_n-hidden-layers1_feat_prob0.05_seed0_20260412_213549_082\\tms.pth"
   # 1 hidden w/fixed identity
 
 # # --- Task Specific ---

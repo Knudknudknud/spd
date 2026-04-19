@@ -14,7 +14,7 @@ from torch import Tensor, nn
 from wandb.apis.public import Run
 
 from spd.configs import Config
-from spd.models.components import EmbeddingComponent, LinearComponent, TensorGNAN
+from spd.models.components import EmbeddingComponent, LinearComponent, TensorGNAN, Transformer, PerformerAttention
 from spd.spd_types import WANDB_PATH_PREFIX, ModelPath
 from spd.utils import load_pretrained
 from spd.wandb_utils import download_wandb_file, fetch_latest_wandb_checkpoint, fetch_wandb_run_dir
@@ -47,8 +47,10 @@ class ComponentModel(nn.Module):
         )
         
         #Consider changing out_channels to be k and then adding an mlp on top.
-        self.gnan = TensorGNAN(in_channels=k, out_channels=1, n_layers=2, hidden_channels=4, bias=True, dropout=0.0, is_graph_task=False, rho_per_feature=False)
+        #self.gnan = TensorGNAN(in_channels=k, out_channels=1, n_layers=2, hidden_channels=4, bias=True, dropout=0.0, is_graph_task=False, rho_per_feature=False)
+        self.gnan = Transformer(in_channels=k, out_channels=1, hidden_channels=5)
         
+        #self.gnan = PerformerAttention(in_channels=k, out_channels=1, hidden_channels=5, nb_features=5)
     def create_target_components(self, target_module_patterns: list[str], C: int, k: int) -> nn.ModuleDict:
         """Create target components for the model."""
         components: dict[str, LinearComponent | EmbeddingComponent] = {}
