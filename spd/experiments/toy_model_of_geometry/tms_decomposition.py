@@ -14,8 +14,9 @@ import wandb
 import yaml
 
 from spd.configs import Config, TMSTaskConfig
-from spd.data_utils import DatasetGeneratedDataLoader, SparseFeatureDataset
-from spd.experiments.tms_rank_r.models import TMSModel, TMSModelConfig
+from spd.data_utils import DatasetGeneratedDataLoader
+from spd.toy_model_of_geometry.simplex_dataset import SimplexDataset
+from spd.experiments.toy_model_of_geometry.models import TMSModel, TMSModelConfig
 from spd.log import logger
 from spd.plotting import create_toy_model_plot_results
 from spd.run_spd import get_common_run_name_suffix, optimize
@@ -96,12 +97,11 @@ def main(config_path_or_obj: Path | str | Config) -> None:
     )
 
     synced_inputs = target_model_train_config_dict.get("synced_inputs", None)
-    dataset = SparseFeatureDataset(
-        n_features=target_model.config.n_features,
+    dataset = SimplexDataset(
+        groups=target_model.config.groups,
         feature_probability=task_config.feature_probability,
         device=device,
         data_generation_type=task_config.data_generation_type,
-        value_range=(0.0, 1.0),
         synced_inputs=synced_inputs,
     )
     train_loader = DatasetGeneratedDataLoader(dataset, batch_size=config.batch_size, shuffle=False)
