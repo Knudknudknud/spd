@@ -179,7 +179,7 @@ def _remove_same_layer_edges(edge_index: Tensor, node_distances: Tensor) -> Tens
     return edge_index[:, cross_layer_mask]
 
 
-def whiten_components(feats: torch.Tensor, eps: float = 1e-3) -> torch.Tensor:
+def whiten_components(feats: torch.Tensor, eps: float = 1e-2) -> torch.Tensor:
     """Whiten across the batch dimension so components become decorrelated.
 
     Input:  (batch, C, k)

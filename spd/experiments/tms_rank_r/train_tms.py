@@ -102,7 +102,12 @@ def train(
             out = model(batch)
             error = importance * (labels - out) ** 2
 
-            # norm_loss = ((out.norm(dim=1) - batch.norm(dim=1)) ** 2).mean()
+            groups = [[0,1], [2,3], [4,5], [6,7]]
+            norm_loss = 0.0
+            for group in groups:
+                out_pair = out[:, group]
+                in_pair = batch[:, group]
+                norm_loss += ((out_pair.norm(dim=1) - in_pair.norm(dim=1))**2).mean()
 
             loss = error.mean()
             loss.backward()

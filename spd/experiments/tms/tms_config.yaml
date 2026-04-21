@@ -12,7 +12,6 @@ n_mask_samples: 1
 n_ci_mlp_neurons: 16
 # n_ci_mlp_neurons: 0
 target_module_patterns: ["linear1", "linear2"]
-data_generation_type: "exactly_one_active"
 #target_module_patterns: ["linear1", "linear2", "hidden_layers.0"]
 
 # --- Loss Coefficients ---

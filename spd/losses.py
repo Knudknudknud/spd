@@ -14,6 +14,37 @@ from spd.models.components import EmbeddingComponent, LinearComponent
 from spd.utils import calc_kl_divergence_lm
 
 
+
+
+def calc_component_orthogonality_loss(
+    components: dict[str, LinearComponent | EmbeddingComponent],
+) -> Float[Tensor, ""]:
+    """Penalize non-orthogonality between different components' A matrices,
+    using normalized (cosine-like) directions."""
+    total = torch.tensor(0.0, device=next(iter(components.values())).A.device)
+    n_layers = 0
+    for comp in components.values():
+        A = comp.A  # (d_in, C, k)
+        d_in, C, k = A.shape
+        A_flat = A.permute(1, 2, 0).reshape(C * k, d_in)  # (C*k, d_in)
+
+        # Normalize each row to unit length
+        A_normed = F.normalize(A_flat, p=2, dim=-1)
+
+        gram = A_normed @ A_normed.T  # (C*k, C*k), entries in [-1, 1]
+
+        block_diag = torch.block_diag(
+            *[torch.ones(k, k, device=A.device) for _ in range(C)]
+        )
+        off_block = 1.0 - block_diag
+
+        # Mean squared cosine on off-block entries
+        n_off_entries = off_block.sum()
+        total = total + (gram * off_block).pow(2).sum() / n_off_entries.clamp_min(1)
+        n_layers += 1
+
+    return total / max(n_layers, 1)
+
 def calc_embedding_recon_loss(
     model: ComponentModel,
     batch: Int[Tensor, "..."],
@@ -430,5 +461,10 @@ def calculate_losses(
         )
         total_loss += config.embedding_recon_coeff * embedding_recon_loss
         loss_terms["loss/embedding_recon"] = embedding_recon_loss.item()
+    
+    # orthogonality_coefficient = 1
+    # orthogonality_loss = calc_component_orthogonality_loss(components=components)
+    # total_loss += orthogonality_coefficient * orthogonality_loss
+    # loss_terms["loss/orthogonality"] = orthogonality_loss.item()
 
     return total_loss, loss_terms

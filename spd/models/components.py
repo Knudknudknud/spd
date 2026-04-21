@@ -187,10 +187,12 @@ class Transformer(nn.Module):
         self.W_v = nn.Linear(in_channels, hidden_channels)
 
         self.out_projection = nn.Sequential(
-            nn.Linear(in_channels + hidden_channels, hidden_channels),
+            nn.Linear(2 * hidden_channels, hidden_channels),
             nn.ReLU(),
             nn.Linear(hidden_channels, out_channels),
         )
+        self.own_projection = nn.Linear(in_channels, hidden_channels)
+
 
     def forward_batched(self, x_batch):
 
@@ -200,8 +202,8 @@ class Transformer(nn.Module):
 
         #Compute attention
         out = F.scaled_dot_product_attention(Q, K, V)
-
-        combined = torch.cat([x_batch, out], dim=-1)
+        out_self_prediction =self.own_projection(x_batch)
+        combined = torch.cat([out_self_prediction, out], dim=-1)
         return self.out_projection(combined)
 
     
@@ -383,7 +385,8 @@ class TensorGNAN(nn.Module):
 #     def __init__(self, C: int):
 #         super().__init__()
 #         self.weight = nn.Parameter(torch.empty((C,)))
-#         self.bias = nn.Parameter(torch.zeros((C,)))
+#         self.bias = nn.Parameter(torch.zeros((C,)))        self.attn_proj = nn.Linear(hidden_channels, out_channels)
+
 #         fan_val = 1  # Since each weight gets applied independently
 #         init_param_(self.weight, fan_val=fan_val, nonlinearity="linear")
 
