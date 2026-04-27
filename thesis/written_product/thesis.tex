@@ -15,8 +15,8 @@
 Some super cool abstract of all my findings
 \end{abstract}
 
-\section{Temp intro}
-Introduction
+\section{Introduction}
+
 A central goal of mechanistic interpretability is to decompose a neural network's parameters
 into a small number of meaningful units, atoms, each of which corresponds to something the model is doing.
 The hope is that a network's computation, however dense and distributed in its raw form, can be expressed
@@ -179,15 +179,100 @@ These components are later clustered manually.... -> GNaN solves
 Components are rank 1, many features are multidimensional, dependent
 components are trained independently
 
-\subsection{Irreducibility and natural units of decomposition}
+\subsection{Irreducibility and the natural unit of decomposition}
 \label{sec:irreducibility}
-Develops Engels et al.'s framework formally. The irreducibility definition, the multi-dimensional superposition hypothesis, and the implication that the natural unit of decomposition is the irreducible feature with its associated V
-V matrix. This subsection is doing the theoretical work of establishing what a faithful decomposition should target. It does not yet claim SPD fails to target this; it just establishes the target.
 
-\subsection{Effective representational rank}
-The distinction between formal dfi
-dfi and the effective rank the model uses to represent an irreducible feature. The two coincide for non-degenerate cases (simplex, circle) but come apart for degenerate cases (perfect correlation, where the model can compress to lower rank). The implication: the rank of an SPD subcomponent that hosts an irreducible feature should match the effective representational rank, which is at most dfi
-dfi but can be less. This subsection sets up both the rank-1 case (compressed representations) and the rank-k case (full representations) as targets the method needs to handle.
+The standard formulation of superposition treats features as
+one-dimensional directions in activation space, with each feature
+contributing a scalar activation along its direction. 
+
+The work of engels et al. provide empirical evidence that the strong feature hypothesis is too restrictive,
+and that transformer architectures organise cyclical concepts, such as days of the week and months of the year, as two-dimensional structures,
+that are not composed of independent one-dimensional features and instead are irreducibly multi-dimensional.
+
+Additionally the paper provides a formal definition of irreducibility and a corresponding refinement of the superposition hypothesis.
+
+\paragraph{Irreducibility.}
+A feature $f \in \mathbb{R}^{d_f}$ is reducible into features
+$a$ and $b$ if there exists an affine transformation
+$f \mapsto Rf + c \equiv (a, b)$ with $R$ orthonormal, such that the
+joint distribution $p(a, b)$ satisfies one of two conditions:
+\renewcommand\labelitemi{\tiny$\bullet$}
+\begin{itemize}
+    \setlength\itemsep{0em}
+    \item \textbf{Separability}: $p(a, b)= p(a) \, p(b)$
+    \item \textbf{Mixture of disjoint distributions}: $p(a, b) = w \, p(a) \, \delta(b) + (1 - w) \, p'(a, b), \quad w \in (0, 1)$
+\end{itemize}
+where $\delta$ is the Dirac delta distribution. 
+In other words, a feature is reducible when its components are statistically independent, or when the joint distribution decomposes into a regime where one component is exactly zero and the other varies on its own.
+
+A feature whose joint distribution admits neither of these properties,
+carries information only when interpreted together, and any decomposition into smaller units
+would lose information the original feature encodes.
+
+Under this multi-dimensional view, the superposition hypothesis,
+the hidden states are written as a sum of feature contributions:
+\begin{equation}
+    x_{i,l}(t) = \sum_i V_i \, f_i(t)
+\end{equation}
+where each $f_i(t) \in \mathbb{R}^{d_{f_i}}$ is an irreducible
+feature with internal dimensionality $d_{f_i} \geq 1$, each
+$V_i \in \mathbb{R}^{d \times d_{f_i}}$ is a projection matrix
+embedding the feature into a $d_{f_i}$-dimensional subspace of
+hidden space, and the projection matrices are pairwise
+$\delta$-orthogonal: $\| V_i^\top V_j \| < \delta$ for $i \neq j$.
+
+The multi-dimensional hypothesis makes two structural commitments
+about the model's representation. First, the projection matrices
+$V_i$ are pairwise $\delta$-orthogonal, with the column spaces of
+different features approximately disjoint in hidden space. Second,
+each $f_i$ is irreducible, meaning the coordinates within a single
+feature covary according to the feature's joint distribution rather
+than being independent components that happen to share a subspace. \footnote{Does this not also help my case of softmax, we train the importance to maximize the importance, some old paper i read meant that it increased the intra cluster similarity, and decreased the inter cluster, We should check this over training and see if it happens!}
+
+\paragraph{Effective representational rank.}
+The definition of $V_i \in \mathbb{R}^{d \times d_{f_i}}$ does not
+require its columns to be linearly independent: $d_{f_i}$ specifies
+the formal dimensionality of the irreducible feature, but
+$\text{rank}(V_i) \leq d_{f_i}$ is what the model actually uses.
+The two coincide when the joint distribution of the feature's
+coordinates is non-degenerate enough that compression would lose
+information; they come apart when the distribution permits a
+lower-rank representation. Two perfectly correlated coordinates
+with $f_i^{(1)}(t) = f_i^{(2)}(t)$ for all $t$, for instance, can
+be represented through a $V_i$ with both columns equal to a single
+direction $v \in \mathbb{R}^d$:
+\begin{equation}
+    V_i \, f_i = v \cdot f_i^{(1)} + v \cdot f_i^{(2)} = 2v \cdot f_i^{(1)}
+\end{equation}
+Here $V_i$ is formally $d \times 2$ but its column space is
+one-dimensional, and the feature is irreducibly two-dimensional in
+its input distribution but represented through a rank-deficient
+$V_i$ without loss of reconstructive information.
+
+The formal dimensionality $d_{f_i}$ thus acts as an upper bound on
+the rank a faithful representation requires, with the actual rank
+determined by how the model has chosen to encode the feature. The
+rank required by a parameter decomposition method to host an
+irreducible feature as a single unit is the effective
+representational rank, not the formal dimensionality.
+
+\paragraph{Implications for parameter decomposition.}
+This framework offers a natural framing for the question raised in
+the introduction of which level a parameter decomposition should
+target. Under the multi-dimensional superposition hypothesis, the
+irreducible feature is the unit at which the model manipulates
+structure, and a decomposition that matches this granularity stays
+faithful to the model's own organisation. Finer decompositions
+split irreducible features into coordinates the model treats as a
+single object; coarser ones collapse distinct features into one.
+The present work takes the irreducible feature as the unit its
+extension aims to recover.
+
+SPD's rank-one parameterisation can host an irreducible feature as
+a single unit only when its effective representational rank is one;
+the extension developed in the next section accommodates features
+whose effective representational rank is greater.
 
 \subsection{Rank-$k$ subcomponents and relational importance}
 \label{sec:rank-k-attention}
@@ -237,7 +322,7 @@ input, conditioned on the activations of all subcomponents.
 The posterior is realised through a softmax over subcomponents,
 
 \begin{equation}
-\alpha^l_c(x) = \frac{\exp s^l_c(x)}{\sum_{c' \in C} \exp s^l_{c'}(x)}
+\alpha^l_c(x) = \frac{\exp s^l_c(x)}{\sum_{c'=1}^{C} \exp s^l_{c'}(x)}
     \qquad
     s^l_c(x) = f_{\text{self}}(h^l_c(x)) + f_{\text{agg}}\!\left(\{h^l_{c'}(x)\}_{c' \neq c}\right)
 \end{equation}
@@ -254,7 +339,21 @@ l is the number of layers, leading to scalability concerns at larger sizes.
 To circumvent this, we apply fastattention, reducing the complexity to be linear in the number of components.
 \footnote{Double check this, fast attention was also used by someo ther paper on SPD and transformers, but applied to the sequence length.}.
 
+
+
 \subsection{SVD reformulation, capacity and per feature ablation}
+
+The competition pressure introduced by the softmax has a
+theoretical motivation under the multi-dimensional superposition
+hypothesis. The hypothesis predicts that different irreducible
+features occupy approximately orthogonal projection subspaces;
+the softmax-and-attention mechanism implements a training pressure
+toward this orthogonality at the level of SPD's atoms. Atoms whose
+$V$ matrices share input directions cannot be cleanly distinguished
+on inputs that activate those directions, and the softmax
+penalises ambiguous allocations. The optimiser's response is to
+push the atoms' $V$ matrices toward disjoint subspaces, recovering
+the orthogonality structure the hypothesis posits.
 
 \subsubsection{GNAN-based importance functions}
 In SPD, each importance function $\gamma_{c}^{l}$ is an 

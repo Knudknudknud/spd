@@ -1,14 +1,14 @@
 # Fdb version 4
-["biber thesis"] 1777302890.50885 "thesis.bcf" "thesis.bbl" "thesis" 1777303120.60913 0
+["biber thesis"] 1777317072.65878 "thesis.bcf" "thesis.bbl" "thesis" 1777319613.60795 0
   "references.bib" 1775391521 3402 f18d00f7a48bfd3fc2a4c42e395c213d ""
-  "thesis.bcf" 1777303120 109399 bb054ace7f7a3dbf5e4476c8f5c4dcc0 "pdflatex"
+  "thesis.bcf" 1777319613 109399 bb054ace7f7a3dbf5e4476c8f5c4dcc0 "pdflatex"
   (generated)
   "thesis.bbl"
   "thesis.blg"
   (rewritten before read)
-["pdflatex"] 1777303117.13863 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1777303120.61006 0
+["pdflatex"] 1777319611.36295 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1777319613.60911 0
   "arxiv.sty" 1774611555 7902 f2cb9d6386c38cb1ddd8d4504a6292a3 ""
-  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1777303115 39701 9e5f140134892795e2d8173f4ac4a6c9 ""
+  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1777319610 44797 3aa7d56c07be773fc9bee7775577fef5 ""
   "c:/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc" 1722946599 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "c:/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1722947038 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "c:/texlive/2024/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1722957685 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -106,10 +106,10 @@
   "c:/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1722958775 5437080 ed7bddc74a2a640cd859bad2f86a3c86 ""
   "c:/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1722959163 6879081 fdeace8d7504e29902b33a8915f1b7e1 ""
   "c:/texlive/2024/texmf.cnf" 1722958746 713 e69b156964470283e0530f5060668171 ""
-  "thesis.aux" 1777303120 5326 39b62d07de94176236f50be7d9afef3c "pdflatex"
-  "thesis.bbl" 1777302903 11858 e8dfb678a4d0a63aa7de076088773fbb "biber thesis"
-  "thesis.run.xml" 1777303120 2325 e2b7b0621d055d962ffd71f3077e0c03 "pdflatex"
-  "thesis.tex" 1777303115 39701 9e5f140134892795e2d8173f4ac4a6c9 ""
+  "thesis.aux" 1777319613 5520 bccb3e20aebc53959daf33b0a9bf42ca "pdflatex"
+  "thesis.bbl" 1777317076 11858 e8dfb678a4d0a63aa7de076088773fbb "biber thesis"
+  "thesis.run.xml" 1777319613 2325 e2b7b0621d055d962ffd71f3077e0c03 "pdflatex"
+  "thesis.tex" 1777319610 44797 3aa7d56c07be773fc9bee7775577fef5 ""
   (generated)
   "thesis.aux"
   "thesis.bcf"
