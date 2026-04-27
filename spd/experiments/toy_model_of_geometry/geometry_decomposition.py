@@ -1,8 +1,4 @@
-"""Run spd on a TMS model.
-
-Note that the first instance index is fixed to the identity matrix. This is done so we can compare
-the losses of the "correct" solution during training.
-"""
+"""Run SPD on a Geometry model."""
 
 from datetime import datetime
 from pathlib import Path
@@ -13,10 +9,10 @@ import torch
 import wandb
 import yaml
 
-from spd.configs import Config, TMSTaskConfig
+from spd.configs import Config, GeometryTaskConfig
 from spd.data_utils import DatasetGeneratedDataLoader
-from spd.toy_model_of_geometry.simplex_dataset import SimplexDataset
-from spd.experiments.toy_model_of_geometry.models import TMSModel, TMSModelConfig
+from spd.experiments.toy_model_of_geometry.simplex_dataset import SimplexDataset
+from spd.experiments.toy_model_of_geometry.models import GeometryModel, GeometryModelConfig
 from spd.log import logger
 from spd.plotting import create_toy_model_plot_results
 from spd.run_spd import get_common_run_name_suffix, optimize
@@ -26,32 +22,33 @@ from spd.wandb_utils import init_wandb
 wandb.require("core")
 
 
-def get_run_name(config: Config, tms_model_config: TMSModelConfig) -> str:
+def get_run_name(config: Config, geometry_model_config: GeometryModelConfig) -> str:
     """Generate a run name based on the config."""
     if config.wandb_run_name:
         run_suffix = config.wandb_run_name
     else:
+        input_dim = sum(k * (k + 1) for k in geometry_model_config.ranks)
         run_suffix = get_common_run_name_suffix(config)
-        run_suffix += f"ft{tms_model_config.n_features}_"
-        run_suffix += f"hid{tms_model_config.n_hidden}"
-        run_suffix += f"hid-layers{tms_model_config.n_hidden_layers}"
+        run_suffix += f"_input-dim{input_dim}_"
+        run_suffix += f"hid{geometry_model_config.n_hidden}_"
+        run_suffix += f"ranks{'-'.join(str(r) for r in geometry_model_config.ranks)}"
     return config.wandb_run_name_prefix + run_suffix
 
 
 def save_target_model_info(
     save_to_wandb: bool,
     out_dir: Path,
-    tms_model: TMSModel,
-    tms_model_train_config_dict: dict[str, Any],
+    geometry_model: GeometryModel,
+    geometry_model_train_config_dict: dict[str, Any],
 ) -> None:
-    torch.save(tms_model.state_dict(), out_dir / "tms.pth")
+    torch.save(geometry_model.state_dict(), out_dir / "geometry.pth")
 
-    with open(out_dir / "tms_train_config.yaml", "w") as f:
-        yaml.dump(tms_model_train_config_dict, f, indent=2)
+    with open(out_dir / "geometry_train_config.yaml", "w") as f:
+        yaml.dump(geometry_model_train_config_dict, f, indent=2)
 
     if save_to_wandb:
-        wandb.save(str(out_dir / "tms.pth"), base_path=out_dir, policy="now")
-        wandb.save(str(out_dir / "tms_train_config.yaml"), base_path=out_dir, policy="now")
+        wandb.save(str(out_dir / "geometry.pth"), base_path=out_dir, policy="now")
+        wandb.save(str(out_dir / "geometry_train_config.yaml"), base_path=out_dir, policy="now")
 
 
 def main(config_path_or_obj: Path | str | Config) -> None:
@@ -64,19 +61,18 @@ def main(config_path_or_obj: Path | str | Config) -> None:
         config = init_wandb(config, config.wandb_project)
 
     task_config = config.task_config
-    assert isinstance(task_config, TMSTaskConfig)
-
+    assert isinstance(task_config, GeometryTaskConfig)
     set_seed(config.seed)
     logger.info(config)
 
     assert config.pretrained_model_path, "pretrained_model_path must be set"
-    target_model, target_model_train_config_dict = TMSModel.from_pretrained(
+    target_model, target_model_train_config_dict = GeometryModel.from_pretrained(
         config.pretrained_model_path,
     )
     target_model = target_model.to(device)
     target_model.eval()
 
-    run_name = get_run_name(config=config, tms_model_config=target_model.config)
+    run_name = get_run_name(config=config, geometry_model_config=target_model.config)
     if config.wandb_project:
         assert wandb.run, "wandb.run must be initialized before training"
         wandb.run.name = run_name
@@ -92,26 +88,22 @@ def main(config_path_or_obj: Path | str | Config) -> None:
     save_target_model_info(
         save_to_wandb=config.wandb_project is not None,
         out_dir=out_dir,
-        tms_model=target_model,
-        tms_model_train_config_dict=target_model_train_config_dict,
+        geometry_model=target_model,
+        geometry_model_train_config_dict=target_model_train_config_dict,
     )
 
-    synced_inputs = target_model_train_config_dict.get("synced_inputs", None)
     dataset = SimplexDataset(
-        groups=target_model.config.groups,
+        dimensions=target_model.config.ranks,
         feature_probability=task_config.feature_probability,
         device=device,
         data_generation_type=task_config.data_generation_type,
-        synced_inputs=synced_inputs,
     )
     train_loader = DatasetGeneratedDataLoader(dataset, batch_size=config.batch_size, shuffle=False)
     eval_loader = DatasetGeneratedDataLoader(dataset, batch_size=config.batch_size, shuffle=False)
 
+    # No tied weights in geometry model (input_dim != output_dim)
     tied_weights = None
-    if target_model.config.tied_weights:
-        tied_weights = [("linear1", "linear2")]
 
-    
     optimize(
         target_model=target_model,
         config=config,

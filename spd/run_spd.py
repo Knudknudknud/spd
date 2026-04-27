@@ -31,7 +31,6 @@ from spd.plotting import (
     create_embed_ci_sample_table,
     plot_ci_histograms,
     plot_mean_component_activation_counts,
-    create_gnan_plots,
 )
 from spd.utils import (
     calc_kl_divergence_lm,
@@ -40,6 +39,10 @@ from spd.utils import (
     get_lr_with_warmup,
 )
 wandb.init(mode="online")
+
+def get_temperature(step: int, total_steps: int, t_start: float = 1.0, t_end: float = 0.3) -> float:
+    progress = min(step / total_steps, 1.0)
+    return t_start * (t_end / t_start) ** progress
 
 def get_common_run_name_suffix(config: Config) -> str:
     """Generate a run suffix based on Config that is common to all experiments."""
@@ -81,7 +84,7 @@ def optimize(
         base_model=target_model,
         target_module_patterns=config.target_module_patterns,
         C=config.C,
-        k=config.k,
+        K=config.K,
         n_ci_mlp_neurons=config.n_ci_mlp_neurons,
         pretrained_model_output_attr=config.pretrained_model_output_attr,
     )
@@ -168,8 +171,13 @@ def optimize(
         )
         As = {module_name: components[module_name].A for module_name in components}
 
+        #T = get_temperature(step, config.steps, t_start=1.0, t_end=0.3)
+        T = 1.0
         causal_importances, causal_importances_upper_leaky = calc_causal_importances(
-            pre_weight_acts=pre_weight_acts, As=As, gnan=model.gnan, detach_inputs=False)
+            pre_weight_acts=pre_weight_acts, As=As, gnan=model.gnan, detach_inputs=False,
+            temperature=T,
+        )
+        log_data["temperature"] = T
 
         for layer_name, ci in causal_importances.items():
             alive_components[layer_name] = alive_components[layer_name] | (ci > 0.1).any(dim=(0, 1))
@@ -185,7 +193,7 @@ def optimize(
             device=device,
             n_params=n_params,
         )
-
+        
         log_data["loss/total"] = total_loss.item()
         log_data.update(loss_terms)
 
@@ -195,6 +203,7 @@ def optimize(
                 tqdm.write(f"--- Step {step} ---")
                 tqdm.write(f"LR: {step_lr:.6f}")
                 tqdm.write(f"Total Loss: {log_data['loss/total']:.7f}")
+                tqdm.write(f"Temperature: {log_data['temperature']:.7f}")
                 for name, value in loss_terms.items():
                     tqdm.write(f"{name}: {value:.7f}")
 
@@ -308,14 +317,4 @@ def optimize(
                 wandb.log({"grad_norm": grad_norm_val}, step=step)
 
             optimizer.step()
-
-            # if step % config.print_freq == 0:
-            #     # Check GNN weights are actually changing
-            #     for name, param in model.gnan.named_parameters():
-            #         if param.grad is not None:
-            #             tqdm.write(f"GNN {name}: grad_norm={param.grad.norm().item():.6f}, weight_norm={param.norm().item():.6f}")
-            #         else:
-            #             tqdm.write(f"GNN {name}: NO GRADIENT")
-
-
     logger.info("Finished training loop.")

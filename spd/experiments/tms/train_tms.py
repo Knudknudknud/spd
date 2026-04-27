@@ -491,6 +491,71 @@ if __name__ == "__main__":
     #     # synced_inputs=[[5, 6], [0, 2, 3]],
     # )
 
-    set_seed(config.seed)
 
-    run_train(config, device)
+    
+
+    # set_seed(config.seed)
+
+    # run_train(config, device)
+    N_FEATURES = 8
+    N_HIDDEN = 5
+    BASE_PROB = 0.05
+
+    COMMON = dict(
+        wandb_project="spd-train-tms",
+        batch_size=2048,
+        steps=20000,
+        seed=0,
+        lr=5e-3,
+        lr_schedule="constant",
+        data_generation_type="at_least_zero_active",
+        fixed_identity_hidden_layers=False,
+        fixed_random_hidden_layers=False,
+    )
+    TMS_CFG = dict(
+        n_features=N_FEATURES,
+        n_hidden=N_HIDDEN,
+        n_hidden_layers=1,
+        tied_weights=False,
+        device=device,
+        init_bias_to_zero=False,
+    )
+
+    # Coordinates: 12 singletons
+    config_coordinates = TMSTrainConfig(
+        tms_model_config=TMSModelConfig(**TMS_CFG),
+        feature_probability=BASE_PROB,
+        synced_inputs=None,
+        **COMMON,
+    )
+
+    # Pairs: 6 pairs of size 2
+    pairs = [[2*i, 2*i + 1] for i in range(N_FEATURES // 2)]
+    config_pairs = TMSTrainConfig(
+        tms_model_config=TMSModelConfig(**TMS_CFG),
+        feature_probability=BASE_PROB / 2,
+        synced_inputs=pairs,
+        **COMMON,
+    )
+
+    # Vertices: 3 vertices of size 4
+    VERTEX_SIZE = 4
+    vertices = [
+        list(range(VERTEX_SIZE * i, VERTEX_SIZE * (i + 1)))
+        for i in range(N_FEATURES // VERTEX_SIZE)
+    ]
+    config_vertices = TMSTrainConfig(
+        tms_model_config=TMSModelConfig(**TMS_CFG),
+        feature_probability=BASE_PROB / VERTEX_SIZE,
+        synced_inputs=vertices,
+        **COMMON,
+    )
+
+    for name, config in [
+        ("coordinates", config_coordinates),
+        ("pairs", config_pairs),
+        ("vertices", config_vertices),
+    ]:
+        print(f"\n{'='*60}\nTraining condition: {name}\n{'='*60}")
+        set_seed(config.seed)
+        run_train(config, device)

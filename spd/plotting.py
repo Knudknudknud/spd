@@ -10,11 +10,12 @@ from jaxtyping import Float
 from matplotlib import pyplot as plt
 from matplotlib.colors import CenteredNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from torch import Tensor, device
+from torch import Tensor
 
 from spd.models.component_model import ComponentModel
 from spd.models.component_utils import calc_causal_importances
-from spd.models.components import EmbeddingComponent, LinearComponent, TensorGNAN
+from spd.models.components import EmbeddingComponent, LinearComponent, Transformer
+import einops
 
 
 def permute_to_identity(
@@ -132,7 +133,7 @@ def _plot_causal_importances_figure(
 def plot_causal_importance_vals(
     model: ComponentModel,
     components: Mapping[str, LinearComponent | EmbeddingComponent],
-    gnan: TensorGNAN,
+    gnan: Mapping[str, Transformer],
     batch_shape: tuple[int, ...],
     device: str | torch.device,
     input_magnitude: float,
@@ -311,14 +312,10 @@ def plot_AB_matrices(
         A_data = As[name]
         if all_perm_indices is not None:
             A_data = A_data[:, all_perm_indices[name]]
-        A_data = A_data.detach().cpu()
+        #A_data = A_data.detach().cpu().numpy() original
+        A_data = einops.rearrange(A_data.detach().cpu().numpy(), "d_in C K -> d_in (C K)")
 
-        #If A has a different k, than 1 display the norm instead of direction
-        #some kind of bug here, but will fix later.
-        if A_data.shape[-1] > 1:
-            print("A has k > 1, plotting norm instead of direction")
-            A_data = A_data.norm(dim=-1)  # (d_in, C, k) → (d_in, C)
-        A_data = A_data.numpy()
+
         im = axs[2 * j, 0].matshow(A_data, aspect="auto", cmap="coolwarm")
         axs[2 * j, 0].set_ylabel("d_in index")
         axs[2 * j, 0].set_xlabel("Component index")
@@ -329,12 +326,10 @@ def plot_AB_matrices(
         B_data = Bs[name]
         if all_perm_indices is not None:
             B_data = B_data[all_perm_indices[name], :]
-        B_data = B_data.detach().cpu()
+        #B_data = B_data.detach().cpu().numpy() original, but had bugs with k dim
+        B_data = einops.rearrange(B_data.detach().cpu().numpy(), "C K d_out -> (C K) d_out")
 
-        if B_data.shape[-1] > 1:
-            B_data = B_data.norm(dim=-2)  # (C, k, d_out) → (C, d_out)
-            print("B has k > 1, plotting norm instead of direction")
-        B_data = B_data.numpy()
+        
         im = axs[2 * j + 1, 0].matshow(B_data, aspect="auto", cmap="coolwarm")
         axs[2 * j + 1, 0].set_ylabel("Component index")
         axs[2 * j + 1, 0].set_xlabel("d_out index")
@@ -453,7 +448,7 @@ def plot_ci_histograms(
 def create_toy_model_plot_results(
     model: ComponentModel,
     components: dict[str, LinearComponent | EmbeddingComponent],
-    gnan: TensorGNAN,
+    gnan: dict[str, Transformer],
     batch_shape: tuple[int, ...],
     device: str | torch.device,
     **_,
@@ -466,7 +461,7 @@ def create_toy_model_plot_results(
     Args:
         model: The ComponentModel
         components: Dictionary of components
-        gates: Dictionary of gates
+        gnan: Dictionary of transformers
         batch_shape: Shape of the batch
         device: Device to use
         **_: Additional keyword arguments (ignored)
@@ -492,187 +487,3 @@ def create_toy_model_plot_results(
         components=components, all_perm_indices=all_perm_indices
     )
     return fig_dict
-
-def create_gnan_plots(gnan: TensorGNAN) -> dict[str, plt.Figure]:
-    fig_dict = {"gnan_features": create_gnan_feature_weights(gnan)}
-
-    for i, fig in enumerate(create_gnan_distance_weights(gnan)):
-        fig_dict[f"gnan_distances_{i}"] = fig
-
-    for i, fig in enumerate(create_gnan_feature_distance_weights(gnan)):
-        fig_dict[f"gnan_feature_distances_{i}"] = fig
-
-    return fig_dict
-
-# def create_gnan_feature_weights(gnan: TensorGNAN) -> plt.Figure:
-#     n_features = len(gnan.fs)
-#     f_scores = np.zeros(n_features)
-#     device = next(gnan.parameters()).device
-#     with torch.inference_mode():
-#         for i in range(n_features):
-#             f_scores[i] = gnan.fs[i](torch.tensor([[1.0]], device=device, dtype=torch.float32)).detach().cpu().flatten()[0]
-
-#     fig, ax = plt.subplots(figsize=(max(4, n_features * 0.5), 3))
-#     ax.bar([f"{i}" for i in range(n_features)], f_scores)
-#     ax.set_xlabel("Feature index")
-#     ax.set_ylabel("f(1.0)")
-#     ax.set_title("GNAN per-feature function outputs")
-#     fig.tight_layout()
-#     return fig
-
-
-# def create_gnan_distance_weights(gnan: TensorGNAN, n_steps: int = 50) -> plt.Figure:
-#     """Plot rho output as heatmap over (layer_distance, cosine_similarity)."""
-#     device = next(gnan.parameters()).device
-#     layer_dists = np.linspace(-5, 5, n_steps).astype(np.float32)
-#     cos_sims = np.linspace(-1, 1, n_steps).astype(np.float32)
-
-#     rho_grid = np.zeros((n_steps, n_steps))
-#     with torch.inference_mode():
-#         for i, ld in enumerate(layer_dists):
-#             for j, cs in enumerate(cos_sims):
-#                 rho_grid[i, j] = gnan.rho(torch.tensor([[ld, cs]], device=device)).detach().cpu().item()
-
-#     fig, ax = plt.subplots(figsize=(6, 5))
-#     im = ax.imshow(rho_grid, aspect="auto", origin="lower",
-#                    extent=[-1, 1, -5, 5], cmap="coolwarm")
-#     im.set_clim(vmin=-abs(rho_grid).max(), vmax=abs(rho_grid).max())
-#     ax.set_xlabel("Cosine similarity")
-#     ax.set_ylabel("Layer distance")
-#     ax.set_title("GNAN rho(layer_dist, cos_sim)")
-#     fig.colorbar(im, ax=ax)
-#     fig.tight_layout()
-#     return fig
-
-
-# def create_gnan_feature_distance_weights(gnan: TensorGNAN, n_steps: int = 30) -> plt.Figure:
-#     """Plot f(1.0) * rho(layer_dist, cos_sim) summed over features."""
-#     from matplotlib.colors import LinearSegmentedColormap
-
-#     device = next(gnan.parameters()).device
-#     n_features = len(gnan.fs)
-#     layer_dists = np.linspace(-5, 5, n_steps).astype(np.float32)
-#     cos_sims = np.linspace(-1, 1, n_steps).astype(np.float32)
-
-#     with torch.inference_mode():
-#         f_scores = np.zeros(n_features)
-#         for i in range(n_features):
-#             f_scores[i] = gnan.fs[i](torch.tensor([[1.0]], device=device)).detach().cpu().item()
-
-#         rho_grid = np.zeros((n_steps, n_steps))
-#         for i, ld in enumerate(layer_dists):
-#             for j, cs in enumerate(cos_sims):
-#                 rho_grid[i, j] = gnan.rho(torch.tensor([[ld, cs]], device=device)).detach().cpu().item()
-
-#     # Sum f_scores * rho for total contribution
-#     total = f_scores.sum() * rho_grid
-#     cmap = LinearSegmentedColormap.from_list("custom", ["red", "white", "green"], N=100)
-
-#     fig, ax = plt.subplots(figsize=(6, 5))
-#     im = ax.imshow(total, aspect="auto", origin="lower",
-#                    extent=[-1, 1, -5, 5], cmap=cmap)
-#     im.set_clim(vmin=-abs(total).max(), vmax=abs(total).max())
-#     ax.set_xlabel("Cosine similarity")
-#     ax.set_ylabel("Layer distance")
-#     ax.set_title("GNAN: sum(f) × rho(layer_dist, cos_sim)")
-#     fig.colorbar(im, ax=ax)
-#     fig.tight_layout()
-#     return fig
-
-def create_gnan_feature_weights(gnan: TensorGNAN) -> plt.Figure:
-    n_features = len(gnan.fs)
-    f_scores = np.zeros(n_features)
-    device = next(gnan.parameters()).device
-    with torch.inference_mode():
-        for i in range(n_features):
-            f_scores[i] = gnan.fs[i](torch.tensor([[1.0]], device=device)).detach().cpu().item()
-
-    fig, ax = plt.subplots(figsize=(max(4, n_features * 0.5), 3))
-    ax.bar([f"{i}" for i in range(n_features)], f_scores)
-    ax.set_xlabel("Feature index")
-    ax.set_ylabel("f(1.0)")
-    ax.set_title("GNAN per-feature function outputs")
-    fig.tight_layout()
-    return fig
-
-
-def _eval_rho(rho, device, n_steps=50):
-    """Evaluate a single rho over a 2D grid. Returns (grid, layer_dists, cos_sims)."""
-    layer_dists = np.linspace(-5, 5, n_steps).astype(np.float32)
-    cos_sims = np.linspace(-1, 1, n_steps).astype(np.float32)
-    ld_grid, cs_grid = np.meshgrid(layer_dists, cos_sims, indexing="ij")
-    pairs = np.stack([ld_grid.flatten(), cs_grid.flatten()], axis=1)
-    with torch.inference_mode():
-        out = rho(torch.tensor(pairs, device=device)).detach().cpu().numpy().flatten()
-    return out.reshape(n_steps, n_steps), layer_dists, cos_sims
-
-
-def create_gnan_distance_weights(gnan: TensorGNAN, n_steps: int = 50) -> list[plt.Figure]:
-    """Heatmap + 1D slices for each rho."""
-    device = next(gnan.parameters()).device
-    figs = []
-
-    for rho_idx, rho in enumerate(gnan.rhos):
-        label = f"rho_{rho_idx}" if gnan.rho_per_feature else "rho (shared)"
-        rho_grid, layer_dists, cos_sims = _eval_rho(rho, device, n_steps)
-
-        # --- 2D heatmap ---
-        fig, ax = plt.subplots(figsize=(6, 5))
-        im = ax.imshow(rho_grid, aspect="auto", origin="lower",
-                       extent=[-1, 1, -5, 5], cmap="coolwarm")
-        im.set_clim(vmin=-abs(rho_grid).max(), vmax=abs(rho_grid).max())
-        ax.set_xlabel("Cosine similarity")
-        ax.set_ylabel("Layer distance")
-        ax.set_title(f"GNAN {label}(layer_dist, cos_sim)")
-        fig.colorbar(im, ax=ax)
-        fig.tight_layout()
-        figs.append(fig)
-
-    return figs
-
-
-def create_gnan_feature_distance_weights(gnan: TensorGNAN, n_steps: int = 30) -> list[plt.Figure]:
-    """Plot f(1.0) * rho for each rho (or summed if shared)."""
-    from matplotlib.colors import LinearSegmentedColormap
-
-    device = next(gnan.parameters()).device
-    n_features = len(gnan.fs)
-    cmap = LinearSegmentedColormap.from_list("custom", ["red", "white", "green"], N=100)
-    figs = []
-
-    with torch.inference_mode():
-        f_scores = np.zeros(n_features)
-        for i in range(n_features):
-            f_scores[i] = gnan.fs[i](torch.tensor([[1.0]], device=device)).detach().cpu().item()
-
-    if gnan.rho_per_feature:
-        for feat_idx, rho in enumerate(gnan.rhos):
-            rho_grid, layer_dists, cos_sims = _eval_rho(rho, device, n_steps)
-            total = f_scores[feat_idx] * rho_grid
-
-            fig, ax = plt.subplots(figsize=(6, 5))
-            im = ax.imshow(total, aspect="auto", origin="lower",
-                           extent=[-1, 1, -5, 5], cmap=cmap)
-            im.set_clim(vmin=-abs(total).max(), vmax=abs(total).max())
-            ax.set_xlabel("Cosine similarity")
-            ax.set_ylabel("Layer distance")
-            ax.set_title(f"f_{feat_idx}(1) × rho_{feat_idx}")
-            fig.colorbar(im, ax=ax)
-            fig.tight_layout()
-            figs.append(fig)
-    else:
-        rho_grid, layer_dists, cos_sims = _eval_rho(gnan.rhos[0], device, n_steps)
-        total = f_scores.sum() * rho_grid
-
-        fig, ax = plt.subplots(figsize=(6, 5))
-        im = ax.imshow(total, aspect="auto", origin="lower",
-                       extent=[-1, 1, -5, 5], cmap=cmap)
-        im.set_clim(vmin=-abs(total).max(), vmax=abs(total).max())
-        ax.set_xlabel("Cosine similarity")
-        ax.set_ylabel("Layer distance")
-        ax.set_title("sum(f) × rho(layer_dist, cos_sim)")
-        fig.colorbar(im, ax=ax)
-        fig.tight_layout()
-        figs.append(fig)
-
-    return figs

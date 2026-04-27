@@ -111,6 +111,7 @@ def train(
                     wandb.log({"loss": loss.item(), "lr": step_lr}, step=step)
 
 
+
 def get_model_and_dataloader(
     config: GeometryTrainConfig, device: str
     ) -> tuple[GeometryModel, DatasetGeneratedDataLoader[tuple[torch.Tensor, torch.Tensor]]]:
@@ -176,6 +177,7 @@ def run_train(config: GeometryTrainConfig, device: str) -> None:
         pred_volumes = model(eval_batch)
 
     ranks = config.geometry_model_config.ranks
+    
     print("\n=== VOLUME PREDICTION SUMMARY ===")
     print(f"{'group':<8}{'dim':<6}{'MAE':<10}{'RMSE':<10}{'true mean':<12}{'pred mean':<12}{'corr':<8}")
     for g_idx, k in enumerate(ranks):
@@ -215,26 +217,54 @@ def run_train(config: GeometryTrainConfig, device: str) -> None:
         ratio = (s[0] / s[1]).item() if len(s) > 1 and s[1] > 0 else float('inf')
         print(f"Group {g_idx} (dim {k}): singular values = {s.tolist()}, s0/s1 = {ratio:.2f}")
 
+    effective_rank_per_group(model, dataloader.dataset)
+
+
+def effective_rank_per_group(model, dataset, threshold=0.3):
+    """Show effective rank of linear1 input block and linear2 row, per group."""
+    W1 = model.linear1.weight.data.detach().cpu()  # (n_hidden, input_dim)
+    W2 = model.linear2.weight.data.detach().cpu()  # (output_dim, n_hidden)
+
+    print("\n=== EFFECTIVE RANK PER GROUP ===")
+    print(f"{'group':<8}{'dim':<6}{'linear1 SVs':<40}{'linear2 hidden-unit weights':<40}")
+
+    for g_idx, (k, group) in enumerate(zip(dataset.dimensions, dataset.groups)):
+        # linear1: how this group's inputs project into hidden space
+        W1_block = W1[:, group]  # (n_hidden, group_size)
+        s1 = torch.linalg.svdvals(W1_block)
+        s1_norm = s1 / s1.max()
+        eff_rank_1 = (s1_norm > threshold).sum().item()
+
+        # linear2: how hidden space projects into this group's output
+        w2_row = W2[g_idx]  # (n_hidden,)
+        w2_norm = w2_row.abs() / w2_row.abs().max()
+        eff_rank_2 = (w2_norm > threshold).sum().item()
+
+        s1_str = "[" + ", ".join(f"{v:.2f}" for v in s1.tolist()) + "]"
+        w2_str = "[" + ", ".join(f"{v:.2f}" for v in w2_row.abs().tolist()) + "]"
+        print(f"{g_idx:<8}{k:<6}rank {eff_rank_1}: {s1_str:<30}  rank {eff_rank_2}: {w2_str}")
+
+
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
     config = GeometryTrainConfig(
     wandb_project="spd-train-tms",
     geometry_model_config=GeometryModelConfig(
-        ranks=[2, 2, 2, 2],       # simplex dimensions, defines input_dim automatically
-        n_hidden=6,
-        device=device,
-        init_bias_to_zero=False,
-        output_activation="identity",
-    ),
-    feature_probability=0.05,
-    batch_size=1024,
-    steps=10000,
+    ranks=[2, 2, 2, 2],
+    n_hidden=150,
+    device=device,
+    init_bias_to_zero=False,
+    output_activation="relu",
+),
+    feature_probability=0.5,
+    batch_size=2048,               
+    steps=50000,
     seed=0,
-    lr=5e-3,
-    lr_schedule="constant",
-    data_generation_type="at_least_zero_active",
-    )
+    lr=1e-3,
+    lr_schedule="cosine",
+    data_generation_type="at_least_zero_active",)
     set_seed(config.seed)
 
     run_train(config, device)
+    

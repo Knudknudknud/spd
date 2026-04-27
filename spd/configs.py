@@ -32,6 +32,20 @@ class TMSTaskConfig(BaseModel):
         description="Strategy for generating synthetic data for TMS training",
     )
 
+class GeometryTaskConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    task_name: Literal["geometry"] = Field(
+        default="geometry",
+        description="Identifier for the geometry (simplex-volume) decomposition task",
+    )
+    feature_probability: Probability = Field(
+        ...,
+        description="Probability that a given simplex group is active in generated data",
+    )
+    data_generation_type: Literal["exactly_one_active", "at_least_zero_active"] = Field(
+        default="at_least_zero_active",
+        description="Strategy for generating synthetic data for geometry training",
+    )
 
 class ResidualMLPTaskConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -105,7 +119,7 @@ class Config(BaseModel):
         ...,
         description="The number of subcomponents per layer",
     )
-    k: PositiveInt = Field(
+    K: PositiveInt = Field(
         ...,
         description="The rank of of each component, i.e the number of columns in A. The SPD paper uses k=1",
     )
@@ -243,10 +257,10 @@ class Config(BaseModel):
     )
 
     # --- Task Specific ---
-    task_config: TMSTaskConfig | ResidualMLPTaskConfig | LMTaskConfig = Field(
-        ...,
-        discriminator="task_name",
-        description="Nested task-specific configuration selected by the `task_name` discriminator",
+    task_config: TMSTaskConfig | ResidualMLPTaskConfig | LMTaskConfig | GeometryTaskConfig = Field(
+    ...,
+    discriminator="task_name",
+    description="Nested task-specific configuration selected by the `task_name` discriminator",
     )
 
     DEPRECATED_CONFIG_KEYS: ClassVar[list[str]] = []

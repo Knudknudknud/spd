@@ -185,27 +185,25 @@ class Transformer(nn.Module):
         self.W_q = nn.Linear(in_channels, hidden_channels)
         self.W_k = nn.Linear(in_channels, hidden_channels)
         self.W_v = nn.Linear(in_channels, hidden_channels)
-
-        self.out_projection = nn.Sequential(
-            nn.Linear(2 * hidden_channels, hidden_channels),
+        
+        # Self path: dominant, like original SPD gate
+        self.self_proj = nn.Sequential(
+            nn.Linear(in_channels, hidden_channels),
             nn.ReLU(),
             nn.Linear(hidden_channels, out_channels),
         )
-        self.own_projection = nn.Linear(in_channels, hidden_channels)
-
+        
+        # Attention correction: zero-initialised
+        self.attn_proj = nn.Linear(hidden_channels, out_channels)
+        nn.init.zeros_(self.attn_proj.weight)
+        nn.init.zeros_(self.attn_proj.bias)
 
     def forward_batched(self, x_batch):
-
-        Q = self.W_q(x_batch)  # (S, N, d)
-        K = self.W_k(x_batch)  # (S, N, d)
-        V = self.W_v(x_batch)  # (S, N, d)
-
-        #Compute attention
-        out = F.scaled_dot_product_attention(Q, K, V)
-        out_self_prediction =self.own_projection(x_batch)
-        combined = torch.cat([out_self_prediction, out], dim=-1)
-        return self.out_projection(combined)
-
+        Q = self.W_q(x_batch)
+        K = self.W_k(x_batch)
+        V = self.W_v(x_batch)
+        attn_out = F.scaled_dot_product_attention(Q, K, V)
+        return self.self_proj(x_batch) + self.attn_proj(attn_out)
     
 class TensorGNAN(nn.Module):
     def __init__(self, in_channels, out_channels, n_layers, hidden_channels=None, bias=True, dropout=0.0,
@@ -432,7 +430,6 @@ class TensorGNAN(nn.Module):
 #         )
 #         return out
 
-
 class LinearComponent(nn.Module):
     """A linear transformation made from A and B matrices for SPD.
 
@@ -441,24 +438,24 @@ class LinearComponent(nn.Module):
     The weight matrix W is decomposed as W = B^T @ A^T, where A and B are learned parameters.
     """
 
-    def __init__(self, d_in: int, d_out: int, C: int, k: int, bias: Tensor | None):
+    def __init__(self, d_in: int, d_out: int, C: int, K: int, bias: Tensor | None):
         super().__init__()
         self.C = C
-        self.k = k
+        self.K = K
 
-        self.A = nn.Parameter(torch.empty(d_in, C, k))
-        self.B = nn.Parameter(torch.empty(C, k, d_out))
+        self.A = nn.Parameter(torch.empty(d_in, C, K))
+        self.B = nn.Parameter(torch.empty(C, K, d_out))
         self.bias = bias
 
         init_param_(self.A, fan_val=d_out, nonlinearity="linear")
-        init_param_(self.B, fan_val=C, nonlinearity="linear")
+        init_param_(self.B, fan_val=C * K, nonlinearity="linear")
 
         self.mask: Float[Tensor, "... C"] | None = None  # Gets set on sparse forward passes
 
     @property
     def weight(self) -> Float[Tensor, "d_out d_in"]:
         """B^T @ A^T"""
-        return einops.einsum(self.A, self.B, "d_in C k, C k d_out -> d_out d_in")
+        return einops.einsum(self.A, self.B, "d_in C K, C K d_out -> d_out d_in")
 
     # @torch.compile
     def forward(self, x: Float[Tensor, "... d_in"]) -> Float[Tensor, "... d_out"]:
@@ -470,16 +467,13 @@ class LinearComponent(nn.Module):
         Returns:
             output: The summed output across all components
         """
-        component_acts = einops.einsum(x, self.A, "... d_in, d_in C k -> ... C k")
+        component_acts = einops.einsum(x, self.A, "... d_in, d_in C K -> ... C K")
 
         if self.mask is not None:
-            
-            #component_acts *= self.mask
-            component_acts = component_acts * self.mask.unsqueeze(-1)
+            component_acts *= self.mask.unsqueeze(-1)
 
+        out = einops.einsum(component_acts, self.B, "... C K, C K d_out -> ... d_out")
 
-        #out = einops.einsum(component_acts, self.B, "... C, C d_out -> ... d_out")
-        out = einops.einsum(component_acts, self.B, "... C k, C k d_out -> ... d_out")
         if self.bias is not None:
             out += self.bias
 
@@ -494,15 +488,17 @@ class EmbeddingComponent(nn.Module):
         vocab_size: int,
         embedding_dim: int,
         C: int,
+        K: int,
     ):
         super().__init__()
         self.C = C
+        self.K = K
 
-        self.A = nn.Parameter(torch.empty(vocab_size, C))
-        self.B = nn.Parameter(torch.empty(C, embedding_dim))
+        self.A = nn.Parameter(torch.empty(vocab_size, C, K))
+        self.B = nn.Parameter(torch.empty(C, K, embedding_dim))
 
         init_param_(self.A, fan_val=embedding_dim, nonlinearity="linear")
-        init_param_(self.B, fan_val=C, nonlinearity="linear")
+        init_param_(self.B, fan_val=C* K, nonlinearity="linear")
 
         # For masked forward passes
         self.mask: Float[Tensor, "batch pos C"] | None = None
@@ -511,7 +507,7 @@ class EmbeddingComponent(nn.Module):
     def weight(self) -> Float[Tensor, "vocab_size embedding_dim"]:
         """A @ B"""
         return einops.einsum(
-            self.A, self.B, "vocab_size C, ... C embedding_dim -> vocab_size embedding_dim"
+            self.A, self.B, "vocab_size C K, ... C K embedding_dim -> vocab_size embedding_dim"
         )
 
     # @torch.compile
@@ -527,12 +523,13 @@ class EmbeddingComponent(nn.Module):
             x: Input tensor of token indices
         """
         # From https://github.com/pytorch/pytorch/blob/main/torch/_decomp/decompositions.py#L1211
-        component_acts = self.A[x]  # (batch pos C)
+        component_acts = self.A[x]  # (batch pos C K)
 
         if self.mask is not None:
-            component_acts *= self.mask
+            #was component_acts *= self.mask, but k causes dimension mismatch?
+            component_acts *= self.mask.unsqueeze(-1)
 
         out = einops.einsum(
-            component_acts, self.B, "batch pos C, ... C embedding_dim -> batch pos embedding_dim"
+            component_acts, self.B, "batch pos C K, ... C K embedding_dim -> batch pos embedding_dim"
         )
         return out

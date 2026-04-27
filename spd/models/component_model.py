@@ -14,7 +14,7 @@ from torch import Tensor, nn
 from wandb.apis.public import Run
 
 from spd.configs import Config
-from spd.models.components import EmbeddingComponent, LinearComponent, TensorGNAN, Transformer, PerformerAttention
+from spd.models.components import EmbeddingComponent, LinearComponent, Transformer
 from spd.spd_types import WANDB_PATH_PREFIX, ModelPath
 from spd.utils import load_pretrained
 from spd.wandb_utils import download_wandb_file, fetch_latest_wandb_checkpoint, fetch_wandb_run_dir
@@ -33,25 +33,25 @@ class ComponentModel(nn.Module):
         base_model: nn.Module,
         target_module_patterns: list[str],
         C: int,
-        k: int,
+        K: int,
         n_ci_mlp_neurons: int,
         pretrained_model_output_attr: str | None,
     ):
         super().__init__()
         self.model = base_model
         self.C = C
-        self.k = k
+        self.K = K
         self.pretrained_model_output_attr = pretrained_model_output_attr
         self.components = self.create_target_components(
-            target_module_patterns=target_module_patterns, C=C, k=k
+            target_module_patterns=target_module_patterns, C=C, K=K
         )
         
-        #Consider changing out_channels to be k and then adding an mlp on top.
-        #self.gnan = TensorGNAN(in_channels=k, out_channels=1, n_layers=2, hidden_channels=4, bias=True, dropout=0.0, is_graph_task=False, rho_per_feature=False)
-        self.gnan = Transformer(in_channels=k, out_channels=1, hidden_channels=5)
-        
-        #self.gnan = PerformerAttention(in_channels=k, out_channels=1, hidden_channels=5, nb_features=5)
-    def create_target_components(self, target_module_patterns: list[str], C: int, k: int) -> nn.ModuleDict:
+        self.gnan = nn.ModuleDict({
+            layer_name: Transformer(in_channels=K, out_channels=1, hidden_channels=16)
+            for layer_name in self.components.keys()
+        })
+
+    def create_target_components(self, target_module_patterns: list[str], C: int, K: int) -> nn.ModuleDict:
         """Create target components for the model."""
         components: dict[str, LinearComponent | EmbeddingComponent] = {}
         matched_patterns: set[str] = set()
@@ -64,13 +64,14 @@ class ComponentModel(nn.Module):
                         d_out, d_in = module.weight.shape
                         # Replace "." with "-" in the name to avoid issues with module dict keys
                         components[name.replace(".", "-")] = LinearComponent(
-                            d_in=d_in, d_out=d_out, C=C, k=k, bias=module.bias
+                            d_in=d_in, d_out=d_out, C=C, K=K, bias=module.bias
                         )
                     elif isinstance(module, nn.Embedding):
                         components[name.replace(".", "-")] = EmbeddingComponent(
                             vocab_size=module.num_embeddings,
                             embedding_dim=module.embedding_dim,
                             C=C,
+                            K=K,
                         )
                     else:
                         raise ValueError(
@@ -92,12 +93,6 @@ class ComponentModel(nn.Module):
             )
         return nn.ModuleDict(components)
 
-    def to(self, *args, **kwargs):
-        self.model.to(*args, **kwargs)
-        for component in self.components.values():
-            component.to(*args, **kwargs)
-        self.gnan.to(*args, **kwargs)
-        return self
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """Regular forward pass of the (target) model.
@@ -217,54 +212,55 @@ class ComponentModel(nn.Module):
 
         return checkpoint_path, final_config_path
 
-    # @classmethod
-    # def from_pretrained(cls, path: ModelPath) -> tuple["ComponentModel", Config, Path]:
-    #     """Load a trained ComponentModel checkpoint along with its original config.
+    @classmethod
+    def from_pretrained(cls, path: ModelPath) -> tuple["ComponentModel", Config, Path]:
+        """Load a trained ComponentModel checkpoint along with its original config.
 
-    #     The method supports two storage schemes:
-    #     1.  A direct local path to the checkpoint file (plus `final_config.yaml` in
-    #         the same directory).
-    #     2.  A WandB reference of the form ``wandb:<entity>/<project>/runs/<run_id>``.
-    #     """
+        The method supports two storage schemes:
+        1.  A direct local path to the checkpoint file (plus `final_config.yaml` in
+            the same directory).
+        2.  A WandB reference of the form ``wandb:<entity>/<project>/runs/<run_id>``.
+        """
 
-    #     if isinstance(path, str) and path.startswith(WANDB_PATH_PREFIX):
-    #         wandb_path = path.removeprefix(WANDB_PATH_PREFIX)
-    #         api = wandb.Api()
-    #         run: Run = api.run(wandb_path)
-    #         model_path, config_path = cls._download_wandb_files(wandb_path)
-    #         out_dir = fetch_wandb_run_dir(run.id)
-    #     else:
-    #         model_path = Path(path)
-    #         config_path = Path(path).parent / "final_config.yaml"
-    #         out_dir = Path(path).parent
+        if isinstance(path, str) and path.startswith(WANDB_PATH_PREFIX):
+            wandb_path = path.removeprefix(WANDB_PATH_PREFIX)
+            api = wandb.Api()
+            run: Run = api.run(wandb_path)
+            model_path, config_path = cls._download_wandb_files(wandb_path)
+            out_dir = fetch_wandb_run_dir(run.id)
+        else:
+            model_path = Path(path)
+            config_path = Path(path).parent / "final_config.yaml"
+            out_dir = Path(path).parent
 
-    #     model_weights = torch.load(model_path, map_location="cpu", weights_only=True)
-    #     with open(config_path) as f:
-    #         config = Config(**yaml.safe_load(f))
+        model_weights = torch.load(model_path, map_location="cpu", weights_only=True)
+        with open(config_path) as f:
+            config = Config(**yaml.safe_load(f))
 
-    #     assert (
-    #         config.pretrained_model_path is not None and config.pretrained_model_class is not None
-    #     ), (
-    #         "pretrained_model_name and pretrained_model_class must be specified in the config to "
-    #         "reload a ComponentModel."
-    #     )
+        assert (
+            config.pretrained_model_path is not None and config.pretrained_model_class is not None
+        ), (
+            "pretrained_model_name and pretrained_model_class must be specified in the config to "
+            "reload a ComponentModel."
+        )
 
-    #     base_model_raw = load_pretrained(
-    #         path_to_class=config.pretrained_model_class,
-    #         model_path=config.pretrained_model_path,
-    #         model_name_hf=config.pretrained_model_name_hf,
-    #     )
-    #     base_model = base_model_raw[0] if isinstance(base_model_raw, tuple) else base_model_raw
+        base_model_raw = load_pretrained(
+            path_to_class=config.pretrained_model_class,
+            model_path=config.pretrained_model_path,
+            model_name_hf=config.pretrained_model_name_hf,
+        )
+        base_model = base_model_raw[0] if isinstance(base_model_raw, tuple) else base_model_raw
 
-    #     comp_model = ComponentModel(
-    #         base_model=base_model,
-    #         target_module_patterns=config.target_module_patterns,
-    #         C=config.C,
-    #         n_ci_mlp_neurons=config.n_ci_mlp_neurons,
-    #         pretrained_model_output_attr=config.pretrained_model_output_attr,
-    #     )
-    #     comp_model.load_state_dict(model_weights)
-    #     return comp_model, config, out_dir
+        comp_model = ComponentModel(
+            base_model=base_model,
+            target_module_patterns=config.target_module_patterns,
+            C=config.C,
+            K= config.K,
+            n_ci_mlp_neurons=config.n_ci_mlp_neurons,
+            pretrained_model_output_attr=config.pretrained_model_output_attr,
+        )
+        comp_model.load_state_dict(model_weights)
+        return comp_model, config, out_dir
 
 
 def init_As_and_Bs_(
@@ -287,10 +283,11 @@ def init_As_and_Bs_(
         # Make A and B have unit norm in the d_in and d_out dimensions
         A.data[:] = torch.randn_like(A.data)
         B.data[:] = torch.randn_like(B.data)
+        #Changed from -2, -1 to 0,1 when i added k
         A.data[:] = A.data / A.data.norm(dim=0, keepdim=True)
         B.data[:] = B.data / B.data.norm(dim=-1, keepdim=True)
 
         # Calculate inner products
-        C_norms = einops.einsum(A, B, target_weight, "d_in C k, C k d_out, d_out d_in -> C")
+        C_norms = einops.einsum(A, B, target_weight, "d_in C K, C K d_out, d_out d_in -> C K")
         # Scale B by the inner product.
-        B.data[:] = B.data * C_norms.unsqueeze(-1).unsqueeze(-1)
+        B.data[:] = B.data * C_norms.unsqueeze(-1)
