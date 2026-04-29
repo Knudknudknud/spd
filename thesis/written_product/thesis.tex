@@ -1,5 +1,9 @@
 \documentclass{article}
 \usepackage{arxiv} 
+\usepackage{graphicx} % Inserting images
+\graphicspath{{Images/}} % Expects Image folder in current folder.
+\usepackage{float} % Improves h specifier
+
 
 \usepackage[style=alphabetic]{biblatex}
 \usepackage{amsmath}
@@ -190,7 +194,7 @@ The work of engels et al. provide empirical evidence that the strong feature hyp
 and that transformer architectures organise cyclical concepts, such as days of the week and months of the year, as two-dimensional structures,
 that are not composed of independent one-dimensional features and instead are irreducibly multi-dimensional.
 
-Additionally the paper provides a formal definition of irreducibility and a corresponding refinement of the superposition hypothesis.
+To accomodate this, the paper provides a formal definition of irreducibility and a corresponding refinement of the superposition hypothesis.
 
 \paragraph{Irreducibility.}
 A feature $f \in \mathbb{R}^{d_f}$ is reducible into features
@@ -210,8 +214,9 @@ A feature whose joint distribution admits neither of these properties,
 carries information only when interpreted together, and any decomposition into smaller units
 would lose information the original feature encodes.
 
-Under this multi-dimensional view, the superposition hypothesis,
-the hidden states are written as a sum of feature contributions:
+With this definition, the superposition hypothesis is refined as follows:
+
+Every hidden state $x_{i,l}(t)$ can be written as a sum of feature contributions
 \begin{equation}
     x_{i,l}(t) = \sum_i V_i \, f_i(t)
 \end{equation}
@@ -222,15 +227,17 @@ embedding the feature into a $d_{f_i}$-dimensional subspace of
 hidden space, and the projection matrices are pairwise
 $\delta$-orthogonal: $\| V_i^\top V_j \| < \delta$ for $i \neq j$.
 
-The multi-dimensional hypothesis makes two structural commitments
-about the model's representation. First, the projection matrices
+
+The multi-dimensional hypothesis makes two structural commitments about the model's representation,
+that will be explored throughout this work.
+Firstly, the projection matrices
 $V_i$ are pairwise $\delta$-orthogonal, with the column spaces of
-different features approximately disjoint in hidden space. Second,
+different features approximately disjoint in hidden space. 
+Secondly,
 each $f_i$ is irreducible, meaning the coordinates within a single
 feature covary according to the feature's joint distribution rather
 than being independent components that happen to share a subspace. \footnote{Does this not also help my case of softmax, we train the importance to maximize the importance, some old paper i read meant that it increased the intra cluster similarity, and decreased the inter cluster, We should check this over training and see if it happens!}
 
-\paragraph{Effective representational rank.}
 The definition of $V_i \in \mathbb{R}^{d \times d_{f_i}}$ does not
 require its columns to be linearly independent: $d_{f_i}$ specifies
 the formal dimensionality of the irreducible feature, but
@@ -248,31 +255,22 @@ direction $v \in \mathbb{R}^d$:
 Here $V_i$ is formally $d \times 2$ but its column space is
 one-dimensional, and the feature is irreducibly two-dimensional in
 its input distribution but represented through a rank-deficient
-$V_i$ without loss of reconstructive information.
+$V_i$ without loss of reconstructive information. We will
+show empirical evidence of this phenomenon in section \ref{sec:experiments}.
 
 The formal dimensionality $d_{f_i}$ thus acts as an upper bound on
 the rank a faithful representation requires, with the actual rank
-determined by how the model has chosen to encode the feature. The
-rank required by a parameter decomposition method to host an
-irreducible feature as a single unit is the effective
-representational rank, not the formal dimensionality.
+determined by how the model has chosen to encode the feature.
 
 \paragraph{Implications for parameter decomposition.}
-This framework offers a natural framing for the question raised in
-the introduction of which level a parameter decomposition should
-target. Under the multi-dimensional superposition hypothesis, the
-irreducible feature is the unit at which the model manipulates
-structure, and a decomposition that matches this granularity stays
-faithful to the model's own organisation. Finer decompositions
-split irreducible features into coordinates the model treats as a
-single object; coarser ones collapse distinct features into one.
-The present work takes the irreducible feature as the unit its
-extension aims to recover.
+This present work takes the irreducible feature as the atomic unit of decomposition,
+and explores how to extend SPD to recover these features both when they can be collapsed into a single rank-one component and
+what happens when they cannot.
+This definition of irreducibility formalises the structural-level of decomposition described in the introduction.
+The decomposition in the dependent feature regime should aim to recover these irreducible features,
+and not split them into independent components or collapse them into larger units.
 
-SPD's rank-one parameterisation can host an irreducible feature as
-a single unit only when its effective representational rank is one;
-the extension developed in the next section accommodates features
-whose effective representational rank is greater.
+
 
 \subsection{Rank-$k$ subcomponents and relational importance}
 \label{sec:rank-k-attention}
@@ -331,14 +329,69 @@ activation, while $f_{\text{agg}}$ acts as a corrective term that
 contextualises $c$ against other subcomponents through an attention
 mechanism.
 
+
+A significant advantage of the reformulation is that softmax
+naturally enforces a probabilistic distribution over
+subcomponents. The importance becomes more interpretable: a
+subcomponent is predominantly responsible for the reconstruction
+when its allocation dominates. Softmax introduces a
+structural pressure that encourages each subcomponent to maximise
+the probability that a feature belongs to it, motivating the
+optimiser to group dependent features within the same
+subcomponent.
+
+During the experiments in SPD, this structural pressure was not necessary, as
+experiment features were indepndent and subcomponents were kept at rank 1.
+
+The rank-$k$ extension lifts this restriction by giving each
+subcomponent capacity to host up to $k$ rank-one factors. With
+this added capacity, the question of how dependent features
+distribute across subcomponents becomes consequential: a
+mechanism is required to encourage their co-location within a
+single subcomponent rather than their dispersion across many.
+The minimality loss originally proposed for SPD takes the form
+\begin{equation}
+    \mathcal{L}_{\text{minimality}}^{\text{SPD}} = \sum_{l=1}^{L} \sum_{c=1}^{C} |g^l_c(x)|^p, \qquad p > 0,
+\end{equation}
+penalising a power of the importance magnitudes. The pressure
+this loss exerts on allocation shape depends on $p$ and is
+limited in either direction: for $p < 1$ the loss weakly
+favours concentration, and for $p > 1$ it favours distribution.
+
+Under the softmax reformulation, the minimality loss becomes degenerate: The sum is always one, regardless of how the importance is distributed.
+We replace it with an entropy-based minimality term that
+penalises the shape of the allocation:
+\begin{equation}
+    \mathcal{L}_{\text{minimality}} = -\sum_{l=1}^{L} \sum_{c=1}^{C} \alpha^l_c(x) \log \alpha^l_c(x)
+\end{equation}
+
+Entropy is minimised at one-hot allocations, where a single
+subcomponent has all the importance, and increases monotonically
+as the allocation flattens.
+
+This pressure is appropriate when each irreducible feature can be
+hosted by a single subcomponent of sufficient rank. Two regimes
+fall outside this assumption. The first is when a feature's
+effective representational rank exceeds the chosen $k$, so the
+feature cannot be hosted as a single unit and the second being if
+a feature is reducible, and should be split across multiple subcomponents. The former
+serves as a motivation for the rank-$k$ extension, while the latter must be handled through the relative weighting of the faithfulness loss and the minimality loss.
+If the faithfulness loss dominates, the model is pressured to split these features to achieve a more faithful reconstruction.
+
 It is noted, that this attention mechanism has computational cost
 $O(l \cdot C^2)$, where
 C is the number of subcomponents per layer and
 l is the number of layers, leading to scalability concerns at larger sizes.
 
-To circumvent this, we apply fastattention, reducing the complexity to be linear in the number of components.
-\footnote{Double check this, fast attention was also used by someo ther paper on SPD and transformers, but applied to the sequence length.}.
 
+\footnote{Double check this, flex? attention was also used by someo ther paper on SPD and transformers, but applied to the sequence length.}.
+
+\subsection{Add the part that rank k, is unsifficient in the standard SPD, as it has no structural pressure to group things, and always that orthogonal dparts are split across components,
+as we only punish multiple parts being active, but we dont mind that they are split across multiple components}
+
+\subsection{Add a part about that the softmax has the nice porpoerty of summing to 1, while sigmoid did not, it also makes the minimality loss redundant as its always constant 1. Perhaps we can write that ti t is more understandable when it can be seen as a percentage}
+
+\subsection{We need an experiment that examines what happens when we train on independent features but then put in a combined feature, the causal importance should be half and half}
 
 
 \subsection{SVD reformulation, capacity and per feature ablation}
@@ -355,146 +408,7 @@ penalises ambiguous allocations. The optimiser's response is to
 push the atoms' $V$ matrices toward disjoint subspaces, recovering
 the orthogonality structure the hypothesis posits.
 
-\subsubsection{GNAN-based importance functions}
-In SPD, each importance function $\gamma_{c}^{l}$ is an 
-independent MLP that receives only its own inner activation. 
-Intuitively, however, causal importance is relational: whether 
-a subcomponent can be ablated without affecting the output may 
-well depend on which other subcomponents are active alongside it.
-
-To address this, the independent MLPs are replaced with a Graph Neural Additive Network (GNAN)
-that can relate each subcomponent to its neighbourhood.
-
-The $C$ subcomponents are treated as nodes in a graph, with node 
-features given by their inner activation vectors 
-$\mathbf{h}_{c}^{l}(x) \in \mathbb{R}^{k}$. The GNAN updates 
-each node's representation through an additive neighbourhood 
-aggregation. For node $i$ in layer $l$ and feature dimension $k$ \footnote{I am very open to alternative equations, i.e perhaps we delete the layer distance inside rho, however it seemed necessary to use cosine similarity, as otherwise the signal was useless as described in some earlier section}:
-\[
-    [\mathbf{z}_{i}]_{k} = \sum_{j=1}^{N} 
-    \frac{1}{|\mathcal{L}(j)|} \cdot 
-   \rho\!\left(\frac{1}{1 + \mathrm{dist}(j, i)},\; 
-\mathrm{cos}(j, i)\right) \cdot 
-    f_{k}\!\left([\mathbf{h}_{j}]_{k}\right)
-\]
-OBS: Implementation ill present today is this:
-
-\[
-    \mathbf{z}_{i} = \sum_{j=1}^{N} \rho \left( \text{layer distance}, \text{cosine similarity} \right) \cdot f_{k}\left( [\mathbf{h}_{j}]_{k} \right)
-\]
-where $f_{k}$ is a learned function applied to the $k$-th inner 
-activation of each neighbouring node $j$; $|\mathcal{L}(j)|$ is 
-the number of nodes in the same layer as $j$, which normalises 
-the contribution of each 
-layer; $\mathrm{dist}(j, i)$ is the layer distance between 
-nodes $j$ and $i$\footnote{The layer distance, could later be signed to differentiate between
-previous and future layers}; $\mathrm{cos}(j, i)$ is the cosine similarity 
-between their parameter vectors; and $\rho$ is a learned function 
-that maps both the distance kernel and the cosine similarity to a 
-scalar weight.
-
-$z_{i}$ becomes a vector in $\mathbb{R}^{k}$, which 
-fits perfectly with the current activation vectors.
-
-A separate MLP is trained to combine the aggregated neighbourhood information and the node's own activation into an importance value in $[0, 1]$:
-Producing a single importance value per subcomponent and passing it through 
-a leaky hard sigmoid, following 
-SPD \autocite{stochasticparameterdecomposition}:
-\[
-   g_{c}^{l} = \sigma_{H}(AGG(\mathbf{z}_{i}^l, \mathbf{h}_{i}^l))
-\]
-The self-connection through $f_{\text{self}}$ (or just the raw activation) ensures that each 
-node retains its own identity after aggregation, mitigating 
-the oversmoothing that can occur in GNNs. \{Clever cite here, i.e gnn book\}
-
-
-\textbf{Alternative formulation, that would work with the next section} \\
-
-After the GNAN update, the per-dimension importance values are 
-computed from the updated representation and passed through a 
-leaky hard sigmoid, following 
-SPD \autocite{stochasticparameterdecomposition}:
-\[
-    \mathbf{g}_{c}^{l}(x) = \sigma_{H}\!\left(\mathbf{h}_{c}^{l}(x)\right)
-    \in [0, 1]^{k}
-\]
-in other words, the importance function becomes multidimensional,
-and each column can be masked independently.
-
-\textbf{Remarks:} \\
-For now the edge set construction is left as the fully connected graph,
-which remains reasonably computationally expensive for small models.
-However it could very easily be made more efficient, for other architectures,
-or by considering only the k-hop neighbourhood of each node, or only considering prior neighbours or later neighbourhoods.
-Likewise we could store both distances as sparse structures as they are symmetric. $\cos (j,i) = \cos (i,j)$
-\\
-\textbf{Remark 2:} \\
-The choice of edge set construction and distance function is a very important design choice,
-e.g using the layer distance on a fully connected graph encodes the same signal for all nods in a layer:
-For nodes $i_1, i_2$ in the same layer $l$:
-\[
-    \forall\, j \colon \quad 
-    \mathrm{dist}(j, i_1) = \mathrm{dist}(j, i_2) = |k_j - l|
-\]
-and therefore
-\[
-    [\mathbf{h}_{i_1}]_k = \sum_{j=1}^{N} 
-    \frac{1}{\#\mathrm{dist}_{i_1}(j, i_1)} \cdot 
-    \rho\!\left(\frac{1}{1 + |k_j - l|}\right) \cdot 
-    f_k([\mathbf{x}_j]_k) 
-    = [\mathbf{h}_{i_2}]_k
-\]
-since no term in the sum depends on the identity of $i$ 
-within layer $l$, only on the layer index $l$ itself.
-\\
-Additionally this produces a counterproductive signal,
-the gnan tries to boost or suppress all nodes in a layer together, instead
-of learning to differentiate between them.
-
-\textbf{Remark 3:} \\
-The choice of distance should probably be reconsidered in general,
-I have a feeling that the function needs to be from an asymmetric metric space,
-i.e
-\[
-    dist(i, j) \neq dist(j, i)    
-\]
-Atleast if the intution is if component A in layer k, is highly active, perhaps component B in layer
-k+1 should likely be inactive, as the other component needs to handle this feature,
-thus the distance from A to B should be different, as otherwise both are boosted or suppressed together. 
-
-\textbf{Remark 4:} \\
-The current experiments are more sensitive to hyperparameters,
-than the original code seems to be, if the minimality pressure is too low, then all components are active, and doesn't "kill" any of them
-
-\textbf{Remark 5:} \\
-I haven't been able to find any "benefit" in setting k higher,
-this is ofcourse because hte ground truth of all the models we have
-are rank 1 independent features, we need to find a scenario where the dependence and or rank k is actually necessary:
-
-My ideas
-\renewcommand\labelitemi{\tiny$\bullet$}
-\begin{itemize}
-    \setlength\itemsep{0em}
-    \item Sample points from the unit circle, i.e $\cos(\theta)^2+ \sin(\theta)^2 = 1$ then
-    \begin{align*}
-        x = \sqrt{1-\sin (\theta)^2} \text{ or} -\sqrt{1-\sin(\theta)^2} \\
-    \end{align*}
-    i.e sometihng can only be expressed with a rank 2 component?
-    \item we could look for circuits, the goal is then no longer to find N independent features, but suppose we have input groups [0,1,2], [2,3,4], [3,4,5] then we want one component that activates for the first group, one for the second and one for the third
-\end{itemize}
-
-\textbf{Remark 6:} \\
-I added the gnan plots to wandB remember to show them
-
-\textbf{Remark 7:} \\
-The per feature construction with only 1 feature is rather boring, and does not utilize the expressiveness at all.
-
-\textbf{Remark 8:} \\
-I dont think its a code problem,
-as i can reproduce equivalent results to their findings.
-Im just not able to beat them.
-We need to discuss experiments where the k dimensionality and dependence
-actually matters.
+Remember to add an experiment that shows if softmax enforce the orthogonality constraint from engels.
 
 \subsubsection{ Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}
 Following the extension to rank-$k$ subcomponents, and the alternative formulation of the GNAN,
@@ -549,18 +463,144 @@ data.
 
 \section{Experiments}
 \subsection{Reproducing SPD on independent features}
+\label{sec:spd-independent-features}
 \subsection{Vanilla SPD on dependent features, the contrast experiment, two subsections, TMS sync and geometric model side by side.}
+
+\subsection{TMS with tied weights and synced inputs}
+\label{sec:tms-tied-experiment}
+
+This section examines the behaviour of vanilla SPD on a model
+in which dependent features are forced into an irreducible
+representation by construction. The setup is a Toy Model of
+Superposition with tied encoder and decoder weights, trained on
+inputs in which pairs of features always co-occur. The
+combination of tied weights and synced inputs is a controlled
+instance of the regime the multi-dimensional superposition
+hypothesis is designed to describe: features whose joint
+distribution is irreducible, represented by the model through
+shared low-rank directions in hidden space.
+
+\subsubsection{Model setup}
+To explore how SPD and the modified SPD with softmax and attention handle irreducible features, we reuse the Model of superposition introduced in section ~ \ref{sec:spd-independent-features}
+Like before the architecture is a single-hidden-layer autoencoder:
+\[
+    f(x) = W^{\top} \sigma(Wx+b) \quad W \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{features}}}, \quad d_{\text{features}} \gg d_{\text{hidden}}
+\]
+The model is still trained to reconstruct sparse feature activations with an $L_{2}$ loss, but the input distribution ties features together in pairs.
+Concretely for this experiment, $d_{features} = 40$ and $d_{hidden}=10$,
+Each feature pair is zero with probability $1-p$, and with probability p both features are independently drawn from $\mathrm{Uniform}(\epsilon, 1)$.
+
+By construction, the features satisfy neither of Engels reducibility conditions, see section~\ref{sec:irreducibility}.
+The state of one feature in a pair fully determines the state of the other and
+the joint distribution has no mass, where either feature is set to zero and the other is active.
+By Engels definition each pair forms an irreducible two-dimensional feature.
+
+
+As the model is forced into superposition, it's impossible to learn an invertible representation of the features,
+and necessarily must compress these pairs into a much smaller latent space,
+we show empirically that the model does this by collapsing each pair into a single direction in hidden space.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccc}
+\hline
+Group & Mean Cosine similarity & Std Dev & Range \\
+\hline
+Within-group & 0.999 & 0.010 & [0.997, 1.000] \\
+Across-group & 0.053 & 0.223 & [-1.000, 0.038] \\
+\hline
+\end{tabular}
+\caption{Comparison of cosine similarity within and across groups}
+\label{tab:tms-paired-cosine-similarity}
+\end{table}
+Where the cosine similarity is measured between the rows of $W^{d_{\text{features}} \times d_{\text{hidden}}}$.
+
+
+As described in section~\ref{sec:irreducibility},
+the multi-dimensional superposition hypothesis sets an upper bound on the representational rank of each feature,
+but does not require the model to use the full rank. 
+
+Also we check the SVD of these matrices.
+
+
+Somewhere we use the effective rank to estimate the required capacity.
+
+\subsubsection{Comparison of vanilla SPD and the softmax-and-attention extension}
+For both decompositions we train with $C = 150$ subcomponents, in terms of hyperparameters,
+we reuse the ones suggested in the original SPD paper, with the exception of the minimality loss, which is kept at $x$ for SPD and set to $y$ for the softmax exntension.
+Additionally for this experiment, we set $k=1$, as the features were shown to be captureable as a single direction in hidden space.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=15cm]{tms_comparison_rank_1_paired.png}
+    \caption{Left: Attention and softmax only at like 15k steps vs 40k steps, Right: Vanilla spd.}
+\end{figure}
+\label{fig:tms-paired-comparison}
+
+Text explaining what we see, this will change so wait for now.
+-Something about if both decompositions are faithful, and if they are faithful to one of the two hypotheses, if they are delta orthogonal, and if the importance values are interpretable.
+
+To verify a successful decomposition, each matrix $V_{i}$ should also be $\delta$-orthogonal to the others.
+
+
+Also show the SVD, input space readings with two nice plots,
+compare $||V^TV||$ matrices
+
+
+The multi-dimensional superposition hypothesis predicts that the
+projection matrices for different irreducible features are pairwise
+$\delta$-orthogonal. At the parameter level, the recovered $V_c$
+matrices are the operational counterpart, and the prediction
+translates to the requirement that recovered atoms have small
+pairwise overlap in their input-side directions.
+
+For each method, we compute the pairwise cosine similarity
+\begin{equation}
+    M_{cc'} = \frac{V_c^\top V_{c'}}{\|V_c\| \|V_{c'}\|}
+\end{equation}
+between recovered atoms. The off-diagonal distribution is
+compared against the across-group cosine similarity of the
+trained model's encoder ($0.053$, Table 1), which serves as
+the reference structure a faithful decomposition should
+recover.
+
+% \begin{table}[h]
+% \centering
+% \begin{tabular}{lcc}
+% \toprule
+%                            & Vanilla SPD & Softmax-attention \\
+% \midrule
+% Mean $|M_{cc'}|$ off-diag  & x.xx        & y.yy \\
+% Max $|M_{cc'}|$ off-diag   & x.xx        & y.yy \\
+% \bottomrule
+% \end{tabular}
+% \caption{Pairwise overlap of recovered atoms.}
+% \end{table}
+
+
 \subsection{Attention + softmax on TMS, Geometry}
 \subsection{Extending rank k on Geometry, where k matters}
 
-<ss
+\subsection{Checking for orthogonality throughout training with softmax and attention / compare to baseline spd.}
 
-
+\subsection{Toy model of learning gates}
+To test the case of enges, where the probability distribution is in fact reducable.
+We could train it to learn logic gates i.e
+1+0 = 0,
+1 + 1 = 1,
+0 + 0 = 0,
+0 + 1 = 1,
+in such a view each could occur independently ,but nlywhen 
+both are active, the output is active,
+we then sample independently from the two features and see if
+it compacts them in a single unit or not.
 
 
 
 
 \subsection{Toy model of superposition}
+Remember to reference back to engels, 
+that we tie the weights, so the right interpretation must be the paired you find.
 \subsubsection{Paired subcomponents}
 By engels et al, two features are irreducible if they always co-occur,
 as per this definition, two features that are always seen together should thus be treated as a single unit,
@@ -568,14 +608,22 @@ this is something that the original SPD method does not do, it instead
 splits them into to seperate subcomponents.
 
 
-\subsection{Toy model of geometry}
+\subsection{Toy model of geometry + increasing rank of k in both models}
 Again if we extend the line of engels,
 we would expect the simplex to compose into a singular unit,
 in this plot we would expect one component to entirely capture the simplex,
 even though the individual features in themselves also form valid structures,
-like the vertices themselves
+like the vertices themselves.
 
-% \subsection{Irreducibility as the target of decomposition}
+If the feature dimension is less than the effective rank, then the model
+cannot represent the feature as a single unit, and must split it into multiple subcomponents.
+
+
+\subsection{Robustness to hyperparameters.}
+\subsection{Something about how the model learns to orthogonalize matrices}
+
+
+\subsection{Irreducibility as the target of decomposition}
 
 % The methodological extensions developed in the next sections are best
 % understood against a formal account of what a faithful decomposition
@@ -810,6 +858,152 @@ if it is better explained by a rank 1 component than rank 2.
 
 
 
+\subsubsection{GNAN-based importance functions}
+In SPD, each importance function $\gamma_{c}^{l}$ is an 
+independent MLP that receives only its own inner activation. 
+Intuitively, however, causal importance is relational: whether 
+a subcomponent can be ablated without affecting the output may 
+well depend on which other subcomponents are active alongside it.
+
+To address this, the independent MLPs are replaced with a Graph Neural Additive Network (GNAN)
+that can relate each subcomponent to its neighbourhood.
+
+The $C$ subcomponents are treated as nodes in a graph, with node 
+features given by their inner activation vectors 
+$\mathbf{h}_{c}^{l}(x) \in \mathbb{R}^{k}$. The GNAN updates 
+each node's representation through an additive neighbourhood 
+aggregation. For node $i$ in layer $l$ and feature dimension $k$ \footnote{I am very open to alternative equations, i.e perhaps we delete the layer distance inside rho, however it seemed necessary to use cosine similarity, as otherwise the signal was useless as described in some earlier section}:
+\[
+    [\mathbf{z}_{i}]_{k} = \sum_{j=1}^{N} 
+    \frac{1}{|\mathcal{L}(j)|} \cdot 
+   \rho\!\left(\frac{1}{1 + \mathrm{dist}(j, i)},\; 
+\mathrm{cos}(j, i)\right) \cdot 
+    f_{k}\!\left([\mathbf{h}_{j}]_{k}\right)
+\]
+OBS: Implementation ill present today is this:
+
+\[
+    \mathbf{z}_{i} = \sum_{j=1}^{N} \rho \left( \text{layer distance}, \text{cosine similarity} \right) \cdot f_{k}\left( [\mathbf{h}_{j}]_{k} \right)
+\]
+where $f_{k}$ is a learned function applied to the $k$-th inner 
+activation of each neighbouring node $j$; $|\mathcal{L}(j)|$ is 
+the number of nodes in the same layer as $j$, which normalises 
+the contribution of each 
+layer; $\mathrm{dist}(j, i)$ is the layer distance between 
+nodes $j$ and $i$\footnote{The layer distance, could later be signed to differentiate between
+previous and future layers}; $\mathrm{cos}(j, i)$ is the cosine similarity 
+between their parameter vectors; and $\rho$ is a learned function 
+that maps both the distance kernel and the cosine similarity to a 
+scalar weight.
+
+$z_{i}$ becomes a vector in $\mathbb{R}^{k}$, which 
+fits perfectly with the current activation vectors.
+
+A separate MLP is trained to combine the aggregated neighbourhood information and the node's own activation into an importance value in $[0, 1]$:
+Producing a single importance value per subcomponent and passing it through 
+a leaky hard sigmoid, following 
+SPD \autocite{stochasticparameterdecomposition}:
+\[
+   g_{c}^{l} = \sigma_{H}(AGG(\mathbf{z}_{i}^l, \mathbf{h}_{i}^l))
+\]
+The self-connection through $f_{\text{self}}$ (or just the raw activation) ensures that each 
+node retains its own identity after aggregation, mitigating 
+the oversmoothing that can occur in GNNs. \{Clever cite here, i.e gnn book\}
+
+
+\textbf{Alternative formulation, that would work with the next section} \\
+
+After the GNAN update, the per-dimension importance values are 
+computed from the updated representation and passed through a 
+leaky hard sigmoid, following 
+SPD \autocite{stochasticparameterdecomposition}:
+\[
+    \mathbf{g}_{c}^{l}(x) = \sigma_{H}\!\left(\mathbf{h}_{c}^{l}(x)\right)
+    \in [0, 1]^{k}
+\]
+in other words, the importance function becomes multidimensional,
+and each column can be masked independently.
+
+\textbf{Remarks:} \\
+For now the edge set construction is left as the fully connected graph,
+which remains reasonably computationally expensive for small models.
+However it could very easily be made more efficient, for other architectures,
+or by considering only the k-hop neighbourhood of each node, or only considering prior neighbours or later neighbourhoods.
+Likewise we could store both distances as sparse structures as they are symmetric. $\cos (j,i) = \cos (i,j)$
+\\
+\textbf{Remark 2:} \\
+The choice of edge set construction and distance function is a very important design choice,
+e.g using the layer distance on a fully connected graph encodes the same signal for all nods in a layer:
+For nodes $i_1, i_2$ in the same layer $l$:
+\[
+    \forall\, j \colon \quad 
+    \mathrm{dist}(j, i_1) = \mathrm{dist}(j, i_2) = |k_j - l|
+\]
+and therefore
+\[
+    [\mathbf{h}_{i_1}]_k = \sum_{j=1}^{N} 
+    \frac{1}{\#\mathrm{dist}_{i_1}(j, i_1)} \cdot 
+    \rho\!\left(\frac{1}{1 + |k_j - l|}\right) \cdot 
+    f_k([\mathbf{x}_j]_k) 
+    = [\mathbf{h}_{i_2}]_k
+\]
+since no term in the sum depends on the identity of $i$ 
+within layer $l$, only on the layer index $l$ itself.
+\\
+Additionally this produces a counterproductive signal,
+the gnan tries to boost or suppress all nodes in a layer together, instead
+of learning to differentiate between them.
+
+\textbf{Remark 3:} \\
+The choice of distance should probably be reconsidered in general,
+I have a feeling that the function needs to be from an asymmetric metric space,
+i.e
+\[
+    dist(i, j) \neq dist(j, i)    
+\]
+Atleast if the intution is if component A in layer k, is highly active, perhaps component B in layer
+k+1 should likely be inactive, as the other component needs to handle this feature,
+thus the distance from A to B should be different, as otherwise both are boosted or suppressed together. 
+
+\textbf{Remark 4:} \\
+The current experiments are more sensitive to hyperparameters,
+than the original code seems to be, if the minimality pressure is too low, then all components are active, and doesn't "kill" any of them
+
+\textbf{Remark 5:} \\
+I haven't been able to find any "benefit" in setting k higher,
+this is ofcourse because hte ground truth of all the models we have
+are rank 1 independent features, we need to find a scenario where the dependence and or rank k is actually necessary:
+
+My ideas
+\renewcommand\labelitemi{\tiny$\bullet$}
+\begin{itemize}
+    \setlength\itemsep{0em}
+    \item Sample points from the unit circle, i.e $\cos(\theta)^2+ \sin(\theta)^2 = 1$ then
+    \begin{align*}
+        x = \sqrt{1-\sin (\theta)^2} \text{ or} -\sqrt{1-\sin(\theta)^2} \\
+    \end{align*}
+    i.e sometihng can only be expressed with a rank 2 component?
+    \item we could look for circuits, the goal is then no longer to find N independent features, but suppose we have input groups [0,1,2], [2,3,4], [3,4,5] then we want one component that activates for the first group, one for the second and one for the third
+\end{itemize}
+
+\textbf{Remark 6:} \\
+I added the gnan plots to wandB remember to show them
+
+\textbf{Remark 7:} \\
+The per feature construction with only 1 feature is rather boring, and does not utilize the expressiveness at all.
+
+\textbf{Remark 8:} \\
+I dont think its a code problem,
+as i can reproduce equivalent results to their findings.
+Im just not able to beat them.
+We need to discuss experiments where the k dimensionality and dependence
+actually matters.
+
+
+
+\section{Notes}
+Putting the minimality lsos entropy higher, encourages diagonals?
+Instead of capturing two features in the same component.
 
 
 
