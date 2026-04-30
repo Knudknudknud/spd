@@ -1,0 +1,73 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx} % Inserting images
+\graphicspath{{Images/}} % Expects Image folder in current folder.
+\usepackage{float} % Improves h specifier
+
+\usepackage[style=alphabetic]{biblatex}
+\addbibresource{references.bib}
+
+\usepackage{fancyhdr, setspace, geometry, times} % Layout
+\geometry{a4paper, left=30mm, right=30mm, top=20mm, bottom=15mm, headheight=27.1pt}
+\onehalfspacing
+
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{tabularx, booktabs} %tables
+\usepackage{multicol} % Allows multi columns
+
+% Custom Commands located in texmf
+\usepackage{Theoremboxes}
+\usepackage{Commands}
+
+% Uncomment for dark mode
+%\usepackage{darkmode}
+%\enabledarkmode
+
+% Declares this document as the main one, when using chapters.
+%\newcommand{\included}{}
+%Place inside document, if to be used with chapters. (or similar structure)
+%\input{lectures/Lecture1}
+
+
+
+% First page
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[r]{Knud Sønderbek \par \today}
+\fancyfoot[R]{\thepage}
+
+\title{Proposal to change master thesis problem description}
+\date{\today}
+\author{Knud Sønderbek}
+
+\begin{document}
+\maketitle
+\newpage
+\pagenumbering{arabic}
+The initial aim of this thesis was to identify co-occurring features in learned representations, based on the intuition that meaningful structure can be recovered from patterns of joint activation. Early work explored this using graph neural networks, with the idea that co-occurrence relationships could be modeled explicitly through graph structure.
+In practice, however, the learned structure did not meaningfully benefit from the graph formulation.
+\\
+Additionally, the attention mechanism became effectively layer-wise, removing the “graph” interpretation, and features were primarily organized within layers instead of across a relational graph.
+At the same time, a more fundamental issue with the co-occurrence framing became apparent. Co-occurrence alone does not uniquely determine structure: features can co-occur due to shared causes, but also due to representational compression or alignment in the feature space. 
+This led to a reformulation in terms of irreducible features learnt through training.
+\\
+To accommodate this, while the framing still explores multiple different importance mechanisms it also develops a framework to test these features as well as a formal grounding to why this decomposition should be seen as a ground truth.
+The new problem description becomes:
+
+\begin{itemize}
+    \item Describe what an irreducible feature is and that this creates the ground truth decomposition. \cite{engels2025languagemodelfeaturesonedimensionally}
+    \item Extending SPD with rank $k$ matrices instead of rank $1$ matrices, as irreducible features necessitate this \cite{stochasticparameterdecomposition}
+    \begin{itemize}
+        \item Relate it to an effective way to compute the bound of the rank k through \autocite{effectiverank}
+    \end{itemize}
+    \item Defining the original independent sigmoid interpretation as a softmax and attention mechanism instead \cite{stochasticparameterdecomposition}
+    \item Develop a set of testing experiments that.
+    \begin{itemize}
+        \item Test statistically independent features through the original SPD toy models \autocite{stochasticparameterdecomposition}
+        \item Features under a joint probability distribution, where one feature musn’t co-occur with the other, through a toy model that effective learns logic gates.
+        \item Statistically dependent features that always co-occur, through a toy model that learns to compute the volume of a simplex.
+    \end{itemize}
+\end{itemize}
+
+\printbibliography
+
+\end{document}

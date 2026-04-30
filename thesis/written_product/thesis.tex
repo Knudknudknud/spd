@@ -6,9 +6,10 @@
 
 
 \usepackage[style=alphabetic]{biblatex}
+\addbibresource{references.bib}
+
 \usepackage{amsmath}
 \usepackage{amssymb}
-\addbibresource{references.bib}
 
 
 \begin{document}
@@ -389,9 +390,6 @@ l is the number of layers, leading to scalability concerns at larger sizes.
 \subsection{Add the part that rank k, is unsifficient in the standard SPD, as it has no structural pressure to group things, and always that orthogonal dparts are split across components,
 as we only punish multiple parts being active, but we dont mind that they are split across multiple components}
 
-\subsection{Add a part about that the softmax has the nice porpoerty of summing to 1, while sigmoid did not, it also makes the minimality loss redundant as its always constant 1. Perhaps we can write that ti t is more understandable when it can be seen as a percentage}
-
-\subsection{We need an experiment that examines what happens when we train on independent features but then put in a combined feature, the causal importance should be half and half}
 
 
 \subsection{SVD reformulation, capacity and per feature ablation}
@@ -464,71 +462,97 @@ data.
 \section{Experiments}
 \subsection{Reproducing SPD on independent features}
 \label{sec:spd-independent-features}
-\subsection{Vanilla SPD on dependent features, the contrast experiment, two subsections, TMS sync and geometric model side by side.}
+\subsubsection{Sensitivity to hyperparameters}
+\label{sec:spd-sensitivity}
+
 
 \subsection{TMS with tied weights and synced inputs}
 \label{sec:tms-tied-experiment}
 
-This section examines the behaviour of vanilla SPD on a model
-in which dependent features are forced into an irreducible
-representation by construction. The setup is a Toy Model of
-Superposition with tied encoder and decoder weights, trained on
-inputs in which pairs of features always co-occur. The
-combination of tied weights and synced inputs is a controlled
-instance of the regime the multi-dimensional superposition
-hypothesis is designed to describe: features whose joint
-distribution is irreducible, represented by the model through
-shared low-rank directions in hidden space.
 
-\subsubsection{Model setup}
-To explore how SPD and the modified SPD with softmax and attention handle irreducible features, we reuse the Model of superposition introduced in section ~ \ref{sec:spd-independent-features}
-Like before the architecture is a single-hidden-layer autoencoder:
+
+To examine how SPD and the softmax-and-attention extension handle
+irreducible features, we reuse the model of superposition introduced
+in Section~\ref{sec:spd-independent-features}. The architecture is
+a single-hidden-layer autoencoder with tied weights:
 \[
-    f(x) = W^{\top} \sigma(Wx+b) \quad W \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{features}}}, \quad d_{\text{features}} \gg d_{\text{hidden}}
+    f(x) = W^{\top} \sigma(Wx + b), \qquad W \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{features}}}, \quad d_{\text{features}} \gg d_{\text{hidden}}
 \]
-The model is still trained to reconstruct sparse feature activations with an $L_{2}$ loss, but the input distribution ties features together in pairs.
-Concretely for this experiment, $d_{features} = 40$ and $d_{hidden}=10$,
-Each feature pair is zero with probability $1-p$, and with probability p both features are independently drawn from $\mathrm{Uniform}(\epsilon, 1)$.
+The model is trained to reconstruct sparse feature activations under
+an $L_2$ loss. The input distribution differs from
+Section~\ref{sec:spd-independent-features} in that features are tied
+into pairs. Concretely, $d_{\text{features}} = 40$,
+$d_{\text{hidden}} = 10$, and the features are partitioned into
+$20$ pairs $\{f_{2i-1}, f_{2i}\}_{i=1}^{20}$. Each pair is zero
+with probability $1 - p$, and with probability $p$ both features are
+independently drawn from $\mathrm{Uniform}(\epsilon, 1)$.
 
-By construction, the features satisfy neither of Engels reducibility conditions, see section~\ref{sec:irreducibility}.
-The state of one feature in a pair fully determines the state of the other and
-the joint distribution has no mass, where either feature is set to zero and the other is active.
-By Engels definition each pair forms an irreducible two-dimensional feature.
+By construction, the joint distribution of each pair satisfies neither
+of the reducibility conditions defined in
+Section~\ref{sec:irreducibility}: the activation of one feature in
+a pair fully determines the activation of the other, and the joint
+distribution has no mass where one feature is zero while
+the other is active. By \autocite{engels2025languagemodelfeaturesonedimensionally}, each pair is therefore an irreducible
+two-dimensional feature.
 
-
-As the model is forced into superposition, it's impossible to learn an invertible representation of the features,
-and necessarily must compress these pairs into a much smaller latent space,
-we show empirically that the model does this by collapsing each pair into a single direction in hidden space.
-
+Since $d_{\text{features}} \gg d_{\text{hidden}}$, feature representations are necessarily compressed through superposition. In the learned encoder, this results in near-collinearity within feature pairs and approximate orthogonality across pairs.
 \begin{table}[h]
 \centering
-\begin{tabular}{lcccc}
+\begin{tabular}{lccc}
 \hline
-Group & Mean Cosine similarity & Std Dev & Range \\
+Group        & Mean    & Std Dev & Range \\
 \hline
-Within-group & 0.999 & 0.010 & [0.997, 1.000] \\
-Across-group & 0.053 & 0.223 & [-1.000, 0.038] \\
+Within-group & $0.999$ & $0.010$ & $[0.997, 1.000]$ \\
+Across-group & $0.053$ & $0.223$ & $[-1.000, 0.038]$ \\
 \hline
 \end{tabular}
-\caption{Comparison of cosine similarity within and across groups}
+\caption{Cosine similarity between encoder columns $W_{:,i}$ and
+$W_{:,j}$, partitioned by group membership.}
 \label{tab:tms-paired-cosine-similarity}
 \end{table}
-Where the cosine similarity is measured between the rows of $W^{d_{\text{features}} \times d_{\text{hidden}}}$.
 
+Under the multi-dimensional superposition hypothesis (Section \ref{sec:irreducibility}),
+the formal dimensionality $d_{fi} = 2$, which provides an upper bound on the rank required to represent each feature.
+The observed near-collinearity within pairs suggests that this representation essentially collapses to a one-dimensional subspace.
 
-As described in section~\ref{sec:irreducibility},
-the multi-dimensional superposition hypothesis sets an upper bound on the representational rank of each feature,
-but does not require the model to use the full rank. 
+To quantify this, the effective rank of each pair's submatrix, $W_{:,2i-1:2i} \in \mathbb{R}^{d_{\text{hidden}} \times 2}$ is computed using the entropy-based definition of \autocite{effectiverank}.
+\[
+    r_{\text{eff}}(W_g) = \exp\!\left(-\sum_{k=1}^{Q} p_k \log p_k\right),
+    \qquad p_k = \frac{\sigma_k^2}{\sum_{j=1}^{Q} \sigma_j^2}
+\]
+where $\sigma_k$ are the singular values of $W_g$ and $Q = |g|$.
+The quantity lies in $[1, |g|]$ and equals $1$ when the group is
+exactly rank-one. To gauge the required value of $k$ for the rank-$k$ extension, the maximum effective rank across pairs is examined:
 
-Also we check the SVD of these matrices.
-
-
-Somewhere we use the effective rank to estimate the required capacity.
+\[
+    k = \max_{i} ,\ r_{\text{eff}}(W_{:,2i-1:2i}),
+\]
+In this case the max is essentially 1 across all pairs, suggesting that $k=1$ is sufficient to capture these features without loss of information.
+(Table~\ref{tbl:mean-effective-rank}).
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\hline
+Mean   & Std Dev & Range \\
+\hline
+$1.0003$ & $0.01$  & $[1.0, 1.05]$ \\
+\hline
+\end{tabular}
+\caption{Effective rank of paired-feature encoder blocks. Values
+near $1$ indicate collapse to a single direction.}
+\label{tbl:mean-effective-rank}
+\end{table}
+% Note: numbers are placeholders pending final results.
 
 \subsubsection{Comparison of vanilla SPD and the softmax-and-attention extension}
-For both decompositions we train with $C = 150$ subcomponents, in terms of hyperparameters,
-we reuse the ones suggested in the original SPD paper, with the exception of the minimality loss, which is kept at $x$ for SPD and set to $y$ for the softmax exntension.
-Additionally for this experiment, we set $k=1$, as the features were shown to be captureable as a single direction in hidden space.
+
+Both decompositions are trained with $C = 150$ subcomponents and
+the hyperparameters proposed in the original SPD paper, with the
+exception of the minimality loss, which is set to $x$ for vanilla
+SPD and $y$ for the softmax-and-attention extension. We use
+$k = 1$, since each pair was shown to be representable along a
+single direction in hidden space. The ground truth decomposition is one where each pair is captured by a single subcomponent.
+
 
 \begin{figure}[H]
     \centering
@@ -543,10 +567,6 @@ Text explaining what we see, this will change so wait for now.
 To verify a successful decomposition, each matrix $V_{i}$ should also be $\delta$-orthogonal to the others.
 
 
-Also show the SVD, input space readings with two nice plots,
-compare $||V^TV||$ matrices
-
-
 The multi-dimensional superposition hypothesis predicts that the
 projection matrices for different irreducible features are pairwise
 $\delta$-orthogonal. At the parameter level, the recovered $V_c$
@@ -554,15 +574,18 @@ matrices are the operational counterpart, and the prediction
 translates to the requirement that recovered atoms have small
 pairwise overlap in their input-side directions.
 
-For each method, we compute the pairwise cosine similarity
+For each method, we compute the pairwise cosine similarity \footnote{Maybe even UV combined? Only read or write?}
 \begin{equation}
     M_{cc'} = \frac{V_c^\top V_{c'}}{\|V_c\| \|V_{c'}\|}
 \end{equation}
-between recovered atoms. The off-diagonal distribution is
+
 compared against the across-group cosine similarity of the
-trained model's encoder ($0.053$, Table 1), which serves as
-the reference structure a faithful decomposition should
-recover.
+trained model's encoder ($0.053$, \ref{tab:tms-paired-cosine-similarity}), the softmax-and-attention shows "something"
+and the baseline model finds that "something else".
+
+here we have four nice plots, overall alligment, across V's, across U's, entire thing?
+Reference to original model and maybe a table?
+
 
 % \begin{table}[h]
 % \centering
@@ -578,12 +601,68 @@ recover.
 % \end{table}
 
 
-\subsection{Attention + softmax on TMS, Geometry}
-\subsection{Extending rank k on Geometry, where k matters}
+\textbf{Remarks for this section}
+Intra cluster cosine has a -1. Two features are perfectly alligned to a factor of -1,
+can this cause issues with decomposition? Same component could capture both features, if they read from the same input.
+However they shouldnt as its distinctly different feature indices.
+
+
+
+\subsection{Extending to Rank-k: When Higher-Dimensional Structure Matters}
+The rank-k extension is required in settings where feature representations do not collapse to a single direction. This is illustrated by a model trained to compute the volume of an n-dimensional simplex.
+
+In this experiment, consider a model trained to compute the volume of an n-dimensional simplex:
+\[
+    f(x) = W_1 \sigma(W_2 x), \quad W_2 \in \mathbb{R}^{k \cdot n(n+1) \times d_{hidden}}, \quad W_1 \in \mathbb{R}^{d_{hidden} \times k}
+\]
+Here, k denotes the number of simplices and n the dimensionality of each simplex, which has n+1 vertices.
+
+As in Section~\ref{sec:tms-tied-experiment}, the k simplices are sampled independently with fixed probability, such that either all n(n+1) features of a simplex are active or none are. The resulting feature groups are therefore statistically dependent, and their joint distribution assigns negligible probability to partial activation patterns.
+By the definition of irreducibility in Section~\ref{sec:irreducibility}, each simplex constitutes an irreducible feature with formal dimensionality 
+$d_{fi}=n(n+1)$.
+
+For this experiment, the model is trained with $n=2$ and $k=4$, yielding four triangles $\mathbb{R}^2$ and a total of 24 input features. The ground-truth decomposition therefore consists of four subcomponents, each responding to 6 adjacent features. 
+We note that the effective rank and cosine similarity here imply a decomposition should require at least $k=2$.
+\textbf{[Placeholder: cosine similarity results]}
+
+\textbf{[Placeholder: effective rank results, showing $r_{eff} > 1$]}
+Firstly, we demonstrate that the original SPD formulation surprisingly yields the best clustered reconstruction when $k=1$:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=8cm]{spd_original_geometry.png}
+    \caption{SPD decomposed with k=1,2,3 from left to right.}
+\end{figure}
+The reconstruction clearly yields 4 subcomponents per group, that only respond to the 6 features of a single simplex, however these subcomponents are seperated even though they are irreducible.
+
+We note that we werent able to find a reconstruction at all when the minimality coefficient was outside of $[1e-4,5e-4]$.
+
+The softmax and attention extension, on the other hand, shows the expected behaviour, with $k=1$, the reconstruction neccessitates that each simplex is split into multiple subcomponents, here each subcomponent captures a single feature.
+The extension to $k=2$ allows the model to capture each simplex as a single unit, with all 6 features of a simplex captured by a single subcomponent. However, it does collapse 2 simplices into a single subcomponent. The extension to $k=3$ does not yield any improvement, suggesting that the model has found a faithful reconstruction at $k=2$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=8cm]{attention_geometry.png}
+    \caption{Softmax-and-Attention decomposed with k=1,2,3 from left to right.}
+\end{figure}
+While the softmax approach does not find a perfect reconstruction either, it clearly demonstrates how the extension from rank 1 to rank 2 
+allows a non diagonal representation of the features. Had it been perfect, then the middle plot would have shown 4 components instead of the collapsed 2.
+
+
+Same plots i was going to do for the TMS experiment, perhaps this gets its own section,
+we compare how input spaces are alligned over training, does the softmax encourage $\delta$ orthogonality better?
+
+
 
 \subsection{Checking for orthogonality throughout training with softmax and attention / compare to baseline spd.}
 
 \subsection{Toy model of learning gates}
+
+\textbf{Remark: }
+Im not sure we can sample binary values, double check the distribution, i think it requires a continuous thing with b not fixed?
+Could always train an addition model, but they already did that in the original paper?
+Can we just use that one to prove the claim?
+
+
+
 To test the case of enges, where the probability distribution is in fact reducable.
 We could train it to learn logic gates i.e
 1+0 = 0,
@@ -596,31 +675,19 @@ we then sample independently from the two features and see if
 it compacts them in a single unit or not.
 
 
+The concept here is clear:
+The ideal decomposition here is one that produces independent features,
+that can co occur, however the atomic solution is independence.
+
+We also need to probe for a paired result here. The ground truth should show
+part ownership across 2 components.
+
+bool A, bool B are independnet their joint result shoul be shared ownership.
 
 
-\subsection{Toy model of superposition}
-Remember to reference back to engels, 
-that we tie the weights, so the right interpretation must be the paired you find.
-\subsubsection{Paired subcomponents}
-By engels et al, two features are irreducible if they always co-occur,
-as per this definition, two features that are always seen together should thus be treated as a single unit,
-this is something that the original SPD method does not do, it instead
-splits them into to seperate subcomponents.
+\subsection{Extending the rank to be an upperbound through per feature ablation}
 
 
-\subsection{Toy model of geometry + increasing rank of k in both models}
-Again if we extend the line of engels,
-we would expect the simplex to compose into a singular unit,
-in this plot we would expect one component to entirely capture the simplex,
-even though the individual features in themselves also form valid structures,
-like the vertices themselves.
-
-If the feature dimension is less than the effective rank, then the model
-cannot represent the feature as a single unit, and must split it into multiple subcomponents.
-
-
-\subsection{Robustness to hyperparameters.}
-\subsection{Something about how the model learns to orthogonalize matrices}
 
 
 \subsection{Irreducibility as the target of decomposition}
@@ -830,9 +897,9 @@ cannot represent the feature as a single unit, and must split it into multiple s
 
 
 
-\subsection{Toy model with relu}
-\subsection{Smallest possible LM}
 \section{Discussion}
+
+\section{Acknowledgements}
 
 \section{References}
 

@@ -193,17 +193,19 @@ class Transformer(nn.Module):
             nn.Linear(hidden_channels, out_channels),
         )
         
-        # Attention correction: zero-initialised
         self.attn_proj = nn.Linear(hidden_channels, out_channels)
-        nn.init.zeros_(self.attn_proj.weight)
-        nn.init.zeros_(self.attn_proj.bias)
+        # nn.init.zeros_(self.attn_proj.weight)
+        # nn.init.zeros_(self.attn_proj.bias)
 
     def forward_batched(self, x_batch):
         Q = self.W_q(x_batch)
         K = self.W_k(x_batch)
         V = self.W_v(x_batch)
         attn_out = F.scaled_dot_product_attention(Q, K, V)
-        return self.self_proj(x_batch) + self.attn_proj(attn_out)
+        y = x_batch + attn_out
+        y = y + self.self_proj(attn_out)
+
+        return y
     
 class TensorGNAN(nn.Module):
     def __init__(self, in_channels, out_channels, n_layers, hidden_channels=None, bias=True, dropout=0.0,
