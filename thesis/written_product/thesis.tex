@@ -1,10 +1,15 @@
 \documentclass{article}
 \usepackage{arxiv} 
+\usepackage{graphicx} % Inserting images
+\graphicspath{{Images/}} % Expects Image folder in current folder.
+\usepackage{float} % Improves h specifier
+
 
 \usepackage[style=alphabetic]{biblatex}
+\addbibresource{references.bib}
+
 \usepackage{amsmath}
 \usepackage{amssymb}
-\addbibresource{references.bib}
 
 
 \begin{document}
@@ -16,6 +21,50 @@ Some super cool abstract of all my findings
 \end{abstract}
 
 \section{Introduction}
+
+A central goal of mechanistic interpretability is to decompose a neural network's parameters
+into a small number of meaningful units, atoms, each of which corresponds to something the model is doing.
+The hope is that a network's computation, however dense and distributed in its raw form, can be expressed
+as a sum of simpler mechanisms that admit human-readable descriptions.
+
+A recent line of work shifts the object of decomposition from activations to parameters, decomposing
+a network's weights into a sum of simpler components, each taken to correspond to a
+concrete atom of computation. Methods guided by the principle of minimum description length
+aim to recover components that are faithful to the original weights, minimal in the number required per input,
+and individually as simple as possible. Stochastic Parameter Decomposition (SPD) [Bus+25] is one such method,
+decomposing networks into rank-one subcomponents and learning a per-component importance function that
+estimates each atom's causal contribution to a given input.
+
+The Open Problems in Mechanistic Interpretability programme [Sha+25] identifies the question of how best to
+carve a network at its joints as a central open problem of the field. Whether a parameter decomposition
+recovers the computational primitives the model actually uses depends on what the ground-truth decomposition is taken
+to be, and the carving question is the question of which units to take as ground truth. For models with independent
+features the answer is comparatively unambiguous: one atom per feature. The question becomes substantially harder when
+the features themselves are dependent, a regime that is empirically attested in real models.
+Engels et al. [Eng+24] develop a rigorous notion of irreducible multi-dimensional features, defined as
+features whose joint distribution can be split neither into independent components nor
+into disjoint mixture components, and show that language models represent inherently cyclical concepts,
+including days of the week and months of the year, as two-dimensional irreducible features whose individual
+coordinates are not independent units but components of a single object the model manipulates together.
+Networks that represent such features admit multiple decompositions that are equally faithful
+to the weights but differ in the level at which features are separated.
+A network that computes the volume of a cube could equally faithfully be decomposed into separate components
+that each compute one of the side lengths, or into a single component that computes the volume directly.
+The first is a feature-level decomposition: one atom per individual input direction, exposing the internal
+structure of the computation but leaving the grouping of features implicit, recoverable only by
+inspecting which atoms co-activate. The second is a structural-level decomposition:
+one atom per irreducible structure, exposing the grouping directly but treating the internal computation
+as a single unit. Each level loses something the other preserves.
+
+The present work extends SPD by examining its behaviour on dependent feature pairs and larger structures,
+configurations in which the multi-dimensional superposition hypothesis posits a structural-level unit.
+Here SPD is shown to recover both feature-level and structural-level decompositions, and the conditions
+distinguishing the two outcomes are characterised. Building on this, we introduce softmax-and-attention competition between subcomponents,
+making the importance calculation relational, and show that the extension allows SPD to recover decompositions
+that respect the multi-dimensional superposition hypothesis. We additionally introduce the Toy Model of Geometry,
+a small model that computes the volume of a simplex, to examine how this method performs on a more complex structure.
+
+\section{ Old Introduction - may be useful for related work.}
 
 
 Neural networks continue to achieve remarkable performance across domains ranging from medical diagnosis to
@@ -64,10 +113,22 @@ which occupy irreducible multidimensional subspaces.
 
 \autocite{AttributionBasedParameterDecomposition}
 \section{Related work}
-This is the related work of the thesis.
+-Open problems in mechanistic interpretability
+- SPD
+- SPD on transformers
+- APD
+- Engels et al.
+-Activation space decompositions
+    - Circuits, SAE,
+Linear representation hypothesis
+Superposition in general?
+Strong feature hypothesis
+
+
+
 \section{Method}
 
-\subsection{Background on APD}
+\subsection{Background on APD and SPD}
 The initial inspiration for shifting the focus from activations to parameters 
 came from Attribution-based Parameter Decomposition 
 (APD) \autocite{AttributionBasedParameterDecomposition}. APD decomposes the 
@@ -103,7 +164,7 @@ for the causal importance of each component. These gradients
 have been shown to be poor approximations of the true importance. (cite the papers here).
 
 
-\subsection{Stochastic parameter decomposition}
+\subsection*{Stochastic parameter decomposition}
 Stochastic Parameter Decomposition (SPD) was introduced as a solution to the limitations of APD.
 SPD decomposes each weight matrix into a sum of rank-one matrices, called subcomponents:
 \[
@@ -114,7 +175,7 @@ The number of subcomponents $C$ is a hyperparameter that may be chosen to be lar
 These subcomponents are then trained to be faithful to the original weights, to have as few active subcomponents as possible for any given input, and lastly to reconstruct the original network's output.
 \subsubsection{Faithfulness}
 
-\subsubsection{Storchastic reconstruction}
+\subsubsection{Stochastic reconstruction}
 
 \subsubsection{Minimality}
 
@@ -123,45 +184,746 @@ These components are later clustered manually.... -> GNaN solves
 Components are rank 1, many features are multidimensional, dependent
 components are trained independently
 
+\subsection{Irreducibility and the natural unit of decomposition}
+\label{sec:irreducibility}
+
+The standard formulation of superposition treats features as
+one-dimensional directions in activation space, with each feature
+contributing a scalar activation along its direction. 
+
+The work of engels et al. provide empirical evidence that the strong feature hypothesis is too restrictive,
+and that transformer architectures organise cyclical concepts, such as days of the week and months of the year, as two-dimensional structures,
+that are not composed of independent one-dimensional features and instead are irreducibly multi-dimensional.
+
+To accomodate this, the paper provides a formal definition of irreducibility and a corresponding refinement of the superposition hypothesis.
+
+\paragraph{Irreducibility.}
+A feature $f \in \mathbb{R}^{d_f}$ is reducible into features
+$a$ and $b$ if there exists an affine transformation
+$f \mapsto Rf + c \equiv (a, b)$ with $R$ orthonormal, such that the
+joint distribution $p(a, b)$ satisfies one of two conditions:
+\renewcommand\labelitemi{\tiny$\bullet$}
+\begin{itemize}
+    \setlength\itemsep{0em}
+    \item \textbf{Separability}: $p(a, b)= p(a) \, p(b)$
+    \item \textbf{Mixture of disjoint distributions}: $p(a, b) = w \, p(a) \, \delta(b) + (1 - w) \, p'(a, b), \quad w \in (0, 1)$
+\end{itemize}
+where $\delta$ is the Dirac delta distribution. 
+In other words, a feature is reducible when its components are statistically independent, or when the joint distribution decomposes into a regime where one component is exactly zero and the other varies on its own.
+
+A feature whose joint distribution admits neither of these properties,
+carries information only when interpreted together, and any decomposition into smaller units
+would lose information the original feature encodes.
+
+With this definition, the superposition hypothesis is refined as follows:
+
+Every hidden state $x_{i,l}(t)$ can be written as a sum of feature contributions
+\begin{equation}
+    x_{i,l}(t) = \sum_i V_i \, f_i(t)
+\end{equation}
+where each $f_i(t) \in \mathbb{R}^{d_{f_i}}$ is an irreducible
+feature with internal dimensionality $d_{f_i} \geq 1$, each
+$V_i \in \mathbb{R}^{d \times d_{f_i}}$ is a projection matrix
+embedding the feature into a $d_{f_i}$-dimensional subspace of
+hidden space, and the projection matrices are pairwise
+$\delta$-orthogonal: $\| V_i^\top V_j \| < \delta$ for $i \neq j$.
 
 
-\subsection{Some clever name for my additions}
-This works primary purpose is to address two methological limtations of SPD, namely the rank-one constraint on subcomponents and the independence of the importance functions across subcomponents.
-The necessity of these modifications will be demonstrated in the experiments, where dependent and multi-dimensional features will be shown to be common in even simple models, and the original SPD method will be shown to fail to recover them (i hope).
+The multi-dimensional hypothesis makes two structural commitments about the model's representation,
+that will be explored throughout this work.
+Firstly, the projection matrices
+$V_i$ are pairwise $\delta$-orthogonal, with the column spaces of
+different features approximately disjoint in hidden space. 
+Secondly,
+each $f_i$ is irreducible, meaning the coordinates within a single
+feature covary according to the feature's joint distribution rather
+than being independent components that happen to share a subspace. \footnote{Does this not also help my case of softmax, we train the importance to maximize the importance, some old paper i read meant that it increased the intra cluster similarity, and decreased the inter cluster, We should check this over training and see if it happens!}
 
-Additionally, this work also provides a first step towards a general clustering mechanism that operates during training rather than a post-hoc step, by masking features of each subcomponent independently and then allowing related features to be clustered together (again i hope - or the circuit discovery thing..? However it needs modifications).
+The definition of $V_i \in \mathbb{R}^{d \times d_{f_i}}$ does not
+require its columns to be linearly independent: $d_{f_i}$ specifies
+the formal dimensionality of the irreducible feature, but
+$\text{rank}(V_i) \leq d_{f_i}$ is what the model actually uses.
+The two coincide when the joint distribution of the feature's
+coordinates is non-degenerate enough that compression would lose
+information; they come apart when the distribution permits a
+lower-rank representation. Two perfectly correlated coordinates
+with $f_i^{(1)}(t) = f_i^{(2)}(t)$ for all $t$, for instance, can
+be represented through a $V_i$ with both columns equal to a single
+direction $v \in \mathbb{R}^d$:
+\begin{equation}
+    V_i \, f_i = v \cdot f_i^{(1)} + v \cdot f_i^{(2)} = 2v \cdot f_i^{(1)}
+\end{equation}
+Here $V_i$ is formally $d \times 2$ but its column space is
+one-dimensional, and the feature is irreducibly two-dimensional in
+its input distribution but represented through a rank-deficient
+$V_i$ without loss of reconstructive information. We will
+show empirical evidence of this phenomenon in section \ref{sec:experiments}.
 
-To achieve this, three modifications are introduced:
-rank-$k$ subcomponents that can natively capture multi-dimensional mechanisms,
-per-dimension ablation that implicitly learns the rank of each mechanism,
-and an additive graph neural network based importance function that conditions
-each importance on the activation of neighbouring subcomponents.
+The formal dimensionality $d_{f_i}$ thus acts as an upper bound on
+the rank a faithful representation requires, with the actual rank
+determined by how the model has chosen to encode the feature.
 
-\subsubsection{Rank-$k$ subcomponents}
+\paragraph{Implications for parameter decomposition.}
+This present work takes the irreducible feature as the atomic unit of decomposition,
+and explores how to extend SPD to recover these features both when they can be collapsed into a single rank-one component and
+what happens when they cannot.
+This definition of irreducibility formalises the structural-level of decomposition described in the introduction.
+The decomposition in the dependent feature regime should aim to recover these irreducible features,
+and not split them into independent components or collapse them into larger units.
 
-In SPD, each subcomponent is a rank-one outer product of two 
-vectors. A mechanism of rank $r$ must therefore be represented as 
-$r$ separate subcomponents, with no training signal to keep them 
-coherent. To generalize this,
-each pair of vectors is replaced with a pair of matrices:
+
+
+\subsection{Rank-$k$ subcomponents and relational importance}
+\label{sec:rank-k-attention}
+The framework of Engels et al. described in section \ref{sec:irreducibility}
+identifies that these irreducible features are the desired units of decomposition,
+with internal dimensionality $d_{f_i}$. SPD's rank-one parameterisation can contain such a feature as a single atom only when its effective representational rank is one. \footnote{We Say effective rank, as if the model compresses a 2D direction into a line, then we can actually represnet it}
+Otherwise the decomposition must split these features across multiple subcomponents.
+
+To accommodate this, each
+pair of vectors in SPD's parameterisation is replaced with a pair of
+matrices:
+\begin{equation}
+    W^l \approx \sum_{c=1}^{C} U^l_c {V^l_c}^{\top},
+    \qquad
+    U^l_c \in \mathbb{R}^{d_{\text{out}} \times k},
+    \quad
+    V^l_c \in \mathbb{R}^{d_{\text{in}} \times k}
+\end{equation}
+Each subcomponent $U^l_c {V^l_c}^{\top} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
+is a matrix of rank at most $k$, and setting $k = 1$ recovers the
+original SPD formulation.
+
+This definition allows each
+subcomponent to span up to $k$ rank-one factors but does not require
+it to do so; mechanisms for encouraging atoms to use less than their
+full capacity are discussed in Section~\ref{sec:svd-reformulation}.
+
+The extension to the importance function follows naturally from the change in parameterisation.
+The inner activation used to estimate each subcomponent's importance
+is now a $k$-dimensional vector:
+\begin{equation}
+    h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
+\end{equation}
+where $\vec{a}^l(x)$ is the activation of layer $l$ for input $x$.
+
+Lastly we replace the independent importance function with a relational one instead of 
+the original independent one, where each components importance was derived from its own activation, independent of all other subcomponents.
+The justification for this is shown in Section~\ref{sec:experiments}.
+
+We aim to motivate the importance through a probabilistic interpretation, under which importance becomes the posterior probability that a given subcomponent is responsible for the output, conditioned on the activations of all subcomponents in the same layer:
+\begin{equation}
+    \alpha^l_c(x) = p\!\left(c \mid h^l_c(x), \{h^l_{c'}(x)\}_{c' \neq c}\right)
+\end{equation} \footnote{maybe just do all components? Does it matter?}
+Importance becomes the probability that subcomponent $c$ owns the
+input, conditioned on the activations of all subcomponents.
+
+The posterior is realised through a softmax over subcomponents,
+
+\begin{equation}
+\alpha^l_c(x) = \frac{\exp s^l_c(x)}{\sum_{c'=1}^{C} \exp s^l_{c'}(x)}
+    \qquad
+    s^l_c(x) = f_{\text{self}}(h^l_c(x)) + f_{\text{agg}}\!\left(\{h^l_{c'}(x)\}_{c' \neq c}\right)
+\end{equation}
+The $f_{\text{self}}$ maintains the original signal from $c$'s own
+activation, while $f_{\text{agg}}$ acts as a corrective term that
+contextualises $c$ against other subcomponents through an attention
+mechanism.
+
+
+A significant advantage of the reformulation is that softmax
+naturally enforces a probabilistic distribution over
+subcomponents. The importance becomes more interpretable: a
+subcomponent is predominantly responsible for the reconstruction
+when its allocation dominates. Softmax introduces a
+structural pressure that encourages each subcomponent to maximise
+the probability that a feature belongs to it, motivating the
+optimiser to group dependent features within the same
+subcomponent.
+
+During the experiments in SPD, this structural pressure was not necessary, as
+experiment features were indepndent and subcomponents were kept at rank 1.
+
+The rank-$k$ extension lifts this restriction by giving each
+subcomponent capacity to host up to $k$ rank-one factors. With
+this added capacity, the question of how dependent features
+distribute across subcomponents becomes consequential: a
+mechanism is required to encourage their co-location within a
+single subcomponent rather than their dispersion across many.
+The minimality loss originally proposed for SPD takes the form
+\begin{equation}
+    \mathcal{L}_{\text{minimality}}^{\text{SPD}} = \sum_{l=1}^{L} \sum_{c=1}^{C} |g^l_c(x)|^p, \qquad p > 0,
+\end{equation}
+penalising a power of the importance magnitudes. The pressure
+this loss exerts on allocation shape depends on $p$ and is
+limited in either direction: for $p < 1$ the loss weakly
+favours concentration, and for $p > 1$ it favours distribution.
+
+Under the softmax reformulation, the minimality loss becomes degenerate: The sum is always one, regardless of how the importance is distributed.
+We replace it with an entropy-based minimality term that
+penalises the shape of the allocation:
+\begin{equation}
+    \mathcal{L}_{\text{minimality}} = -\sum_{l=1}^{L} \sum_{c=1}^{C} \alpha^l_c(x) \log \alpha^l_c(x)
+\end{equation}
+
+Entropy is minimised at one-hot allocations, where a single
+subcomponent has all the importance, and increases monotonically
+as the allocation flattens.
+
+This pressure is appropriate when each irreducible feature can be
+hosted by a single subcomponent of sufficient rank. Two regimes
+fall outside this assumption. The first is when a feature's
+effective representational rank exceeds the chosen $k$, so the
+feature cannot be hosted as a single unit and the second being if
+a feature is reducible, and should be split across multiple subcomponents. The former
+serves as a motivation for the rank-$k$ extension, while the latter must be handled through the relative weighting of the faithfulness loss and the minimality loss.
+If the faithfulness loss dominates, the model is pressured to split these features to achieve a more faithful reconstruction.
+
+It is noted, that this attention mechanism has computational cost
+$O(l \cdot C^2)$, where
+C is the number of subcomponents per layer and
+l is the number of layers, leading to scalability concerns at larger sizes.
+
+
+\footnote{Double check this, flex? attention was also used by someo ther paper on SPD and transformers, but applied to the sequence length.}.
+
+\subsection{Add the part that rank k, is unsifficient in the standard SPD, as it has no structural pressure to group things, and always that orthogonal dparts are split across components,
+as we only punish multiple parts being active, but we dont mind that they are split across multiple components}
+
+
+
+\subsection{SVD reformulation, capacity and per feature ablation}
+
+The competition pressure introduced by the softmax has a
+theoretical motivation under the multi-dimensional superposition
+hypothesis. The hypothesis predicts that different irreducible
+features occupy approximately orthogonal projection subspaces;
+the softmax-and-attention mechanism implements a training pressure
+toward this orthogonality at the level of SPD's atoms. Atoms whose
+$V$ matrices share input directions cannot be cleanly distinguished
+on inputs that activate those directions, and the softmax
+penalises ambiguous allocations. The optimiser's response is to
+push the atoms' $V$ matrices toward disjoint subspaces, recovering
+the orthogonality structure the hypothesis posits.
+
+Remember to add an experiment that shows if softmax enforce the orthogonality constraint from engels.
+
+\subsubsection{ Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}
+Following the extension to rank-$k$ subcomponents, and the alternative formulation of the GNAN,
+the output $g^{l}_{c} \in [0, 1]^{k}$ is a per feature importance value, and thus the masking can be applied independently to each feature.
+The intuition behind this is that if a mechanism captures a 1 dimensional feature, it would only need of the $k$ dimensions to be active.
+\\
+Likewise if this actually ends up working, k can be considered an upper bound or a so called "capacity" of a mechanism,
+it also follows nicely with the descriptive length principle found in the appendix of APD.
+
+To determine the effective rank of each subcomponent, the stochastic masking becomes:
 \[
-    W^{l} \approx \sum_{c=1}^{C} U_{c}^{l} \, V_{c}^{l\top}, 
-    \quad \text{where} \quad 
-    U_{c}^{l} \in \mathbb{R}^{d_{\text{out}} \times k}, \; 
-    V_{c}^{l} \in \mathbb{R}^{d_{\text{in}} \times k}
+    [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
 \]
-Each subcomponent $U_{c}^{l} V_{c}^{l\top} \in 
-\mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$ is a matrix of 
-rank at most $k$. Setting $k = 1$ yields the original SPD 
-definition.
-As a result of this change, the inner activation used in the importance function becomes a $k$-dimensional vector:
+for each j in $1,\dots,k$
+\\
+Notably this treats each feature independently, which may not be desirable,
+as such we could modify it ever so slightly:
+
 \[
-\mathbf{h}_{c}^{l}(x) = V_{c}^{l\top} \, 
-    \vec{a}^{\,l}(x) \in \mathbb{R}^{k}
+        [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)][g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)][g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
 \]
-The extension from SPD follows naturally: the importance function
-is no longer derived from a single inner activation,
-but from $k$ inner activations, which are processed jointly to produce an overall importance value for the subcomponent.
+The signal becomes an importance of two factors,
+if the component is important and both features are important, it remains active,
+if only one feature is important, the other will be pushed to zero
+
+The masked weight matrix becomes:
+\[
+    W^{\prime l}(x, r) = \sum_{c=1}^{C} 
+    U_{c}^{l} \, \mathrm{diag}\!\left(
+    \mathbf{m}_{c}^{l}(x, r)\right) V_{c}^{l\top}
+\]
+Where the diagonal matrix is the per-feature mask for subcomponent $c$.
+
+The importance minimality loss penalises all $k$ dimensions of 
+all subcomponents toward zero:
+\[
+    \mathcal{L}_{\text{import}} = \sum_{l=1}^{L} \sum_{c=1}^{C} 
+    \sum_{j=1}^{k} \left|[g_{c}^{l}(x)]_{j}\right|^{p}
+\]
+This follows the same logic by which SPD selects the number of 
+active subcomponents: the minimality loss drives unused components 
+toward zero, and only those that are genuinely required to 
+reconstruct the target model's output survive.
+
+This makes $k$ a soft upper bound rather than a sensitive 
+hyperparameter. In practice, $k$ can be set conservatively large 
+and the effective rank of each subcomponent is learned from the 
+data.
+
+
+
+
+\section{Experiments}
+\subsection{Reproducing SPD on independent features}
+\label{sec:spd-independent-features}
+\subsubsection{Sensitivity to hyperparameters}
+\label{sec:spd-sensitivity}
+
+
+\subsection{TMS with tied weights and synced inputs}
+\label{sec:tms-tied-experiment}
+
+
+
+To examine how SPD and the softmax-and-attention extension handle
+irreducible features, we reuse the model of superposition introduced
+in Section~\ref{sec:spd-independent-features}. The architecture is
+a single-hidden-layer autoencoder with tied weights:
+\[
+    f(x) = W^{\top} \sigma(Wx + b), \qquad W \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{features}}}, \quad d_{\text{features}} \gg d_{\text{hidden}}
+\]
+The model is trained to reconstruct sparse feature activations under
+an $L_2$ loss. The input distribution differs from
+Section~\ref{sec:spd-independent-features} in that features are tied
+into pairs. Concretely, $d_{\text{features}} = 40$,
+$d_{\text{hidden}} = 10$, and the features are partitioned into
+$20$ pairs $\{f_{2i-1}, f_{2i}\}_{i=1}^{20}$. Each pair is zero
+with probability $1 - p$, and with probability $p$ both features are
+independently drawn from $\mathrm{Uniform}(\epsilon, 1)$.
+
+By construction, the joint distribution of each pair satisfies neither
+of the reducibility conditions defined in
+Section~\ref{sec:irreducibility}: the activation of one feature in
+a pair fully determines the activation of the other, and the joint
+distribution has no mass where one feature is zero while
+the other is active. By \autocite{engels2025languagemodelfeaturesonedimensionally}, each pair is therefore an irreducible
+two-dimensional feature.
+
+Since $d_{\text{features}} \gg d_{\text{hidden}}$, feature representations are necessarily compressed through superposition. In the learned encoder, this results in near-collinearity within feature pairs and approximate orthogonality across pairs.
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\hline
+Group        & Mean    & Std Dev & Range \\
+\hline
+Within-group & $0.999$ & $0.010$ & $[0.997, 1.000]$ \\
+Across-group & $0.053$ & $0.223$ & $[-1.000, 0.038]$ \\
+\hline
+\end{tabular}
+\caption{Cosine similarity between encoder columns $W_{:,i}$ and
+$W_{:,j}$, partitioned by group membership.}
+\label{tab:tms-paired-cosine-similarity}
+\end{table}
+
+Under the multi-dimensional superposition hypothesis (Section \ref{sec:irreducibility}),
+the formal dimensionality $d_{fi} = 2$, which provides an upper bound on the rank required to represent each feature.
+The observed near-collinearity within pairs suggests that this representation essentially collapses to a one-dimensional subspace.
+
+To quantify this, the effective rank of each pair's submatrix, $W_{:,2i-1:2i} \in \mathbb{R}^{d_{\text{hidden}} \times 2}$ is computed using the entropy-based definition of \autocite{effectiverank}.
+\[
+    r_{\text{eff}}(W_g) = \exp\!\left(-\sum_{k=1}^{Q} p_k \log p_k\right),
+    \qquad p_k = \frac{\sigma_k^2}{\sum_{j=1}^{Q} \sigma_j^2}
+\]
+where $\sigma_k$ are the singular values of $W_g$ and $Q = |g|$.
+The quantity lies in $[1, |g|]$ and equals $1$ when the group is
+exactly rank-one. To gauge the required value of $k$ for the rank-$k$ extension, the maximum effective rank across pairs is examined:
+
+\[
+    k = \max_{i} ,\ r_{\text{eff}}(W_{:,2i-1:2i}),
+\]
+In this case the max is essentially 1 across all pairs, suggesting that $k=1$ is sufficient to capture these features without loss of information.
+(Table~\ref{tbl:mean-effective-rank}).
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\hline
+Mean   & Std Dev & Range \\
+\hline
+$1.0003$ & $0.01$  & $[1.0, 1.05]$ \\
+\hline
+\end{tabular}
+\caption{Effective rank of paired-feature encoder blocks. Values
+near $1$ indicate collapse to a single direction.}
+\label{tbl:mean-effective-rank}
+\end{table}
+% Note: numbers are placeholders pending final results.
+
+\subsubsection{Comparison of vanilla SPD and the softmax-and-attention extension}
+
+Both decompositions are trained with $C = 150$ subcomponents and
+the hyperparameters proposed in the original SPD paper, with the
+exception of the minimality loss, which is set to $x$ for vanilla
+SPD and $y$ for the softmax-and-attention extension. We use
+$k = 1$, since each pair was shown to be representable along a
+single direction in hidden space. The ground truth decomposition is one where each pair is captured by a single subcomponent.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=15cm]{tms_comparison_rank_1_paired.png}
+    \caption{Left: Attention and softmax only at like 15k steps vs 40k steps, Right: Vanilla spd.}
+\end{figure}
+\label{fig:tms-paired-comparison}
+
+Text explaining what we see, this will change so wait for now.
+-Something about if both decompositions are faithful, and if they are faithful to one of the two hypotheses, if they are delta orthogonal, and if the importance values are interpretable.
+
+To verify a successful decomposition, each matrix $V_{i}$ should also be $\delta$-orthogonal to the others.
+
+
+The multi-dimensional superposition hypothesis predicts that the
+projection matrices for different irreducible features are pairwise
+$\delta$-orthogonal. At the parameter level, the recovered $V_c$
+matrices are the operational counterpart, and the prediction
+translates to the requirement that recovered atoms have small
+pairwise overlap in their input-side directions.
+
+For each method, we compute the pairwise cosine similarity \footnote{Maybe even UV combined? Only read or write?}
+\begin{equation}
+    M_{cc'} = \frac{V_c^\top V_{c'}}{\|V_c\| \|V_{c'}\|}
+\end{equation}
+
+compared against the across-group cosine similarity of the
+trained model's encoder ($0.053$, \ref{tab:tms-paired-cosine-similarity}), the softmax-and-attention shows "something"
+and the baseline model finds that "something else".
+
+here we have four nice plots, overall alligment, across V's, across U's, entire thing?
+Reference to original model and maybe a table?
+
+
+% \begin{table}[h]
+% \centering
+% \begin{tabular}{lcc}
+% \toprule
+%                            & Vanilla SPD & Softmax-attention \\
+% \midrule
+% Mean $|M_{cc'}|$ off-diag  & x.xx        & y.yy \\
+% Max $|M_{cc'}|$ off-diag   & x.xx        & y.yy \\
+% \bottomrule
+% \end{tabular}
+% \caption{Pairwise overlap of recovered atoms.}
+% \end{table}
+
+
+\textbf{Remarks for this section}
+Intra cluster cosine has a -1. Two features are perfectly alligned to a factor of -1,
+can this cause issues with decomposition? Same component could capture both features, if they read from the same input.
+However they shouldnt as its distinctly different feature indices.
+
+
+
+\subsection{Extending to Rank-k: When Higher-Dimensional Structure Matters}
+The rank-k extension is required in settings where feature representations do not collapse to a single direction. This is illustrated by a model trained to compute the volume of an n-dimensional simplex.
+
+In this experiment, consider a model trained to compute the volume of an n-dimensional simplex:
+\[
+    f(x) = W_1 \sigma(W_2 x), \quad W_2 \in \mathbb{R}^{k \cdot n(n+1) \times d_{hidden}}, \quad W_1 \in \mathbb{R}^{d_{hidden} \times k}
+\]
+Here, k denotes the number of simplices and n the dimensionality of each simplex, which has n+1 vertices.
+
+As in Section~\ref{sec:tms-tied-experiment}, the k simplices are sampled independently with fixed probability, such that either all n(n+1) features of a simplex are active or none are. The resulting feature groups are therefore statistically dependent, and their joint distribution assigns negligible probability to partial activation patterns.
+By the definition of irreducibility in Section~\ref{sec:irreducibility}, each simplex constitutes an irreducible feature with formal dimensionality 
+$d_{fi}=n(n+1)$.
+
+For this experiment, the model is trained with $n=2$ and $k=4$, yielding four triangles $\mathbb{R}^2$ and a total of 24 input features. The ground-truth decomposition therefore consists of four subcomponents, each responding to 6 adjacent features. 
+We note that the effective rank and cosine similarity here imply a decomposition should require at least $k=2$.
+\textbf{[Placeholder: cosine similarity results]}
+
+\textbf{[Placeholder: effective rank results, showing $r_{eff} > 1$]}
+Firstly, we demonstrate that the original SPD formulation surprisingly yields the best clustered reconstruction when $k=1$:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=8cm]{spd_original_geometry.png}
+    \caption{SPD decomposed with k=1,2,3 from left to right.}
+\end{figure}
+The reconstruction clearly yields 4 subcomponents per group, that only respond to the 6 features of a single simplex, however these subcomponents are seperated even though they are irreducible.
+
+We note that we werent able to find a reconstruction at all when the minimality coefficient was outside of $[1e-4,5e-4]$.
+
+The softmax and attention extension, on the other hand, shows the expected behaviour, with $k=1$, the reconstruction neccessitates that each simplex is split into multiple subcomponents, here each subcomponent captures a single feature.
+The extension to $k=2$ allows the model to capture each simplex as a single unit, with all 6 features of a simplex captured by a single subcomponent. However, it does collapse 2 simplices into a single subcomponent. The extension to $k=3$ does not yield any improvement, suggesting that the model has found a faithful reconstruction at $k=2$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=8cm]{attention_geometry.png}
+    \caption{Softmax-and-Attention decomposed with k=1,2,3 from left to right.}
+\end{figure}
+While the softmax approach does not find a perfect reconstruction either, it clearly demonstrates how the extension from rank 1 to rank 2 
+allows a non diagonal representation of the features. Had it been perfect, then the middle plot would have shown 4 components instead of the collapsed 2.
+
+
+Same plots i was going to do for the TMS experiment, perhaps this gets its own section,
+we compare how input spaces are alligned over training, does the softmax encourage $\delta$ orthogonality better?
+
+
+
+\subsection{Checking for orthogonality throughout training with softmax and attention / compare to baseline spd.}
+
+\subsection{Toy model of learning gates}
+
+\textbf{Remark: }
+Im not sure we can sample binary values, double check the distribution, i think it requires a continuous thing with b not fixed?
+Could always train an addition model, but they already did that in the original paper?
+Can we just use that one to prove the claim?
+
+
+
+To test the case of enges, where the probability distribution is in fact reducable.
+We could train it to learn logic gates i.e
+1+0 = 0,
+1 + 1 = 1,
+0 + 0 = 0,
+0 + 1 = 1,
+in such a view each could occur independently ,but nlywhen 
+both are active, the output is active,
+we then sample independently from the two features and see if
+it compacts them in a single unit or not.
+
+
+The concept here is clear:
+The ideal decomposition here is one that produces independent features,
+that can co occur, however the atomic solution is independence.
+
+We also need to probe for a paired result here. The ground truth should show
+part ownership across 2 components.
+
+bool A, bool B are independnet their joint result shoul be shared ownership.
+
+
+\subsection{Extending the rank to be an upperbound through per feature ablation}
+
+
+
+
+\subsection{Irreducibility as the target of decomposition}
+
+% The methodological extensions developed in the next sections are best
+% understood against a formal account of what a faithful decomposition
+% of a network with dependent features should recover. \citet{engels2024}
+% provide such an account in two parts: a definition of when a feature is
+% \emph{irreducible}, and a corresponding hypothesis about how networks
+% represent irreducible features in their hidden states.
+
+% \paragraph{Reducibility.}
+% A feature $f$ is \emph{reducible} into features $a$ and $b$ if there
+% exists an affine transformation $f \mapsto Rf + c \equiv (a, b)$ for
+% some orthonormal $d_f \times d_f$ matrix $R$ and constant $c$, such
+% that the joint distribution $p(a, b)$ is either separable
+% ($p(a, b) = p(a) p(b)$) or a mixture of disjoint distributions ($a$ and
+% $b$ are non-co-occurring). A feature is \emph{irreducible} when no such
+% decomposition exists.
+
+% Two features that always co-occur, with their joint distribution
+% supported on the diagonal $\{(v, v) : v \in \mathcal{V}\}$ together
+% with the origin, satisfy neither reducibility condition: the joint is
+% not separable (the coordinates are perfectly correlated, not
+% independent) and not a disjoint mixture (the coordinates co-occur, not
+% exclude each other). Such a pair is therefore irreducible. The paired
+% features in the synced-input regime studied in this work are an
+% instance of this construction, and the irreducibility framework
+% identifies them as a single two-dimensional feature rather than two
+% one-dimensional features.
+
+% \paragraph{The multi-dimensional superposition hypothesis.}
+% \citet{engels2024} extend the standard superposition hypothesis to
+% accommodate irreducible multi-dimensional features. Hidden states are
+% written as a sum of feature contributions:
+% \begin{equation}
+%     x_{i,l}(t) = \sum_i V_i \, f_i(t)
+% \end{equation}
+% where each feature $f_i(t) \in \mathbb{R}^{d_{f_i}}$ has internal
+% dimensionality $d_{f_i} \geq 1$, each projection matrix
+% $V_i \in \mathbb{R}^{d \times d_{f_i}}$ embeds the feature into
+% hidden space, and the matrices are pairwise $\delta$-orthogonal:
+% $\| V_i^\top V_j \| < \delta$ for $i \neq j$. Features are sparse in
+% the sense that $f_i(t) = 0$ outside the domain of feature $i$.
+
+% The standard superposition hypothesis is the special case $d_{f_i} = 1$
+% for all $i$, in which $V_i$ collapses to a single direction vector.
+% The multi-dimensional version is strictly stronger: any feature with
+% $d_{f_i} > 1$ can always be expanded as
+% \begin{equation}
+%     V_i f_i = \sum_{k=1}^{d_{f_i}} V_i^{(k)} f_i^{(k)}
+% \end{equation}
+% where $V_i^{(k)}$ is the $k$-th column of $V_i$ and $f_i^{(k)}$ is the
+% $k$-th coordinate of $f_i$. This expansion fits the form of the
+% standard hypothesis but loses the information that the coordinates
+% $f_i^{(k)}$ are coordinates of a single irreducible feature rather
+% than independent one-dimensional features. The multi-dimensional
+% hypothesis preserves this distinction, placing the independence claim
+% between whole irreducible features rather than between scalar
+% coordinates of unknown irreducibility.
+
+% \paragraph{Implications for parameter decomposition.}
+% Hypothesis~2 specifies the granularity at which a faithful
+% decomposition should operate: the units of decomposition should be
+% irreducible features, with each unit's hidden subspace corresponding
+% to a $V_i$ matrix. A decomposition that splits an irreducible feature
+% into its scalar coordinates produces units that are not independent
+% (they covary according to the irreducible feature's joint
+% distribution), and treating them as if they were independent
+% misrepresents the model's computation.
+
+% Vanilla SPD operates at the granularity of the standard superposition
+% hypothesis: each rank-one subcomponent corresponds to a single
+% direction in input space, and there is no mechanism that groups
+% subcomponents whose input coordinates are coordinates of a shared
+% irreducible feature. Applied to a model representing irreducible
+% multi-dimensional features, vanilla SPD therefore recovers
+% decompositions whose units are finer than the irreducibility
+% boundary. The diagnostic in Section~\ref{sec:vanilla-spd-tms} confirms
+% this empirically: on a TMS model trained with paired co-occurring
+% features, vanilla SPD assigns one subcomponent per input coordinate,
+% splitting each irreducible pair into two atoms.
+
+% The attention extension developed in
+% Section~\ref{sec:attention-extension} addresses this gap. By forcing
+% subcomponents into competition for assignment to features, the
+% extension assigns co-occurring features to a single shared subcomponent
+% when the model has internally collapsed them onto a colinear hidden
+% representation. The recovered subcomponent's input-side direction $V$
+% plays the role of the projection matrix $V_i$ in
+% Hypothesis~2\footnote{In the present work the recovered $V$ is
+% rank-one rather than $d \times d_{f_i}$. This reflects the fact that,
+% when an irreducible feature's joint distribution is fully degenerate
+% (the coordinates are perfectly correlated), the model can represent
+% the feature using fewer dimensions than its formal internal
+% dimensionality $d_{f_i}$ would suggest. The recovered atom matches
+% the effective dimensionality the model uses rather than the formal
+% $d_{f_i}$, which is appropriate for parameter decomposition: the
+% target is faithfulness to the model's representation, not to the
+% feature's input-side joint distribution.}, and the recovered atom
+% corresponds to the irreducible feature as a single unit.
+% \subsection{Atom rank and the effective dimensionality of representations}
+
+% The multi-dimensional superposition hypothesis posits that an
+% irreducible feature $f_i$ with internal dimensionality $d_{f_i}$ is
+% represented through a projection matrix
+% $V_i \in \mathbb{R}^{d \times d_{f_i}}$ embedding the feature into
+% a $d_{f_i}$-dimensional subspace of hidden space. The natural reading
+% of this hypothesis is that the model uses all $d_{f_i}$ dimensions of
+% the available subspace --- that the columns of $V_i$ are linearly
+% independent and span a genuinely $d_{f_i}$-dimensional region of
+% hidden space.
+
+% This natural reading does not always hold. The model has discretion
+% over how much of the available subspace to use, and the joint
+% distribution of the feature's internal coordinates determines whether
+% this discretion can be exercised without loss of information. When
+% the joint distribution is degenerate, the model can represent an
+% irreducible feature using fewer than $d_{f_i}$ hidden dimensions while
+% still reconstructing the feature's contribution to its outputs
+% faithfully.
+
+% \paragraph{An example: perfectly correlated coordinates.}
+% Consider an irreducible feature $f_i$ with $d_{f_i} = 2$ whose two
+% coordinates are perfectly correlated, taking the same value $v$ when
+% the feature is active and zero otherwise. The joint distribution
+% $p(f_i^{(1)}, f_i^{(2)})$ has support only on the diagonal
+% $\{(v, v) : v \in \mathcal{V}\}$ together with the origin. This
+% distribution satisfies neither reducibility condition --- the
+% coordinates are not independent (they are perfectly correlated, not
+% factorisable) and the joint is not a disjoint mixture (there is no
+% regime in which one coordinate varies with the other pinned to zero).
+% The feature is therefore irreducible and formally two-dimensional.
+
+% The model representing this feature need not use a full-rank $V_i$.
+% Suppose the model chooses
+% \begin{equation}
+%     V_i = \begin{bmatrix} v & v \end{bmatrix}, \qquad v \in \mathbb{R}^d
+% \end{equation}
+% in which both columns are the same direction. The contribution of
+% this feature to the hidden state is
+% \begin{equation}
+%     V_i \, f_i = v \cdot f_i^{(1)} + v \cdot f_i^{(2)} = 2v \cdot f_i^{(1)}
+% \end{equation}
+% where the second equality uses $f_i^{(1)} = f_i^{(2)}$. A single
+% hidden dimension is sufficient because the perfect correlation means
+% the two coordinates always carry the same scalar value, and the model
+% need only track that scalar. The matrix $V_i$ is formally
+% $d \times 2$, but its column space is one-dimensional. The feature is
+% irreducibly two-dimensional in its input distribution, but the model
+% represents it through a rank-deficient $V_i$.
+
+% \paragraph{Effective representational rank.}
+% This motivates a distinction between the \emph{formal dimensionality}
+% of an irreducible feature, $d_{f_i}$, and the \emph{effective
+% representational rank} that the model uses to represent it,
+% $\text{rank}(V_i) \leq d_{f_i}$. The two coincide when the feature's
+% joint distribution is non-degenerate enough that compression would
+% lose information; they come apart when the joint distribution permits
+% a lower-rank representation without loss.
+
+% The paired-feature setup studied in
+% Section~\ref{sec:paired-experiments} is an instance of the second
+% case. The pair is irreducible with $d_{f_i} = 2$, but the trained
+% model represents it through a $V_i$ of effective rank one. The
+% diagnostic in Section~\ref{sec:diagnostics} confirms this: within-pair
+% cosine similarity of the corresponding columns of the model's input
+% matrix exceeds $0.99$, indicating that the two columns are
+% collinear.
+
+% \paragraph{Implications for atom rank.}
+% The required rank of an SPD subcomponent to host an irreducible
+% feature as a single unit is the \emph{effective representational rank}
+% of that feature in the trained model, not its formal $d_{f_i}$. This
+% is at most $d_{f_i}$ but can be less.
+
+% For features the model compresses --- as in the paired case ---
+% rank-one subcomponents are sufficient to host the irreducible feature
+% as a single unit. The attention extension developed in
+% Section~\ref{sec:attention-extension} operates in this regime,
+% recovering compressed irreducible features as single rank-one atoms
+% whose $V$ aligns with the direction the model uses.
+
+% For features the model represents at full $d_{f_i}$, rank-one
+% subcomponents cannot host the feature regardless of additional
+% methodological machinery. A simplex feature with non-collinear
+% vertices, or a circular feature of the kind \citet{engels2024}
+% identify in language models, requires the model to occupy a
+% genuinely two-dimensional subspace of hidden space; no compression
+% is possible because the joint distribution of vertices does not
+% collapse to a one-dimensional locus. Hosting such a feature as a
+% single unit requires SPD atoms of rank at least equal to the
+% feature's effective representational rank.
+
+% \paragraph{Scope of the present work.}
+% The present work develops methods for the compressed regime, where
+% the model's effective representational rank is one and rank-one
+% atoms suffice. Extending the framework to features the model
+% represents at higher effective rank requires SPD atoms with
+% rank greater than one, which introduces additional methodological
+% considerations beyond the scope of this thesis. The natural next
+% direction is the development of rank-$k$ atoms with mechanisms that
+% preserve the irreducibility-respecting properties of the present
+% method while accommodating features whose representations cannot be
+% compressed. This direction is discussed further in
+% Section~\ref{sec:future-work}.
+
+
+
+\section{Discussion}
+
+\section{Acknowledgements}
+
+\section{References}
+
+\section{Other things to consider?}
+Minimal descriptive length?
+\subsection{That some features are multidimensional}
+Think back to SAE, that learn a dictionary of features,
+then find hte linear combination of those features,
+however that this fails for cyclical features, as
+its cheaper to learn a single feature, than
+learn a direction and a periodic function.
+Now for your experiment, the dream scenario is that
+we allowe a multi dimensional component,
+and that this can learn the cyclical feature, i.e a weekly cycle or modular arithmatic
+either do this or extend TMS to be multi-dimensional,
+show if it works better with ur gnn or not,
+likewise we need to show that through individual masking of features,
+we can teach a component to kill one of its features,
+if it is better explained by a rank 1 component than rank 2.
+
+
+\printbibliography[heading=none]
+
+
 
 \subsubsection{GNAN-based importance functions}
 In SPD, each importance function $\gamma_{c}^{l}$ is an 
@@ -304,311 +1066,11 @@ Im just not able to beat them.
 We need to discuss experiments where the k dimensionality and dependence
 actually matters.
 
-\subsubsection{ Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}
-Following the extension to rank-$k$ subcomponents, and the alternative formulation of the GNAN,
-the output $g^{l}_{c} \in [0, 1]^{k}$ is a per feature importance value, and thus the masking can be applied independently to each feature.
-The intuition behind this is that if a mechanism captures a 1 dimensional feature, it would only need of the $k$ dimensions to be active.
-\\
-Likewise if this actually ends up working, k can be considered an upper bound or a so called "capacity" of a mechanism,
-it also follows nicely with the descriptive length principle found in the appendix of APD.
-
-To determine the effective rank of each subcomponent, the stochastic masking becomes:
-\[
-    [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
-\]
-for each j in $1,\dots,k$
-\\
-Notably this treats each feature independently, which may not be desirable,
-as such we could modify it ever so slightly:
-
-\[
-        [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)][g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)][g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
-\]
-The signal becomes an importance of two factors,
-if the component is important and both features are important, it remains active,
-if only one feature is important, the other will be pushed to zero
-
-The masked weight matrix becomes:
-\[
-    W^{\prime l}(x, r) = \sum_{c=1}^{C} 
-    U_{c}^{l} \, \mathrm{diag}\!\left(
-    \mathbf{m}_{c}^{l}(x, r)\right) V_{c}^{l\top}
-\]
-Where the diagonal matrix is the per-feature mask for subcomponent $c$.
-
-The importance minimality loss penalises all $k$ dimensions of 
-all subcomponents toward zero:
-\[
-    \mathcal{L}_{\text{import}} = \sum_{l=1}^{L} \sum_{c=1}^{C} 
-    \sum_{j=1}^{k} \left|[g_{c}^{l}(x)]_{j}\right|^{p}
-\]
-This follows the same logic by which SPD selects the number of 
-active subcomponents: the minimality loss drives unused components 
-toward zero, and only those that are genuinely required to 
-reconstruct the target model's output survive.
-
-This makes $k$ a soft upper bound rather than a sensitive 
-hyperparameter. In practice, $k$ can be set conservatively large 
-and the effective rank of each subcomponent is learned from the 
-data.
 
 
-\section{Benefits}
-
-% This architecture addresses both limitations of SPD 
-% simultaneously. The rank-$k$ subcomponents eliminate the need for 
-% post-hoc clustering by capturing multi-dimensional mechanisms as 
-% single units. The per-dimension ablation learns the effective rank 
-% of each mechanism automatically. And the GNaN enables importance 
-% decisions to be conditioned on the full neighbourhood, allowing 
-% subcomponents to reject interference from other active mechanisms 
-% and to coordinate their importance values when they participate 
-% in shared computations.
-
-
-
-
-% Pros: Forces all kk
-% k dimensions to be treated as a unit. If two dependent features end up in the same block, they are always ablated together — the stochastic masking will produce high reconstruction error whenever they're separated across blocks, pushing them together. This is the strongest pressure for grouping.
-
-% Cons: You lose implicit rank selection entirely. If k=8k = 8
-% k=8 and the true rank is 2, the other 6 dimensions are dead weight but can't be pruned — they ride along with the block. kk
-% k becomes a sensitive hyperparameter again.
-
-
-% \subsubsection{Training objective}
-
-% The full loss function retains the same structure as SPD:
-% \[
-%     \mathcal{L} = \mathcal{L}_{\text{faith}} + 
-%     \beta_{1} \mathcal{L}_{\text{stoch}} + 
-%     \beta_{2} \mathcal{L}_{\text{stoch-layer}} + 
-%     \beta_{3} \mathcal{L}_{\text{import}}
-% \]
-% The faithfulness loss trains the sum of rank-$k$ subcomponents to 
-% approximate the original weight matrices:
-% \[
-%     \mathcal{L}_{\text{faith}} = \frac{1}{N} \sum_{l=1}^{L} 
-%     \left\| W^{l} - \sum_{c=1}^{C} U_{c}^{l} \, 
-%     V_{c}^{l\top} \right\|_{F}^{2}
-% \]
-% The stochastic reconstruction loss trains the masked model to 
-% replicate the target model's output:
-% \[
-%     \mathcal{L}_{\text{stoch}} = \frac{1}{S} \sum_{s=1}^{S} 
-%     D\!\left(f(x \mid W'(x, r^{(s)})),\; f(x \mid W)\right)
-% \]
-% where $D$ is an appropriate divergence measure and $S$ is the 
-% number of mask samples per training step. The layerwise variant 
-% $\mathcal{L}_{\text{stoch-layer}}$ applies stochastic masking to 
-% one layer at a time while keeping all other layers at their 
-% original weights.
-
-% The importance minimality loss operates over all $k$ dimensions 
-% of all subcomponents as defined in Section~3.3.2. The 
-% hyperparameters are $\beta_{1}, \beta_{2}, \beta_{3}$ (loss 
-% coefficients), $p$ (the norm used in 
-% $\mathcal{L}_{\text{import}}$), $S$ (mask samples per step), $k$ 
-% (the maximum rank of each subcomponent), and $C$ (the number of 
-% subcomponents per layer).
-
-
-% Together, the three modifications form a complementary system. 
-% Rank-$k$ subcomponents provide the \emph{capacity} to represent 
-% multi-dimensional mechanisms — a single subcomponent can host a 
-% feature that occupies an $r$-dimensional subspace. Per-dimension 
-% ablation provides the \emph{pressure} to discard unused capacity 
-% — dimensions that do not contribute to the network's output are 
-% suppressed, preventing a subcomponent from absorbing unrelated 
-% computations. The GNaN provides the \emph{routing}: by 
-% conditioning each importance decision on the activation state of 
-% neighbouring subcomponents, it can learn to consolidate a 
-% multi-dimensional feature into a single subcomponent whose 
-% capacity is sufficient to host it, rather than fragmenting it 
-% across several. In this sense, the GNaN serves as an implicit 
-% clustering mechanism that operates during training rather than 
-% as a post-hoc step.
-
-
-
-% The guiding principle behind these methods is one of minimum description length — a good decomposition
-% should identify the fewest, simplest components needed to faithfully explain what the network is doing on
-% any given input.
-
-
-
-
-\subsection{Dead salmon thing}
-
-\section{Experiments}
-\subsection{Toy model of superposition}
-
-\subsection{Rank-$r$ Toy Model of Superposition}
-
-% To evaluate whether [METHOD\_NAME] can recover multi-dimensional 
-% mechanisms and implicitly learn their rank, we introduce a 
-% generalisation of the Toy Model of Superposition 
-% (TMS)~\autocite{ToyModelsSuperposition} in which features are 
-% $r$-dimensional vectors rather than scalars. We conduct two 
-% experiments: one in which all features share the same rank, and 
-% one in which features of different ranks coexist.
-
-% \subsubsection{Setup}
-
-% The standard TMS reconstructs sparse scalar inputs through a 
-% bottleneck:
-% \[
-%     \hat{\mathbf{x}} = \mathrm{ReLU}(W^{\top} W \mathbf{x} + 
-%     \mathbf{b}), \quad W \in \mathbb{R}^{m \times n}, \quad m < n
-% \]
-% Each feature $x_i \in \mathbb{R}$ is a scalar, and each column 
-% $\vec{w}_i$ of $W$ is the rank-one mechanism that encodes it. We 
-% generalise this by replacing each scalar feature with a vector 
-% $\mathbf{x}^{(i)} \in \mathbb{R}^{r_i}$, where $r_i$ is the 
-% rank of feature $i$. The full input is the concatenation 
-% $\mathbf{x} = (\mathbf{x}^{(1)}, \ldots, 
-% \mathbf{x}^{(n)})^{\top} \in \mathbb{R}^{d}$, where 
-% $d = \sum_{i=1}^{n} r_i$. The model becomes:
-% \[
-%     \hat{\mathbf{x}} = \mathrm{ReLU}(W^{\top} W \mathbf{x} + 
-%     \mathbf{b}), \quad W \in \mathbb{R}^{m \times d}, \quad m < d
-% \]
-% The columns of $W$ are grouped into $n$ blocks:
-% \[
-%     W = \left[\; \underbrace{W_1}_{r_1 \text{ cols}} \;\mid\; 
-%     \underbrace{W_2}_{r_2 \text{ cols}} \;\mid\; \cdots \;\mid\; 
-%     \underbrace{W_n}_{r_n \text{ cols}} \;\right]
-% \]
-% where $W_i \in \mathbb{R}^{m \times r_i}$ is the embedding for 
-% feature $i$. The ground truth mechanism for feature $i$ is the 
-% rank-$r_i$ matrix $W_i W_i^{\top}$, which is active if and only 
-% if $\mathbf{x}^{(i)} \neq \mathbf{0}$.
-
-% \subsubsection{Data distribution}
-
-% Each feature is independently active with probability $s \ll 1$. 
-% When active, it is sampled uniformly from the unit sphere 
-% $S^{r_i - 1}$ to ensure that all $r_i$ dimensions are necessary 
-% for reconstruction:
-% \[
-%     \mathbf{x}^{(i)} \sim \begin{cases}
-%         \mathrm{Unif}(S^{r_i - 1}) & 
-%         \text{with probability } s \\
-%         \mathbf{0} \in \mathbb{R}^{r_i} & 
-%         \text{with probability } 1 - s
-%     \end{cases}
-% \]
-% The target model is trained with an importance-weighted 
-% reconstruction loss:
-% \[
-%     \mathcal{L}_{\text{target}} = \sum_{i=1}^{n} \lambda_i \, 
-%     \|\hat{\mathbf{x}}^{(i)} - \mathbf{x}^{(i)}\|^2
-% \]
-% where $\lambda_i$ are importance weights and 
-% $\hat{\mathbf{x}}^{(i)}$ is the reconstruction of the $i$-th 
-% block.
-
-% \subsubsection{Experiment 1: Uniform rank}
-
-% In the first experiment, all features share the same rank 
-% $r_i = r$ for all $i$. We fix $n = 40$ features, hidden 
-% dimension $m = 15$, sparsity $s = 0.05$, and set $k = 8$ for the 
-% decomposition. We train target models for 
-% $r \in \{1, 2, 4, 8\}$ and decompose each with three methods:
-
-% \renewcommand\labelitemi{\tiny$\bullet$}
-% \begin{itemize}
-%     \setlength\itemsep{0em}
-%     \item SPD (rank-one subcomponents, independent gates),
-%     \item [METHOD\_NAME] without GNaN (rank-$k$ subcomponents 
-%           with per-dimension ablation, independent gates),
-%     \item [METHOD\_NAME] (rank-$k$ subcomponents with 
-%           per-dimension ablation and GNaN).
-% \end{itemize}
-
-% For each decomposition, we measure:
-
-% \renewcommand\labelitemi{\tiny$\bullet$}
-% \begin{itemize}
-%     \setlength\itemsep{0em}
-%     \item \textbf{MMCS}: Mean max cosine similarity between 
-%           recovered and ground truth mechanisms, adapted to 
-%           rank-$r$ subspaces by comparing the principal angles 
-%           between the column spans of $W_i$ and the learned 
-%           subcomponents.
-%     \item \textbf{Effective rank}: The number of dimensions per 
-%           subcomponent whose mean importance 
-%           $\mathbb{E}_x[|[g_c^l(x)]_j|]$ exceeds a threshold 
-%           $\tau = 0.5$.
-%     \item \textbf{Reconstruction loss}: 
-%           $D(f(x \mid W'), f(x \mid W))$ on held-out data.
-% \end{itemize}
-
-% The prediction is that at $r = 1$, all three methods perform 
-% comparably, since all mechanisms are rank-one and the extensions 
-% provide no advantage. As $r$ increases, SPD should degrade 
-% because its independent scalar gates must coordinate across $r$ 
-% fragments, while [METHOD\_NAME] should maintain performance by 
-% capturing each mechanism as a single rank-$r$ block. The 
-% effective rank per subcomponent should match $r$, with the 
-% remaining $k - r$ dimensions driven to zero by the importance 
-% minimality loss.
-
-% \subsubsection{Experiment 2: Mixed rank}
-
-% In the second experiment, features have heterogeneous ranks. We 
-% set $n = 40$ features, of which 20 are rank-one 
-% ($r_i = 1$) and 20 are rank-two ($r_i = 2$). The hidden 
-% dimension is $m = 15$, sparsity $s = 0.05$, and $k = 4$ for 
-% the decomposition. All other settings are identical to 
-% Experiment~1.
-
-% This experiment tests whether the implicit rank selection 
-% operates correctly when the true ranks vary across features 
-% within the same model. The prediction is that [METHOD\_NAME] 
-% learns subcomponents whose effective rank matches the ground 
-% truth rank of the feature they capture: subcomponents 
-% corresponding to rank-one features should have one active 
-% dimension and $k - 1$ suppressed dimensions, while those 
-% corresponding to rank-two features should have two active 
-% dimensions and $k - 2$ suppressed dimensions.
-
-% We visualise this by plotting the per-dimension importance 
-% values $\mathbb{E}_x[|[g_c^l(x)]_j|]$ for each subcomponent, 
-% sorted by magnitude. For a successful decomposition, this 
-% should produce a bimodal pattern: a cluster of subcomponents 
-% with one active dimension and a cluster with two, with a clear 
-% gap between the active and suppressed dimensions within each 
-% subcomponent.
-
-\subsection{Toy model with relu}
-\subsection{Smallest possible LM}
-\section{Discussion}
-
-\section{References}
-
-\section{Other things to consider?}
-Minimal descriptive length?
-\subsection{That some features are multidimensional}
-Think back to SAE, that learn a dictionary of features,
-then find hte linear combination of those features,
-however that this fails for cyclical features, as
-its cheaper to learn a single feature, than
-learn a direction and a periodic function.
-Now for your experiment, the dream scenario is that
-we allowe a multi dimensional component,
-and that this can learn the cyclical feature, i.e a weekly cycle or modular arithmatic
-either do this or extend TMS to be multi-dimensional,
-show if it works better with ur gnn or not,
-likewise we need to show that through individual masking of features,
-we can teach a component to kill one of its features,
-if it is better explained by a rank 1 component than rank 2.
-
-
-\printbibliography[heading=none]
-
-
-
+\section{Notes}
+Putting the minimality lsos entropy higher, encourages diagonals?
+Instead of capturing two features in the same component.
 
 
 
