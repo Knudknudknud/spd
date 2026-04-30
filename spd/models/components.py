@@ -186,7 +186,6 @@ class Transformer(nn.Module):
         self.W_k = nn.Linear(in_channels, hidden_channels)
         self.W_v = nn.Linear(in_channels, hidden_channels)
         
-        # Self path: dominant, like original SPD gate
         self.self_proj = nn.Sequential(
             nn.Linear(in_channels, hidden_channels),
             nn.ReLU(),
@@ -194,8 +193,6 @@ class Transformer(nn.Module):
         )
         
         self.attn_proj = nn.Linear(hidden_channels, out_channels)
-        # nn.init.zeros_(self.attn_proj.weight)
-        # nn.init.zeros_(self.attn_proj.bias)
 
     def forward_batched(self, x_batch):
         Q = self.W_q(x_batch)
