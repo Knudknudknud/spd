@@ -205,6 +205,7 @@ class Transformer(nn.Module):
         attn_out = F.scaled_dot_product_attention(Q, K, V)
         return self.self_proj(x_batch) + self.attn_proj(attn_out)
     
+    
 class TensorGNAN(nn.Module):
     def __init__(self, in_channels, out_channels, n_layers, hidden_channels=None, bias=True, dropout=0.0,
                  rho_per_feature=False, normalize_rho=False, is_graph_task=False, readout_n_layers=1):

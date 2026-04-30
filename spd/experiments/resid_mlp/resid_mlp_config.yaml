@@ -7,7 +7,7 @@ wandb_run_name_prefix: ""
 # --- General ---
 seed: 0
 C: 200
-k: 2
+K: 1
 n_mask_samples: 1
 n_ci_mlp_neurons: 16
 target_module_patterns:

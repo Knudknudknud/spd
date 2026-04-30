@@ -47,7 +47,7 @@ class ComponentModel(nn.Module):
         )
         
         self.gnan = nn.ModuleDict({
-            layer_name: Transformer(in_channels=K, out_channels=1, hidden_channels=16)
+            layer_name: Transformer(in_channels=K, out_channels=1, hidden_channels=32)
             for layer_name in self.components.keys()
         })
 

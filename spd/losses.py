@@ -123,6 +123,17 @@ def calc_importance_minimality_loss(
     return total_loss.sum(dim=-1).mean()
 
 
+def calc_importance_minimality_loss_entropy(ci_upper_leaky, pnorm):
+    total_loss = torch.zeros_like(next(iter(ci_upper_leaky.values())))
+
+    for layer_ci_upper_leaky in ci_upper_leaky.values():
+        layer_entropy = entropy(layer_ci_upper_leaky)  # [..., C]
+        layer_loss = layer_entropy.sum(dim=-1)         # [...]
+
+        total_loss = total_loss + layer_loss
+
+    return total_loss.mean()
+
 def calc_masked_recon_layerwise_loss(
     model: ComponentModel,
     batch: Int[Tensor, "..."],
@@ -284,7 +295,13 @@ def calc_ce_losses(
 def entropy(g, eps=1e-9):
     return -(g * (g + eps).log()).sum(dim=-1)
 
-
+    
+def load_balance_loss(causal_importances):
+    loss = 0
+    for ci in causal_importances.values():
+        mean_per_component = ci.mean(dim=tuple(range(ci.ndim - 1)))
+        loss = loss + (mean_per_component ** 2).sum()
+    return loss
 
 def calculate_losses(
     model: ComponentModel,
@@ -387,13 +404,13 @@ def calculate_losses(
         loss_terms["loss/stochastic_recon_layerwise"] = stochastic_recon_layerwise_loss.item()
 
     # Importance minimality loss
-    importance_minimality_loss = calc_importance_minimality_loss(
-        ci_upper_leaky=causal_importances_upper_leaky, pnorm=config.pnorm
-    )
+    # importance_minimality_loss = calc_importance_minimality_loss(
+    #     ci_upper_leaky=causal_importances_upper_leaky, pnorm=config.pnorm
+    # )
 
-    importance_minimality_loss = sum(
-        entropy(g).mean() 
-        for g in causal_importances_upper_leaky.values()
+
+    importance_minimality_loss = calc_importance_minimality_loss_entropy(
+        ci_upper_leaky=causal_importances_upper_leaky, pnorm=config.pnorm
     )
     total_loss += config.importance_minimality_coeff * importance_minimality_loss
     loss_terms["loss/importance_minimality"] = importance_minimality_loss.item()
