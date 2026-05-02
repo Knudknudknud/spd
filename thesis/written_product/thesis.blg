@@ -1,0 +1,22 @@
+[0] Config.pm:308> INFO - This is Biber 2.20
+[1] Config.pm:311> INFO - Logfile is 'thesis.blg'
+[614] biber-MSWIN64:340> INFO - === 
+[728] Biber.pm:420> INFO - Reading 'thesis.bcf'
+[1092] Biber.pm:994> INFO - Found 8 citekeys in bib section 0
+[1136] Biber.pm:4463> INFO - Processing section 0
+[1186] Biber.pm:4654> INFO - Looking for bibtex file 'references.bib' for section 0
+[1315] bibtex.pm:1713> INFO - LaTeX decoding ...
+[1353] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[1793] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[1794] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[1794] Biber.pm:4283> INFO - Sorting list 'anyt/global//global/global/global' of type 'entry' with template 'anyt' and locale 'en-US'
+[1794] Biber.pm:4289> INFO - No sort tailoring available for locale 'en-US'
+[1842] bbl.pm:676> INFO - Writing 'thesis.bbl' with encoding 'UTF-8'
+[1880] bbl.pm:779> INFO - Output to thesis.bbl
+[1881] Biber.pm:131> WARN - BibTeX subsystem: C:\Users\bruger\AppData\Local\Temp\biber_tmp_Ks71\33e59b5ca9ec342068223d604c3f8d55_18756.utf8, line 25, warning: 19 characters of junk seen at toplevel
+[1881] Biber.pm:131> WARN - BibTeX subsystem: C:\Users\bruger\AppData\Local\Temp\biber_tmp_Ks71\33e59b5ca9ec342068223d604c3f8d55_18756.utf8, line 45, warning: 41 characters of junk seen at toplevel
+[1882] Biber.pm:131> WARN - BibTeX subsystem: C:\Users\bruger\AppData\Local\Temp\biber_tmp_Ks71\33e59b5ca9ec342068223d604c3f8d55_18756.utf8, line 56, warning: 302 characters of junk seen at toplevel
+[1882] Biber.pm:131> WARN - BibTeX subsystem: C:\Users\bruger\AppData\Local\Temp\biber_tmp_Ks71\33e59b5ca9ec342068223d604c3f8d55_18756.utf8, line 75, warning: 151 characters of junk seen at toplevel
+[1882] Biber.pm:131> WARN - BibTeX subsystem: C:\Users\bruger\AppData\Local\Temp\biber_tmp_Ks71\33e59b5ca9ec342068223d604c3f8d55_18756.utf8, line 88, warning: 31 characters of junk seen at toplevel
+[1882] Biber.pm:131> WARN - BibTeX subsystem: C:\Users\bruger\AppData\Local\Temp\biber_tmp_Ks71\33e59b5ca9ec342068223d604c3f8d55_18756.utf8, line 100, warning: 44 characters of junk seen at toplevel
+[1883] Biber.pm:133> INFO - WARNINGS: 6

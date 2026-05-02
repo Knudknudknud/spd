@@ -22,47 +22,54 @@ Some super cool abstract of all my findings
 
 \section{Introduction}
 
-A central goal of mechanistic interpretability is to decompose a neural network's parameters
-into a small number of meaningful units, atoms, each of which corresponds to something the model is doing.
-The hope is that a network's computation, however dense and distributed in its raw form, can be expressed
-as a sum of simpler mechanisms that admit human-readable descriptions.
+Mechanistic interpretability seeks to decompose a neural network's
+parameters into a set of atoms, each corresponding
+to a concrete mechanism underlying the model's computation,
+with the goal of simplifying even dense and distributed networks into a simpler, human-interpretable form.
 
-A recent line of work shifts the object of decomposition from activations to parameters, decomposing
-a network's weights into a sum of simpler components, each taken to correspond to a
-concrete atom of computation. Methods guided by the principle of minimum description length
-aim to recover components that are faithful to the original weights, minimal in the number required per input,
-and individually as simple as possible. Stochastic Parameter Decomposition (SPD) [Bus+25] is one such method,
-decomposing networks into rank-one subcomponents and learning a per-component importance function that
-estimates each atom's causal contribution to a given input.
+Recent work shifts focus from matching activations \autocite{sparseautoencoderscanonicalunits} to directly decomposing parameters. Guided by the minimum description length, these methods aim to recover components that are faithful to the original weights, sparse per input, and individually simple. 
+One such approach, Stochastic Parameter Decomposition (SPD) \autocite{stochasticparameterdecomposition}, factorizes networks into rank-one components with a learned per component importance
+function.
 
-The Open Problems in Mechanistic Interpretability programme [Sha+25] identifies the question of how best to
-carve a network at its joints as a central open problem of the field. Whether a parameter decomposition
-recovers the computational primitives the model actually uses depends on what the ground-truth decomposition is taken
-to be, and the carving question is the question of which units to take as ground truth. For models with independent
-features the answer is comparatively unambiguous: one atom per feature. The question becomes substantially harder when
-the features themselves are dependent, a regime that is empirically attested in real models.
-Engels et al. [Eng+24] develop a rigorous notion of irreducible multi-dimensional features, defined as
-features whose joint distribution can be split neither into independent components nor
-into disjoint mixture components, and show that language models represent inherently cyclical concepts,
-including days of the week and months of the year, as two-dimensional irreducible features whose individual
-coordinates are not independent units but components of a single object the model manipulates together.
-Networks that represent such features admit multiple decompositions that are equally faithful
-to the weights but differ in the level at which features are separated.
-A network that computes the volume of a cube could equally faithfully be decomposed into separate components
-that each compute one of the side lengths, or into a single component that computes the volume directly.
-The first is a feature-level decomposition: one atom per individual input direction, exposing the internal
-structure of the computation but leaving the grouping of features implicit, recoverable only by
-inspecting which atoms co-activate. The second is a structural-level decomposition:
-one atom per irreducible structure, exposing the grouping directly but treating the internal computation
-as a single unit. Each level loses something the other preserves.
+However, both the problem of identifying an appropriate decomposition
+and characterizing its atomic units remain open. \autocite{sharkey2025openproblemsmechanisticinterpretability}
+Whether a parameter decomposition recovers the computational primitives
+of an neural network depends on what the ground-truth decomposition
+is taken to be. With models consisting of independent features,
+the decomposition is unambiguous, with one atom per feature.
+If the features are dependent or co-occur, the decomposition becomes underdetermined.
+Decompositions that split features across multiple atoms, risk losing structural information, that gave each feature its meaning,
+while decompositions that group multiple features into a single atom, risk losing granularity by collapsing distinct features into a single unit.
 
-The present work extends SPD by examining its behaviour on dependent feature pairs and larger structures,
-configurations in which the multi-dimensional superposition hypothesis posits a structural-level unit.
-Here SPD is shown to recover both feature-level and structural-level decompositions, and the conditions
-distinguishing the two outcomes are characterised. Building on this, we introduce softmax-and-attention competition between subcomponents,
-making the importance calculation relational, and show that the extension allows SPD to recover decompositions
-that respect the multi-dimensional superposition hypothesis. We additionally introduce the Toy Model of Geometry,
-a small model that computes the volume of a simplex, to examine how this method performs on a more complex structure.
+For example, a network computing the volume of a cube can be
+decomposed either into components corresponding to individual side
+lengths, or into a single component computing the volume directly.
+The former corresponds to a feature-level decomposition,
+with one atom per input direction, exposing internal
+structure but leaving grouping implicit, only recoverable
+through co-activation patterns. The latter corresponds
+to a structural-level decomposition, with one atom per
+computation, exposing the grouping directly but collapsing per side-length information.
+
+\autocite{engels2025languagemodelfeaturesonedimensionally} introduces a
+a formal definition of irreducibility to disambiguate cases such
+as the cube example.
+Features are irreducible, and thus constitute the unit of decomposition,
+if their joint distribution cannot be decomposed into independent
+factors or into a mixture containing a lower-dimensional component. Empirically,
+it also demonstrates that cyclical concepts, such as days of the week are represented as irreducible two-dimensional features in transformer models.
+
+This work extends SPD by examining its behaviour on dependent features,
+in settings where the multi-dimensional superposition hypothesis posits
+either a feature-level or a structural-level unit \autocite{engels2025languagemodelfeaturesonedimensionally}. 
+A reformulation of the importance function is proposed, in which importance
+corresponds to the conditional probability that a given subcomponent
+is responsible for a computation, conditioned on the activations of all
+subcomponents in the same layer. Finally, it is shown that the
+parameterisation must be extended to rank-k subcomponents to accommodate
+the multi-dimensional feature hypothesis.
+
+
 
 \section{ Old Introduction - may be useful for related work.}
 
@@ -363,7 +370,7 @@ Under the softmax reformulation, the minimality loss becomes degenerate: The sum
 We replace it with an entropy-based minimality term that
 penalises the shape of the allocation:
 \begin{equation}
-    \mathcal{L}_{\text{minimality}} = -\sum_{l=1}^{L} \sum_{c=1}^{C} \alpha^l_c(x) \log \alpha^l_c(x)
+    \mathcal{L}_{\text{minimality}} = - \frac{1}{|C|} \sum_{l=1}^{L} \sum_{c=1}^{C} \alpha^l_c(x) \log \alpha^l_c(x)
 \end{equation}
 
 Entropy is minimised at one-hot allocations, where a single
