@@ -234,6 +234,116 @@
       \verb https://arxiv.org/abs/2309.08600
       \endverb
     \endentry
+    \entry{elhage2022toymodelssuperposition}{misc}{}{}
+      \name{author}{16}{}{%
+        {{hash=541f016661382ea2cc54ea767573b9c3}{%
+           family={Elhage},
+           familyi={E\bibinitperiod},
+           given={Nelson},
+           giveni={N\bibinitperiod}}}%
+        {{hash=e2328e4d29e6d57481f844919121200c}{%
+           family={Hume},
+           familyi={H\bibinitperiod},
+           given={Tristan},
+           giveni={T\bibinitperiod}}}%
+        {{hash=bd24844b3abaa88e1f3c5c074ad37ab6}{%
+           family={Olsson},
+           familyi={O\bibinitperiod},
+           given={Catherine},
+           giveni={C\bibinitperiod}}}%
+        {{hash=145ba94765ef92b3094332c3fa573d26}{%
+           family={Schiefer},
+           familyi={S\bibinitperiod},
+           given={Nicholas},
+           giveni={N\bibinitperiod}}}%
+        {{hash=eb1d3044b466619459c76843f0e98bb9}{%
+           family={Henighan},
+           familyi={H\bibinitperiod},
+           given={Tom},
+           giveni={T\bibinitperiod}}}%
+        {{hash=6cc94a80c21f9c5b346a6f1a21e75095}{%
+           family={Kravec},
+           familyi={K\bibinitperiod},
+           given={Shauna},
+           giveni={S\bibinitperiod}}}%
+        {{hash=b453e963913f0d9b4b7015dcdda7fab6}{%
+           family={Hatfield-Dodds},
+           familyi={H\bibinithyphendelim D\bibinitperiod},
+           given={Zac},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=f6628869ac88ecf9d7cd4d7b0898d7b2}{%
+           family={Lasenby},
+           familyi={L\bibinitperiod},
+           given={Robert},
+           giveni={R\bibinitperiod}}}%
+        {{hash=264474bce221274845000e916a53e05a}{%
+           family={Drain},
+           familyi={D\bibinitperiod},
+           given={Dawn},
+           giveni={D\bibinitperiod}}}%
+        {{hash=19b0640fcc9096d194392da9f536e415}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Carol},
+           giveni={C\bibinitperiod}}}%
+        {{hash=7bfa5101481b4cfcddf46d2915b6ad49}{%
+           family={Grosse},
+           familyi={G\bibinitperiod},
+           given={Roger},
+           giveni={R\bibinitperiod}}}%
+        {{hash=b51e7c5fe92844f39ce52b8a5fa5675f}{%
+           family={McCandlish},
+           familyi={M\bibinitperiod},
+           given={Sam},
+           giveni={S\bibinitperiod}}}%
+        {{hash=9e85370e215d552f72c95a2b63a37802}{%
+           family={Kaplan},
+           familyi={K\bibinitperiod},
+           given={Jared},
+           giveni={J\bibinitperiod}}}%
+        {{hash=1e6adbf36ab730cd5fdadb838b4d2667}{%
+           family={Amodei},
+           familyi={A\bibinitperiod},
+           given={Dario},
+           giveni={D\bibinitperiod}}}%
+        {{hash=c66133f96104e3c0dcd2f73e11469ab0}{%
+           family={Wattenberg},
+           familyi={W\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+        {{hash=dea937fb216bfbba25c1bfa1f36a63fe}{%
+           family={Olah},
+           familyi={O\bibinitperiod},
+           given={Christopher},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{61579b5b16e1bfa48390e215a6b71526}
+      \strng{fullhash}{e46b54b96590ff9e09c9f81fdca69bf7}
+      \strng{fullhashraw}{e46b54b96590ff9e09c9f81fdca69bf7}
+      \strng{bibnamehash}{61579b5b16e1bfa48390e215a6b71526}
+      \strng{authorbibnamehash}{61579b5b16e1bfa48390e215a6b71526}
+      \strng{authornamehash}{61579b5b16e1bfa48390e215a6b71526}
+      \strng{authorfullhash}{e46b54b96590ff9e09c9f81fdca69bf7}
+      \strng{authorfullhashraw}{e46b54b96590ff9e09c9f81fdca69bf7}
+      \field{labelalpha}{Elh+22}
+      \field{sortinit}{E}
+      \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.LG}
+      \field{eprinttype}{arXiv}
+      \field{title}{Toy Models of Superposition}
+      \field{year}{2022}
+      \verb{eprint}
+      \verb 2209.10652
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2209.10652
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2209.10652
+      \endverb
+    \endentry
     \entry{engels2025languagemodelfeaturesonedimensionally}{misc}{}{}
       \name{author}{5}{}{%
         {{hash=1a6d01521ceae1f4e3fc57489f884843}{%
@@ -565,6 +675,39 @@
       \endverb
       \verb{url}
       \verb https://arxiv.org/abs/2501.16496
+      \endverb
+    \endentry
+    \entry{smith2024strong}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=901f01ae77fb6a76c3f1ce5dfb3de257}{%
+           family={Smith},
+           familyi={S\bibinitperiod},
+           given={Lewis},
+           giveni={L\bibinitperiod}}}%
+      }
+      \strng{namehash}{901f01ae77fb6a76c3f1ce5dfb3de257}
+      \strng{fullhash}{901f01ae77fb6a76c3f1ce5dfb3de257}
+      \strng{fullhashraw}{901f01ae77fb6a76c3f1ce5dfb3de257}
+      \strng{bibnamehash}{901f01ae77fb6a76c3f1ce5dfb3de257}
+      \strng{authorbibnamehash}{901f01ae77fb6a76c3f1ce5dfb3de257}
+      \strng{authornamehash}{901f01ae77fb6a76c3f1ce5dfb3de257}
+      \strng{authorfullhash}{901f01ae77fb6a76c3f1ce5dfb3de257}
+      \strng{authorfullhashraw}{901f01ae77fb6a76c3f1ce5dfb3de257}
+      \field{labelalpha}{Smi24}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{LessWrong}
+      \field{month}{8}
+      \field{note}{Accessed: 2026-05-03}
+      \field{title}{The `strong' feature hypothesis could be wrong}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://www.lesswrong.com/posts/tojtPCCRpKLSHBdpn/the-strong-feature-hypothesis-could-be-wrong
+      \endverb
+      \verb{url}
+      \verb https://www.lesswrong.com/posts/tojtPCCRpKLSHBdpn/the-strong-feature-hypothesis-could-be-wrong
       \endverb
     \endentry
   \enddatalist
