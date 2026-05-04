@@ -13,7 +13,7 @@
 
 
 \begin{document}
-\title{Thesis Title}
+\title{Multidimensional Parameter Decomposition for Mechanistic Interpretability}
 \author{Knud Rasmus Sønderbek}
 \maketitle
 \begin{abstract}
@@ -28,8 +28,8 @@ to a concrete mechanism underlying the model's computation,
 with the goal of simplifying even dense and distributed networks into a simpler, human-interpretable form.
 
 
-However, both identifying an appropriate decomposition
- and the decomposition into these atomic units remain open problems.
+However, both the atomic structure for decomposition
+ and the decomposition itself remain open problems.
 \autocite{sharkey2025openproblemsmechanisticinterpretability}
 Whether a decomposition recovers the computational primitives
 of a neural network depends on what the ground-truth decomposition
@@ -53,7 +53,7 @@ Recently,
 a formal definition of irreducibility was introduced to disambiguate cases such
 as the cube example. 
 \autocite{engels2025languagemodelfeaturesonedimensionally}
-Features are irreducible, and thus constitute the unit of decomposition,
+Features are irreducible, and thus constitute units of decomposition,
 if their joint distribution cannot be decomposed into independent
 factors or into a mixture containing a lower-dimensional component.
 
@@ -64,11 +64,10 @@ function.
 
 This work extends SPD by examining its behaviour on dependent features,
 in settings where the multi-dimensional superposition hypothesis posits
-either a feature-level or a structural-level unit \autocite{engels2025languagemodelfeaturesonedimensionally}. 
-A reformulation of the importance function is proposed, in which importance
-corresponds to the conditional probability that a given subcomponent
-is responsible for a computation, conditioned on the activations of all
-subcomponents in the same layer, to encourage that dependent features are grouped within one "mechanism".
+a feature-level or a structural-level unit \footnote{I mean feature-level, structure level is wrong under this view but it sounds good} \autocite{engels2025languagemodelfeaturesonedimensionally}. 
+A reformulation of the importance function is proposed,
+to encourage that features that are manipulated jointly are grouped together, by computing importance relationally across components.
+
 
 
 
@@ -137,16 +136,15 @@ Strong feature hypothesis
 
 \section{Method}
 
-\subsection{Background on APD and SPD}
-The initial inspiration for shifting the focus from activations to parameters 
-came from Attribution-based Parameter Decomposition 
-(APD) \autocite{AttributionBasedParameterDecomposition}. APD decomposes the 
-weights of a network into a set of parameter components: vectors in 
-parameter space that satisfy three desirable properties.
+\subsection{Background on SPD}
+This paper builds on the line of work of Attribution-based Parameter Decomposition (APD) \autocite{AttributionBasedParameterDecomposition}
+and Stochastic Parameter Decomposition (SPD) \autocite{stochasticparameterdecomposition}, which both aim to decompose
+a network's parameters into a set of components that are faithful
+to the original weights, minimal in the number required per input,
+and individually as simple as possible.
 
-Let $f(x, W)$ be a neural network with weight matrices 
-$W = \{W^1, \dots, W^L\}$. A set of parameter components should satisfy the following properties:
-
+To formalise this, consider a neural network $f(x, W)$ with weight matrices $W = \{W^1, \dots, W^L\}$.
+A set of parameter components $\{W^l_c\}_{c=1}^{C}$ are said to comprise the network's mechanisms if they satisfy the following properties:
 \renewcommand\labelitemi{\tiny$\bullet$}
 \begin{itemize}
     \setlength\itemsep{0em}
@@ -158,44 +156,86 @@ $W = \{W^1, \dots, W^L\}$. A set of parameter components should satisfy the foll
           matrices and as few ranks as possible.
 \end{itemize}
 
-If a set of parameter components satisfies these properties, they are said to 
-comprise the network's mechanisms \autocite{AttributionBasedParameterDecomposition}.
+Stochastic Parameter Decomposition (SPD) aims to achieve this by
+decomposing the weight matrices of a network
+ into a sum of rank-one matrices, called subcomponents:
+\begin{equation}
+    W^{l}_{i,j} \approx \sum_{c=1}^{C} \vec{U}_{i,c}^{l} \vec{V}_{j,c}^{l}, \quad \text{where} \quad \vec{u} \in \mathbb{R}^{d_{out}}, \vec{v} \in \mathbb{R}^{d_{in}}
+\end{equation}
+where C is a hyperparameter, for the number of components for each layer, $l$ indexes the layer and $i,j$ are the hidden indices.
+The subcomponent count, C, may be chosen to be larger than both $d_{in}$ and $d_{out}$, enabling the method to learn features in superposition \autocite{stochasticparameterdecomposition}.
 
-However, APD suffers from several practical limitations. Each parameter 
-component is a full vector in parameter space $\mathbb{R}^{|\theta|}$, where 
-$|\theta|$ is the total number of parameters in the network,
-thus increasing the memory cost to $O(\theta \cdot C)$, where $C$ is the number of components,
-making the method computationally expensive to scale to larger models.
-APD is also highly sensitive to its top-$k$ hyperparameter, 
-which specifies the expected number of active components per input and must be 
-chosen in advance. Lastly, APD relies on the magnitude of the gradient as a proxy
-for the causal importance of each component. These gradients
-have been shown to be poor approximations of the true importance. (cite the papers here).
+To enforce the properties above, three losses are introduced, which are optimised jointly.
+Faithfulness is enforced thorugh a mean squared error loss between the original network's weights and the the sum of subcomponents:
+
+\begin{equation}
+    \mathcal{L}_{faithfulness} = \frac{1}{N} \sum_{l=1}^{L}\sum_{i,j} \left( W_{i,j}^{l} - \sum_{c=1}^{C} U^{l}_{i,c}V^{l}_{c,j} \right)^{2}  
+\end{equation}
+where $N$ is the total parameter count in the target model.
+
+Optimization for simplicity and minimality is achieved through a
+stochastic masking procedure. Intuitively, if a subcomponent is not
+necessary for reconstruction, it can be sampled to zero without loss
+of faithfulness. A causal importance function
+$\Gamma: \mathcal{X} \to [0,1]^{C \times L}$ is trained to learn the
+lower bound of the sampling distribution. In SPD, $\Gamma$ is a set
+of independent MLPs $\gamma^l_c$ that each take a layer's activation
+and output a scalar importance for the corresponding subcomponent:
+\begin{equation}
+g^{l}_{c}(x) = \Gamma^l_c(x) = \sigma_{H}(\gamma^{l}_{c}(h^{l}_{c}(x))), \qquad h^{l}_{c}(x) = \vec{V}_{c}^{l\top} \vec{a}^l(x)
+\end{equation}
+where $\sigma_{H}$ is a hard sigmoid and $\vec{a}^l(x)$ is the
+activation at layer $l$. Given a stochastic mask
+$r^l_{c} \sim \mathcal{U}(0, 1)$, the masked weight matrix is
+\begin{equation}
+\begin{aligned}
+    m_{c}^l(x, r) &= g^{l}_{c}(x) + \bigl(1 - g^{l}_{c}(x)\bigr)\, r^l_{c}, \\
+    W'^{l}(x, r)  &= \sum_{c=1}^{C} \vec{U}_{i,c}^{l}\, m_{c}^l(x, r)\, \vec{V}_{c,j}^{l},
+\end{aligned}
+\end{equation}
+and the training objective requires that, for all sampled masks,
+\begin{equation}
+    f\!\left(x \,\big|\, \{W'^{l}(x, r)\}_{l=1}^{L}\right)
+    \approx
+    f\!\left(x \,\big|\, \{W^{l}\}_{l=1}^{L}\right).
+\end{equation}
+
+These masked matrices are used to compute the reconstruction loss, how well the masked weights can reconstruct the original network's output. These
+are computed both on a layer-wise basis and globally, as the global version can be rather noisy if all components are masked at the same time.
+\begin{equation}
+\begin{aligned}
+    \mathcal{L}_{\text{stochastic-recon}}
+      &= \frac{1}{S} \sum_{s=1}^{S}
+         D\!\left(f\bigl(x \mid W'(x, r^{s})\bigr),\; f(x \mid W)\right), \\
+    \mathcal{L}_{\text{stochastic-recon-layer}}
+      &= \frac{1}{LS} \sum_{l=1}^{L} \sum_{s=1}^{S}
+         D\!\left(f\bigl(x \mid W^{1}, \dots, W'^{\,l}(x, r^{(s)}), \dots, W^{L}\bigr),\;
+                  f(x \mid W)\right).
+\end{aligned}
+\end{equation}
+where $D$ is a task-specific divergence measure, such as Mean Squared Error for regression tasks or KL divergence.
 
 
-\subsection*{Stochastic parameter decomposition}
-Stochastic Parameter Decomposition (SPD) was introduced as a solution to the limitations of APD.
-SPD decomposes each weight matrix into a sum of rank-one matrices, called subcomponents:
-\[
-    W^{l} \approx \sum_{c=1}^{C} \vec{u}_{c}^{l} \vec{v}_{c}^{lT}, \quad \text{where} \quad \vec{u} \in \mathbb{R}^{d_{out}}, \vec{v} \in \mathbb{R}^{d_{in}}
-\]
-The number of subcomponents $C$ is a hyperparameter that may be chosen to be larger than the rank of $W^{l}$ enabling the method to learn features in superposition \autocite{stochasticparameterdecomposition}.
+The masks should also be as sparse as possible, which is enforced by
+penalizing the importance values toward zero:
+\begin{equation}
+    \mathcal{L}_{\text{minimality}}
+      = \sum_{l=1}^{L} \sum_{c=1}^{C} \bigl(g^{l}_{c}(x)\bigr)^{p},
+      \qquad p > 0.
+\end{equation}
+\label{spd_minimality}
 
-These subcomponents are then trained to be faithful to the original weights, to have as few active subcomponents as possible for any given input, and lastly to reconstruct the original network's output.
-\subsection{losses}
-\label{sec:spd_losses}
-
-
-\subsubsection{Faithfulness}
-
-\subsubsection{Stochastic reconstruction}
-
-\subsubsection{Minimality}
+The full SPD objective is a weighted sum of these terms:
+\begin{equation}
+    \mathcal{L}_{\text{SPD}}
+      = \mathcal{L}_{\text{faithfulness}}
+      + \beta_{1}\, \mathcal{L}_{\text{stochastic-recon}}
+      + \beta_{2}\, \mathcal{L}_{\text{stochastic-recon-layer}}
+      + \beta_{3}\, \mathcal{L}_{\text{minimality}}.
+\end{equation}
 
 \subsubsection{Limitations}
-These components are later clustered manually.... -> GNaN solves
-Components are rank 1, many features are multidimensional, dependent
-components are trained independently
+Sensitive to hyperparameter minimality loss, 
 
 \subsection{Irreducibility and the natural unit of decomposition}
 \label{sec:irreducibility}
@@ -203,9 +243,9 @@ components are trained independently
 
 The superposition hypothesis states that the hidden states can be represented as a linear combination of sparse one-dimensional features. \cite{elhage2022toymodelssuperposition,engels2025languagemodelfeaturesonedimensionally} Concretely, the hidden state 
 $x_{i,l}$ can be written as:
-\[
+\begin{equation}
     x_{i,l} = \sum_i v_i \, f_i(t)
-\]
+\end{equation}
 where $v_{i} \in \mathbb{R}^d$ are pairwise $\delta$-orthogonal directions and $f_{i}(t) \in \mathbb{R}$ are sparse scalar activations, with $f_{i}(t)=0$ outside the domain of feature $i$.
 
 Recent work has shown, that this may be insufficiently strict, \autocite{smith2024strong,engels2025languagemodelfeaturesonedimensionally}, as it does not capture the structure of multi-dimensional features.
@@ -218,9 +258,9 @@ To accomodate these features, the same paper proposes a correction to the superp
 A feature $f \in \mathbb{R}^{d_f}$ is reducible into features
 $a$ and $b$ if there exists an affine transformation
 
-\[
+\begin{equation}
     f \mapsto Rf + c \equiv \binom{a}{b}
-\]
+\end{equation}
 for some orthonormal $d_{f} \times d_{f}$ matrix $R$, and additive constant c, such that
 the joint distribution $p(a, b)$ satisfies one of two conditions:
 \renewcommand\labelitemi{\tiny$\bullet$}
@@ -245,7 +285,7 @@ The definition of $V_i \in \mathbb{R}^{d \times d_{f_i}}$ does not
 require columns to be linearly independent: $d_{f_i}$ specifies
 an upper bound on the representational capacity of $V_{i}$, while
 $\text{rank} (V_i) \leq d_{fi}$, determines the effective intrinsic dimensionality
-required to represent the feature.. For example, a model may align dependent
+required to represent the feature. For example, a model may align dependent
 components within a shared lower-dimensional subspace
 (Section \ref{fig:tms-paired-comparison}).
 
@@ -255,7 +295,7 @@ components within a shared lower-dimensional subspace
 \label{sec:rank-k-attention}
 In the original SPD paper, the subcomponents are constructed as rank-one matrices, through an outer product of two vectors.
 This formulation is however incompatible with the multi-dimensional superposition hypothesis. (Section \ref{sec:irreducibility})
-A decomposition into lower-dimensional subcomponents, necessarily forces features to be split across multiple subcomponents, or to be contained in a single subcomponent at the cost of faithfulness.
+A decomposition into lower-dimensional subcomponents, necessarily forces features to be split across multiple subcomponents, or to be approximated through a single subcomponent at the cost of reconstruction.
 
 To represent multi-dimensional features, the pairs of vectors are replaced with pairs of matrices.
 \begin{equation}
@@ -266,40 +306,40 @@ To represent multi-dimensional features, the pairs of vectors are replaced with 
     V^l_c \in \mathbb{R}^{d_{\text{in}} \times k}
 \end{equation}
 Each subcomponent $U^l_c {V^l_c}^{\top} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
-then has rank at most $k$, recovering the original SPD definition when $k=1$.
+has rank at most $k$, recovering the original SPD definition when $k=1$.
 As in the multi-dimensional superposition hypothesis, $k$ is an upper bound on
 each subcomponent's representational capacity; the effective rank may be lower,
-as it will be discussed in Section~\ref{sec:svd_reformulation}.
+as it will be discussed \footnote{not a discussion} in Section~\ref{sec:svd_reformulation}.
 
 
-In SPD, each subcomponent’s importance is computed independently through a learned function followed by a sigmoid nonlinearity,
+In SPD, each subcomponent’s importance is computed independently through an MLP followed by a sigmoid nonlinearity,
 allowing multiple subcomponents to be active for a given input and thus distribute a
-feature across them. The minimality loss does not translate to the rank-k setting, where each subcomponent can represent multiple feature directions:
+feature across them, even when it is irreducible. Likewise, the minimality loss does not translate to the rank-k setting, where each subcomponent can represent multiple feature directions:
 it imposes no penalty for distributing a feature across multiple subcomponents,
-nor for a single subcomponent to encode parts of multiple features. (Section \ref{sec:spd_losses})
+nor for a single subcomponent to encode parts of multiple features. (Section \ref{spd_minimality})
 
-To address this, importance is redefined as a relational quantity over all subcomponents in the same layer.
-\[
-    \alpha^l_c(x) = p\!\left(c \mid \{h^l_{c'}(x)\}^C_{c'=1}\right), \quad h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
-\]
-where $\vec{a}^l(x)$ is the activation of layer $l$ for input $x$.
-The distribution is computed using a transformer block operating over subcomponents, followed by a softmax over the C components.
+To address this, the causal importance function is redefined to maximize the conditional probability, that a given subcomponent c, is responsible for a given feature, conditioned on the activations of all other subcomponents in the same layer.
+\begin{equation}
+    g^l_c(x) = p\!\left(c \mid \{h^l_{c'}(x)\}^{C}_{c'=1}\right), \quad h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
+\end{equation}
+where $\vec{a}^l(x)$ is the activation of layer $l$ and C is the set of subcompoennts in layer $l$.
+The distribution is computed using a transformer block operating over subcomponents, with a softmax over their activations.
 
 
-This produces a normalized assingmnent over subcomponents, $\sum_{c=1}^{C}\alpha^l_c(x) = 1$,
+This produces a normalized assignment over subcomponents, $\sum_{c=1}^{C}g^l_c(x) = 1$,
 causing the original minimality loss to become degenerate, as each layer contributes a constant value independent of the model state.
 Instead, it's replaced
 with entropy, to pressure the assignment to concentrate on as few subcomponents as possible. 
-\[
-    \mathcal{L}_{\text{minimality}} = - \frac{1}{|C|} \sum_{l=1}^{L} \sum_{c=1}^{C} \alpha^l_c(x) \log \alpha^l_c(x)
-\]
+\begin{equation}
+    \mathcal{L}_{\text{minimality}} = - \frac{1}{|C|} \sum_{l=1}^{L} \sum_{c=1}^{C} g^l_c(x) \log g^l_c(x)
+\end{equation}
 This pressure is complementary to both the faithfulness loss and the
-rank-$k$ extension. If $k$ is too small or the minimality weight is too
-low, the faithfulness loss dominates and forces features to split across
+rank-$k$ extension. If $k$ is too small or the minimality coefficient is too
+small, the faithfulness loss dominates and forces features to split across
 subcomponents. Conversely, if the minimality weight is too high, the model
 groups features together at the cost of faithfulness.
 
-A limitation of this formulation is its computational cost. Computing
+An unfortunate limitation of this formulation is its computational cost. Computing
 relational importance via a transformer over subcomponents scales
 quadratically with the number of subcomponents compared to the linear cost of the original independent importance functions.  \footnote{Play with attention approximations}
 
@@ -335,35 +375,35 @@ Likewise if this actually ends up working, k can be considered an upper bound or
 it also follows nicely with the descriptive length principle found in the appendix of APD.
 
 To determine the effective rank of each subcomponent, the stochastic masking becomes:
-\[
+\begin{equation}
     [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
-\]
+\end{equation}
 for each j in $1,\dots,k$
 \\
 Notably this treats each feature independently, which may not be desirable,
 as such we could modify it ever so slightly:
 
-\[
+\begin{equation}
         [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)][g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)][g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
-\]
+\end{equation}
 The signal becomes an importance of two factors,
 if the component is important and both features are important, it remains active,
 if only one feature is important, the other will be pushed to zero
 
 The masked weight matrix becomes:
-\[
+\begin{equation}
     W^{\prime l}(x, r) = \sum_{c=1}^{C} 
     U_{c}^{l} \, \mathrm{diag}\!\left(
     \mathbf{m}_{c}^{l}(x, r)\right) V_{c}^{l\top}
-\]
+\end{equation}
 Where the diagonal matrix is the per-feature mask for subcomponent $c$.
 
 The importance minimality loss penalises all $k$ dimensions of 
 all subcomponents toward zero:
-\[
+\begin{equation}
     \mathcal{L}_{\text{import}} = \sum_{l=1}^{L} \sum_{c=1}^{C} 
     \sum_{j=1}^{k} \left|[g_{c}^{l}(x)]_{j}\right|^{p}
-\]
+\end{equation}
 This follows the same logic by which SPD selects the number of 
 active subcomponents: the minimality loss drives unused components 
 toward zero, and only those that are genuinely required to 
@@ -393,9 +433,9 @@ To examine how SPD and the softmax-and-attention extension handle
 irreducible features, we reuse the model of superposition introduced
 in Section~\ref{sec:spd-independent-features}. The architecture is
 a single-hidden-layer autoencoder with tied weights:
-\[
+\begin{equation}
     f(x) = W^{\top} \sigma(Wx + b), \qquad W \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{features}}}, \quad d_{\text{features}} \gg d_{\text{hidden}}
-\]
+\end{equation}
 The model is trained to reconstruct sparse feature activations under
 an $L_2$ loss. The input distribution differs from
 Section~\ref{sec:spd-independent-features} in that features are tied
@@ -434,17 +474,17 @@ the formal dimensionality $d_{fi} = 2$, which provides an upper bound on the ran
 The observed near-collinearity within pairs suggests that this representation essentially collapses to a one-dimensional subspace.
 
 To quantify this, the effective rank of each pair's submatrix, $W_{:,2i-1:2i} \in \mathbb{R}^{d_{\text{hidden}} \times 2}$ is computed using the entropy-based definition of \autocite{effectiverank}.
-\[
+\begin{equation}
     r_{\text{eff}}(W_g) = \exp\!\left(-\sum_{k=1}^{Q} p_k \log p_k\right),
     \qquad p_k = \frac{\sigma_k^2}{\sum_{j=1}^{Q} \sigma_j^2}
-\]
+\end{equation}
 where $\sigma_k$ are the singular values of $W_g$ and $Q = |g|$.
 The quantity lies in $[1, |g|]$ and equals $1$ when the group is
 exactly rank-one. To gauge the required value of $k$ for the rank-$k$ extension, the maximum effective rank across pairs is examined:
 
-\[
+\begin{equation}
     k = \max_{i} ,\ r_{\text{eff}}(W_{:,2i-1:2i}),
-\]
+\end{equation}
 In this case the max is essentially 1 across all pairs, suggesting that $k=1$ is sufficient to capture these features without loss of information.
 (Table~\ref{tbl:mean-effective-rank}).
 \begin{table}[h]
@@ -530,9 +570,9 @@ However they shouldnt as its distinctly different feature indices.
 The rank-k extension is required in settings where feature representations do not collapse to a single direction. This is illustrated by a model trained to compute the volume of an n-dimensional simplex.
 
 In this experiment, consider a model trained to compute the volume of an n-dimensional simplex:
-\[
+\begin{equation}
     f(x) = W_1 \sigma(W_2 x), \quad W_2 \in \mathbb{R}^{k \cdot n(n+1) \times d_{hidden}}, \quad W_1 \in \mathbb{R}^{d_{hidden} \times k}
-\]
+\end{equation}
 Here, k denotes the number of simplices and n the dimensionality of each simplex, which has n+1 vertices.
 
 As in Section~\ref{sec:tms-tied-experiment}, the k simplices are sampled independently with fixed probability, such that either all n(n+1) features of a simplex are active or none are. The resulting feature groups are therefore statistically dependent, and their joint distribution assigns negligible probability to partial activation patterns.
@@ -858,18 +898,18 @@ features given by their inner activation vectors
 $\mathbf{h}_{c}^{l}(x) \in \mathbb{R}^{k}$. The GNAN updates 
 each node's representation through an additive neighbourhood 
 aggregation. For node $i$ in layer $l$ and feature dimension $k$ \footnote{I am very open to alternative equations, i.e perhaps we delete the layer distance inside rho, however it seemed necessary to use cosine similarity, as otherwise the signal was useless as described in some earlier section}:
-\[
+\begin{equation}
     [\mathbf{z}_{i}]_{k} = \sum_{j=1}^{N} 
     \frac{1}{|\mathcal{L}(j)|} \cdot 
    \rho\!\left(\frac{1}{1 + \mathrm{dist}(j, i)},\; 
 \mathrm{cos}(j, i)\right) \cdot 
     f_{k}\!\left([\mathbf{h}_{j}]_{k}\right)
-\]
+\end{equation}
 OBS: Implementation ill present today is this:
 
-\[
+\begin{equation}
     \mathbf{z}_{i} = \sum_{j=1}^{N} \rho \left( \text{layer distance}, \text{cosine similarity} \right) \cdot f_{k}\left( [\mathbf{h}_{j}]_{k} \right)
-\]
+\end{equation}
 where $f_{k}$ is a learned function applied to the $k$-th inner 
 activation of each neighbouring node $j$; $|\mathcal{L}(j)|$ is 
 the number of nodes in the same layer as $j$, which normalises 
@@ -888,9 +928,9 @@ A separate MLP is trained to combine the aggregated neighbourhood information an
 Producing a single importance value per subcomponent and passing it through 
 a leaky hard sigmoid, following 
 SPD \autocite{stochasticparameterdecomposition}:
-\[
+\begin{equation}
    g_{c}^{l} = \sigma_{H}(AGG(\mathbf{z}_{i}^l, \mathbf{h}_{i}^l))
-\]
+\end{equation}
 The self-connection through $f_{\text{self}}$ (or just the raw activation) ensures that each 
 node retains its own identity after aggregation, mitigating 
 the oversmoothing that can occur in GNNs. \{Clever cite here, i.e gnn book\}
@@ -902,10 +942,10 @@ After the GNAN update, the per-dimension importance values are
 computed from the updated representation and passed through a 
 leaky hard sigmoid, following 
 SPD \autocite{stochasticparameterdecomposition}:
-\[
+\begin{equation}
     \mathbf{g}_{c}^{l}(x) = \sigma_{H}\!\left(\mathbf{h}_{c}^{l}(x)\right)
     \in [0, 1]^{k}
-\]
+\end{equation}
 in other words, the importance function becomes multidimensional,
 and each column can be masked independently.
 
@@ -920,18 +960,18 @@ Likewise we could store both distances as sparse structures as they are symmetri
 The choice of edge set construction and distance function is a very important design choice,
 e.g using the layer distance on a fully connected graph encodes the same signal for all nods in a layer:
 For nodes $i_1, i_2$ in the same layer $l$:
-\[
+\begin{equation}
     \forall\, j \colon \quad 
     \mathrm{dist}(j, i_1) = \mathrm{dist}(j, i_2) = |k_j - l|
-\]
+\end{equation}
 and therefore
-\[
+\begin{equation}
     [\mathbf{h}_{i_1}]_k = \sum_{j=1}^{N} 
     \frac{1}{\#\mathrm{dist}_{i_1}(j, i_1)} \cdot 
     \rho\!\left(\frac{1}{1 + |k_j - l|}\right) \cdot 
     f_k([\mathbf{x}_j]_k) 
     = [\mathbf{h}_{i_2}]_k
-\]
+\end{equation}
 since no term in the sum depends on the identity of $i$ 
 within layer $l$, only on the layer index $l$ itself.
 \\
@@ -943,9 +983,9 @@ of learning to differentiate between them.
 The choice of distance should probably be reconsidered in general,
 I have a feeling that the function needs to be from an asymmetric metric space,
 i.e
-\[
+\begin{equation}
     dist(i, j) \neq dist(j, i)    
-\]
+\end{equation}
 Atleast if the intution is if component A in layer k, is highly active, perhaps component B in layer
 k+1 should likely be inactive, as the other component needs to handle this feature,
 thus the distance from A to B should be different, as otherwise both are boosted or suppressed together. 

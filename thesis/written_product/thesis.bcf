@@ -2382,7 +2382,7 @@
     <bcf:citekey order="7" intorder="2">absorptionstudyingfeaturesplitting</bcf:citekey>
     <bcf:citekey order="8" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
     <bcf:citekey order="9" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
-    <bcf:citekey order="10" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
+    <bcf:citekey order="10" intorder="1">stochasticparameterdecomposition</bcf:citekey>
     <bcf:citekey order="11" intorder="1">stochasticparameterdecomposition</bcf:citekey>
     <bcf:citekey order="12" intorder="1">elhage2022toymodelssuperposition</bcf:citekey>
     <bcf:citekey order="12" intorder="2">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
