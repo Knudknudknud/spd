@@ -1,0 +1,55 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx} % Inserting images
+\graphicspath{{Images/}} % Expects Image folder in current folder.
+\usepackage{float} % Improves h specifier
+
+\usepackage{fancyhdr, setspace, geometry, times} % Layout
+\geometry{a4paper, left=30mm, right=30mm, top=20mm, bottom=15mm, headheight=27.1pt}
+\onehalfspacing
+
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{tabularx, booktabs} %tables
+\usepackage{multicol} % Allows multi columns
+
+% Custom Commands located in texmf
+\usepackage{Theoremboxes}
+\usepackage{Commands}
+
+% Uncomment for dark mode
+%\usepackage{darkmode}
+%\enabledarkmode
+
+% Declares this document as the main one, when using chapters.
+%\newcommand{\included}{}
+%Place inside document, if to be used with chapters. (or similar structure)
+%\input{lectures/Lecture1}
+
+
+
+% First page
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[r]{Knud Sønderbek \par \today}
+\fancyfoot[R]{\thepage}
+
+\title{}
+\date{\today}
+\author{Knud Sønderbek}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\newpage
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+\pagenumbering{arabic}
+
+\begin{align*}
+       p(a,b) &= w \, p(a) \, \delta(b) + (1 - w) \, p(a, b) \\
+       (-1+w)p(a,b) + p(a,b) &= w \, p(a) \, \delta(b) \\
+        w \, p(a,b) &= w \, p(a) \, \delta(b) \\
+        p(a,b) &= p(a) \, \delta(b) \quad \text{(since $w > 0$)} \\
+\end{align*}
+
+\end{document}

@@ -2377,22 +2377,41 @@
     <bcf:citekey order="3" intorder="1">sparseautoencoderscanonicalunits</bcf:citekey>
     <bcf:citekey order="4" intorder="1">stochasticparameterdecomposition</bcf:citekey>
     <bcf:citekey order="5" intorder="1">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
-    <bcf:citekey order="6" intorder="1">sparseautoencodershighlyinterpretable</bcf:citekey>
-    <bcf:citekey order="7" intorder="1">sparseautoencoderscanonicalunits</bcf:citekey>
-    <bcf:citekey order="7" intorder="2">absorptionstudyingfeaturesplitting</bcf:citekey>
-    <bcf:citekey order="8" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
-    <bcf:citekey order="9" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
-    <bcf:citekey order="10" intorder="1">stochasticparameterdecomposition</bcf:citekey>
-    <bcf:citekey order="11" intorder="1">stochasticparameterdecomposition</bcf:citekey>
-    <bcf:citekey order="12" intorder="1">elhage2022toymodelssuperposition</bcf:citekey>
-    <bcf:citekey order="12" intorder="2">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
-    <bcf:citekey order="13" intorder="1">smith2024strong</bcf:citekey>
-    <bcf:citekey order="13" intorder="2">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
-    <bcf:citekey order="14" intorder="1">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
-    <bcf:citekey order="15" intorder="1">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
-    <bcf:citekey order="16" intorder="1">effectiverank</bcf:citekey>
-    <bcf:citekey order="17" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="6" intorder="1">park2024linearrepresentationhypothesisgeometry</bcf:citekey>
+    <bcf:citekey order="7" intorder="1">elhage2022toymodelssuperposition</bcf:citekey>
+    <bcf:citekey order="8" intorder="1">mendel2024sae</bcf:citekey>
+    <bcf:citekey order="8" intorder="2">smith2024strong</bcf:citekey>
+    <bcf:citekey order="9" intorder="1">csordás2024recurrentneuralnetworkslearn</bcf:citekey>
+    <bcf:citekey order="10" intorder="1">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
+    <bcf:citekey order="11" intorder="1">nanda2023progressmeasuresgrokkingmechanistic</bcf:citekey>
+    <bcf:citekey order="12" intorder="1">sparseautoencodershighlyinterpretable</bcf:citekey>
+    <bcf:citekey order="12" intorder="2">bricken2023monosemanticity</bcf:citekey>
+    <bcf:citekey order="13" intorder="1">absorptionstudyingfeaturesplitting</bcf:citekey>
+    <bcf:citekey order="13" intorder="2">sparseautoencoderscanonicalunits</bcf:citekey>
+    <bcf:citekey order="13" intorder="3">mendel2024sae</bcf:citekey>
+    <bcf:citekey order="14" intorder="1">olah2020zoomin</bcf:citekey>
+    <bcf:citekey order="14" intorder="2">marks2025sparsefeaturecircuitsdiscovering</bcf:citekey>
+    <bcf:citekey order="15" intorder="1">méloux2025everythingeverywhereoncemechanistic</bcf:citekey>
+    <bcf:citekey order="16" intorder="1">dunefsky2024transcodersinterpretablellmfeature</bcf:citekey>
+    <bcf:citekey order="17" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
     <bcf:citekey order="18" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="19" intorder="1">christensen2025decompositionsmalltransformermodels</bcf:citekey>
+    <bcf:citekey order="20" intorder="1">chrisman2025identifyingsparselyactivecircuits</bcf:citekey>
+    <bcf:citekey order="21" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
+    <bcf:citekey order="22" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="23" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="24" intorder="1">elhage2022toymodelssuperposition</bcf:citekey>
+    <bcf:citekey order="24" intorder="2">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
+    <bcf:citekey order="25" intorder="1">smith2024strong</bcf:citekey>
+    <bcf:citekey order="25" intorder="2">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
+    <bcf:citekey order="26" intorder="1">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
+    <bcf:citekey order="27" intorder="1">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
+    <bcf:citekey order="28" intorder="1">effectiverank</bcf:citekey>
+    <bcf:citekey order="29" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="30" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="31" intorder="1">sparseautoencodershighlyinterpretable</bcf:citekey>
+    <bcf:citekey order="32" intorder="1">sparseautoencoderscanonicalunits</bcf:citekey>
+    <bcf:citekey order="32" intorder="2">absorptionstudyingfeaturesplitting</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="anyt">

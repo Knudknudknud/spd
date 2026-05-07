@@ -40,7 +40,7 @@ Decompositions that split features across multiple atoms, risk losing structural
 while decompositions that group multiple features into a single atom, risk losing granularity by collapsing distinct features into a single unit.
 
 For example, a network computing the volume of a cube can be
-decomposed either into components corresponding to individual side
+decomposed into components corresponding to individual side
 lengths, or into a single component computing the volume directly.
 The former corresponds to a feature-level decomposition,
 with one atom per input direction, exposing internal
@@ -58,85 +58,77 @@ if their joint distribution cannot be decomposed into independent
 factors or into a mixture containing a lower-dimensional component.
 
 In terms of the decomposition itself,
-recent work shifts focus from matching activations \autocite{sparseautoencoderscanonicalunits} to directly decomposing parameters. Guided by the minimum description length, these methods aim to recover components that are faithful to the original weights, sparse per input, and individually simple. 
+recent work shifts focus from decomposing activations \autocite{sparseautoencoderscanonicalunits} to directly decomposing parameters. Guided by the minimum description length \footnote{not all are but SPD and APD are}, these methods aim to recover components that are faithful to the original weights, sparse per input, and individually simple. 
 One such approach, Stochastic Parameter Decomposition (SPD) \autocite{stochasticparameterdecomposition}, factorizes networks into rank-one components with a learned per component importance
 function.
 
 This work extends SPD by examining its behaviour on dependent features,
 in settings where the multi-dimensional superposition hypothesis posits
 a feature-level or a structural-level unit \footnote{I mean feature-level, structure level is wrong under this view but it sounds good} \autocite{engels2025languagemodelfeaturesonedimensionally}. 
-A reformulation of the importance function is proposed,
+Additionally a reformulation of the importance function is proposed,
 to encourage that features that are manipulated jointly are grouped together, by computing importance relationally across components.
 
+Findings
 
 
 
 
-\section{ Old Introduction - may be useful for related work.}
-
-
-Neural networks continue to achieve remarkable performance across domains ranging from medical diagnosis to
-autonomous systems. This increase in performance has, however,
-come with a corresponding increase in complexity, making these systems
-less interpretable to those who build and deploy them.
-As neural networks enter high-stakes environments,
-where errors carry legal, financial, or human cost, interpretability becomes a necessity. The concern is not merely technical but ethical: a fundamental principle of accountability holds that the creator of a tool can only be held responsible for its outcomes to the extent that those outcomes could have been reasonably foreseen.
-A system whose internal reasoning cannot be understood is, by definition,
-one whose failures cannot be anticipated.
-
-Mechanistic interpretability aims to reverse-engineer the internal computations
-of neural networks into their simplest forms, such that they can be expressed as humanly interpretable
-algorithms.\\
-Many of the current popular methods within this space, such as sparse autoencoders \cite{sparseautoencodershighlyinterpretable},
-circuit analysis, and probing, primarily operate in activation space.
-However, each of these methods comes with its own set of limitations.
-Sparse autoencoders treat features as independent directions and discard
-the geometric structure between them,
-despite growing evidence that this structure carries meaningful information
-(Leask et al., 2025; Mendel, 2024; Engels et al., 2024). 
-Moreover, sparse autoencoders are trained to reconstruct activations and do not to explicitly identify the computational units that produced them. \cite{sparseautoencoderscanonicalunits, absorptionstudyingfeaturesplitting}
-The resulting decomposition may be functionally equivalent at a given layer, while
-not resembling the mechanisms that the network employs.
-Circuit-level methods face the deeper issue that neural networks are densely connected,
-meaning any given output can be equally well attributed to a multitude of causal pathways, leaving the choice of circuit underdetermined.
-
-A more recent line of work shifts the object of decomposition from activations to parameters.
-More concretely, these methods aim to decompose a network's weights into a sum of simpler components, 
-each of which corresponds to a concrete "mechanism". This reframing sidesteps several of the issues above:
-mechanisms are no longer constrained to specific architectural components, such as neurons or attention heads,
-and can instead be distributed across multiple architectural components. Moreover,
-they decompose the network into functional units rather than representational directions,
-which may further enhance their interpretability.
-\\
-Recently proposed methods guided by the principle of minimum description
-length have shown promising results in this direction, aiming to decompose a network
-into parameter components that are faithful to the original weights, minimal in the number
-required per input, and individually as simple as possible.
-\\
-One such method, Stochastic Parameter Decomposition (Bushnaq et al., 2025), decomposes networks into rank-one subcomponents. Since not all components are relevant for every input, the method learns a function that estimates each component's causal importance for a given input. However, each component's importance is calculated independently, relying only on its own activation. As noted in the original work, this is likely too restrictive for non-toy models, as it prevents each component's importance from being informed by the state of other components. This work replaces the independent importance functions with a graph neural network that determines each component's importance conditioned on its relationships to all other components, while preserving explainability through its generalised additive structure.
-Additionally the use of an additive importance function, generalizes the decomposition to k-dimensional components.
-This generalizsation is motivated by the growing evidence, that transformer models, learn features
-which occupy irreducible multidimensional subspaces.
-
-
-\autocite{AttributionBasedParameterDecomposition}
 \section{Related work}
--Open problems in mechanistic interpretability
-- SPD
-- SPD on transformers
-- APD
-- Engels et al.
--Activation space decompositions
-    - Circuits, SAE,
-Linear representation hypothesis
-Superposition in general?
-Strong feature hypothesis
+\subsection{The linear representation hypothesis}
+A widespread view in mechanistic interpretability is the linear representation hypothesis: high-level concepts are encoded as directions in a network's representation space \autocite{park2024linearrepresentationhypothesisgeometry}. Together with the superposition hypothesis \autocite{elhage2022toymodelssuperposition}, it forms a central tenet of activation-based interpretability: each feature corresponds to a single direction, and a hidden state is a sparse linear combination of feature directions.
+
+Recent work questions how strictly this view should be taken, distinguishing between a weak form of the hypothesis, that some features are linear, from a stronger form that all features are \autocite{mendel2024sae,smith2024strong}. 
+Empirical counterexamples include recurrent networks encoding token position by magnitude rather than direction \autocite{csordás2024recurrentneuralnetworkslearn}, and transformers representing cyclical concepts such as days of the week \autocite{engels2025languagemodelfeaturesonedimensionally} or modular arithmetic \autocite{nanda2023progressmeasuresgrokkingmechanistic} in irreducible low-dimensional subspaces.
+\subsection{Activation-space decomposition}
+A central direction in activation-based interpretability is the decomposition of learned representations in activation space into interpretable features. An active area of research is the use of 
+sparse autoencoders, \autocite{sparseautoencodershighlyinterpretable, bricken2023monosemanticity}
+that learn an overcomplete dictionary that expresses each hidden state as a sparse combination of one-dimensional features.
+However, these features are not necessarily aligned with the network's computation, due to feature absorption, inconsistencies across dictionary sizes, and a failure to capture feature geometry.
+ \autocite{absorptionstudyingfeaturesplitting, sparseautoencoderscanonicalunits,mendel2024sae}.
+
+Circuit discovery extends feature analysis to identify
+how a computation is processed through the network's weights
+by identifying minimal subgraphs required to maintain
+performance on a given task
+when the remaining network is ablated \autocite{olah2020zoomin,marks2025sparsefeaturecircuitsdiscovering}.
+However, these methods generally do not account for the
+polysemantic and densely connected structure of neural networks,
+where the functional behaviour can be attributed to multiple distinct but functionally equivalent subgraphs. \autocite{méloux2025everythingeverywhereoncemechanistic}
+
+\subsection{Parameter-space decomposition}
+
+A more recent line of work shifts the object of decomposition from activations to parameters. Transcoders \autocite{dunefsky2024transcodersinterpretablellmfeature} represent an intermediate step that learns a sparse approximation of an MLP layer. Parameter decomposition methods go further, factorising the network's weights directly, with the goal of recovering the network's computational primitives.
+
+Most directly relevant to this work is the description-length-driven
+line of Attribution-based Parameter Decomposition
+\autocite{AttributionBasedParameterDecomposition} and
+Stochastic Parameter Decomposition (SPD)
+\autocite{stochasticparameterdecomposition},
+recently extended to small transformers
+\autocite{christensen2025decompositionsmalltransformermodels}.
+While APD decomposes a network into multidimensional
+components,
+the method is sensitive to hyperparameters, and does not scale beyond toy settings due
+to computational complexity. SPD addresses this
+by decomposing each weight matrix into rank-one
+subcomponents and learning a per-input importance
+function over them, at the cost of requiring post-hoc
+clustering to recover higher-rank mechanisms;
+both methods are detailed in
+Section~\ref{sec:spd_background}. Other parameter-space
+approaches include local loss landscape decomposition \autocite{chrisman2025identifyingsparselyactivecircuits}.
 
 
 
 \section{Method}
 
 \subsection{Background on SPD}
+\label{sec:spd_background}
+Lukas said to mention apd more + how this did not require the rank 1 constraint, but SPD that is a
+solution does
+APD issues are computaitonal cost and choosing a hard top k.
+
+
 This paper builds on the line of work of Attribution-based Parameter Decomposition (APD) \autocite{AttributionBasedParameterDecomposition}
 and Stochastic Parameter Decomposition (SPD) \autocite{stochasticparameterdecomposition}, which both aim to decompose
 a network's parameters into a set of components that are faithful
@@ -169,7 +161,7 @@ To enforce the properties above, three losses are introduced, which are optimise
 Faithfulness is enforced thorugh a mean squared error loss between the original network's weights and the the sum of subcomponents:
 
 \begin{equation}
-    \mathcal{L}_{faithfulness} = \frac{1}{N} \sum_{l=1}^{L}\sum_{i,j} \left( W_{i,j}^{l} - \sum_{c=1}^{C} U^{l}_{i,c}V^{l}_{c,j} \right)^{2}  
+    \mathcal{L}_{\text{faithfulness}} = \frac{1}{N} \sum_{l=1}^{L}\sum_{i,j} \left( W_{i,j}^{l} - \sum_{c=1}^{C} U^{l}_{i,c}V^{l}_{c,j} \right)^{2}  
 \end{equation}
 where $N$ is the total parameter count in the target model.
 
@@ -185,23 +177,22 @@ and output a scalar importance for the corresponding subcomponent:
 g^{l}_{c}(x) = \Gamma^l_c(x) = \sigma_{H}(\gamma^{l}_{c}(h^{l}_{c}(x))), \qquad h^{l}_{c}(x) = \vec{V}_{c}^{l\top} \vec{a}^l(x)
 \end{equation}
 where $\sigma_{H}$ is a hard sigmoid and $\vec{a}^l(x)$ is the
-activation at layer $l$. Given a stochastic mask
-$r^l_{c} \sim \mathcal{U}(0, 1)$, the masked weight matrix is
+activation at layer $l$. These importance values are used as the lower bound for how much a subcomponent can be masked.
+Let $r^l_{c} \sim \mathcal{U}(0, 1)$, then the masked weight matrix becomes
 \begin{equation}
 \begin{aligned}
     m_{c}^l(x, r) &= g^{l}_{c}(x) + \bigl(1 - g^{l}_{c}(x)\bigr)\, r^l_{c}, \\
     W'^{l}(x, r)  &= \sum_{c=1}^{C} \vec{U}_{i,c}^{l}\, m_{c}^l(x, r)\, \vec{V}_{c,j}^{l},
 \end{aligned}
 \end{equation}
-and the training objective requires that, for all sampled masks,
+The training objective becomes that the masked weights should approximately reconstruct the original network's output, with the importance function learning to identify which subcomponents are necessary for reconstruction.
 \begin{equation}
     f\!\left(x \,\big|\, \{W'^{l}(x, r)\}_{l=1}^{L}\right)
     \approx
     f\!\left(x \,\big|\, \{W^{l}\}_{l=1}^{L}\right).
 \end{equation}
+This is done through both a layer-wise and a global reconstruction loss. The layer-wise version is necessary to provide a stronger training signal as randomly masking all components at the same time can be too noisy to learn from.
 
-These masked matrices are used to compute the reconstruction loss, how well the masked weights can reconstruct the original network's output. These
-are computed both on a layer-wise basis and globally, as the global version can be rather noisy if all components are masked at the same time.
 \begin{equation}
 \begin{aligned}
     \mathcal{L}_{\text{stochastic-recon}}
@@ -239,9 +230,9 @@ Sensitive to hyperparameter minimality loss,
 
 \subsection{Irreducibility and the natural unit of decomposition}
 \label{sec:irreducibility}
-
-
-The superposition hypothesis states that the hidden states can be represented as a linear combination of sparse one-dimensional features. \cite{elhage2022toymodelssuperposition,engels2025languagemodelfeaturesonedimensionally} Concretely, the hidden state 
+To appropriately evaluate the performance of a multi-dimensional feature decomposition method,
+it's necessary to have a clear definition of what the ground-truth decomposition is. The original
+superposition hypothesis states that the hidden states can be represented as a linear combination of sparse one-dimensional features. \cite{elhage2022toymodelssuperposition,engels2025languagemodelfeaturesonedimensionally} Concretely, the hidden state 
 $x_{i,l}$ can be written as:
 \begin{equation}
     x_{i,l} = \sum_i v_i \, f_i(t)
@@ -253,11 +244,16 @@ In particular, transformer models are shown to
 organise cyclical concepts in low-dimensional subspaces
 that do not decompose into meaningful linear components, but are instead manipulated jointly \autocite{engels2025languagemodelfeaturesonedimensionally}.
 
-To accomodate these features, the same paper proposes a correction to the superposition hypothesis, alongside a formal definition of irreducibility that defines, when a feature is in its atomic form and when it can be decomposed into smaller units without loss of information.
+To accomodate these features, the same paper proposes a correction to the superposition hypothesis,
+alongside a formal definition of irreducibility that defines,
+when a feature is in its atomic form and when it can be decomposed into smaller
+units without loss of information.
 
-A feature $f \in \mathbb{R}^{d_f}$ is reducible into features
+A feature $f \in \mathbb{R}^{d_f}$ is
+truly multi-dimensional, if it cannot be written as a sum of two independent features
+or as a the sum of two non-co-occurring features. More formally, a feature is
+reducible into features
 $a$ and $b$ if there exists an affine transformation
-
 \begin{equation}
     f \mapsto Rf + c \equiv \binom{a}{b}
 \end{equation}
@@ -266,12 +262,17 @@ the joint distribution $p(a, b)$ satisfies one of two conditions:
 \renewcommand\labelitemi{\tiny$\bullet$}
 \begin{itemize}
     \setlength\itemsep{0em}
-    \item \textbf{Statistical independence}: $p(a, b)= p(a) \, p(b)$
-    \item \textbf{Sum of disjoint distributions}: $p(a, b) = w \, p(a) \, \delta(b) + (1 - w) \, p'(a, b)$
+    \item \textbf{$p$ is separable}: $p(a, b)= p(a) \, p(b)$
+    \item \textbf{$p$ is a mixture of two disjoint distributions}: 
+    $p(a, b) = w \, p(a) \, \delta(b) + (1 - w) \, p'(a, b)$,
+    with $0 < w < 1$ and $p'(a,b)$ supported on $\{b \neq 0\}$.
 \end{itemize}
-where $\delta$ is the Dirac delta distribution and either a or b is lower dimensional in the disjoint distribution. 
+Here $a$ and $b$ are the first $k$ and remaining $d_f - k$ components of $Rf + c$,
+$p$ is conditioned on inputs where $f$ is active, and $\delta$ is the Dirac delta.
+In the mixture, the two components have disjoint support: the first lives on the
+slice $\{b = 0\}$, a lower-dimensional subspace of the full feature space.
 
-Under this definition, the superposition hypothesis is restated as follows:
+Under this decomposition, the superposition hypothesis takes the form:
 
 Every hidden state $x_{i,l}(t)$ can be written as a sum of feature contributions
 \begin{equation}
@@ -281,15 +282,12 @@ where each $f_i(t) \in \mathbb{R}^{d_{f_i}}$ is an irreducible
 feature with internal dimensionality $d_{f_i} \geq 1$, each
 $V_i \in \mathbb{R}^{d \times d_{f_i}}$ and $\| V_i^\top V_j \| < \delta$ for $i \neq j$.
 
-The definition of $V_i \in \mathbb{R}^{d \times d_{f_i}}$ does not
-require columns to be linearly independent: $d_{f_i}$ specifies
-an upper bound on the representational capacity of $V_{i}$, while
-$\text{rank} (V_i) \leq d_{fi}$, determines the effective intrinsic dimensionality
-required to represent the feature. For example, a model may align dependent
-components within a shared lower-dimensional subspace
-(Section \ref{fig:tms-paired-comparison}).
-
-
+The definition of $V_i \in \mathbb{R}^{d \times d_{f_i}}$ does not require its columns to be linearly independent: $d_{f_i}$ specifies an upper bound on the representational capacity of $V_i$, while $\mathrm{rank}(V_i) \leq d_{f_i}$ determines the effective intrinsic dimensionality required to represent the feature. In practice, this allows models to align dependent components within a shared lower-dimensional subspace (Section \ref{fig:tms-paired-comparison}).
+Consequently, features need not correspond to
+rank-one directions, but may instead occupy structured subspaces
+of higher intrinsic dimension. Decompositions restricted
+to rank-one components are therefore not, in general,
+aligned with this representation without post-hoc clustering.
 
 \subsection{Rank-$k$ subcomponents and relational importance}
 \label{sec:rank-k-attention}
@@ -343,15 +341,13 @@ An unfortunate limitation of this formulation is its computational cost. Computi
 relational importance via a transformer over subcomponents scales
 quadratically with the number of subcomponents compared to the linear cost of the original independent importance functions.  \footnote{Play with attention approximations}
 
-
-
-\subsection{Add the part that rank k, is unsifficient in the standard SPD, as it has no structural pressure to group things, and always that orthogonal dparts are split across components,
-as we only punish multiple parts being active, but we dont mind that they are split across multiple components}
-
-
-
-\subsection{SVD reformulation, capacity and per feature ablation}
+\subsubsection{SVD reformulation, capacity and per feature ablation}
 \label{sec:svd_reformulation}
++ add read write streams, theyre a general thing
+-> perhaps issues with diffusion and recurrent 
+models where this stream is not as clear. https://arxiv.org/pdf/2504.00194
++ add delta orthogonality 
+
 The competition pressure introduced by the softmax has a
 theoretical motivation under the multi-dimensional superposition
 hypothesis. The hypothesis predicts that different irreducible
@@ -418,10 +414,16 @@ data.
 
 
 \section{Experiments}
+Overview of all experiments, and what they show.
+Ive saved an image under images that show how another paper did it.
+remember to address the thing in the higher dimensional upscales,
+where a clear diagonal is not possible.
 \subsection{Reproducing SPD on independent features}
 \label{sec:spd-independent-features}
 \subsubsection{Sensitivity to hyperparameters}
 \label{sec:spd-sensitivity}
+\subsection{Softmax without attention}
+
 
 
 \subsection{TMS with tied weights and synced inputs}
@@ -443,7 +445,7 @@ into pairs. Concretely, $d_{\text{features}} = 40$,
 $d_{\text{hidden}} = 10$, and the features are partitioned into
 $20$ pairs $\{f_{2i-1}, f_{2i}\}_{i=1}^{20}$. Each pair is zero
 with probability $1 - p$, and with probability $p$ both features are
-independently drawn from $\mathrm{Uniform}(\epsilon, 1)$.
+independently drawn from $\mathcal{U} \sim (\epsilon, 1)$.
 
 By construction, the joint distribution of each pair satisfies neither
 of the reducibility conditions defined in
@@ -879,9 +881,13 @@ we can teach a component to kill one of its features,
 if it is better explained by a rank 1 component than rank 2.
 
 
+\section{References}
+
 \printbibliography[heading=none]
 
 
+\section{Appendix}
+Descriptive length thing?
 
 \subsubsection{GNAN-based importance functions}
 In SPD, each importance function $\gamma_{c}^{l}$ is an 
@@ -1026,11 +1032,75 @@ actually matters.
 
 
 
+\section{ Old Introduction - may be useful for related work.}
+
+
+Neural networks continue to achieve remarkable performance across domains ranging from medical diagnosis to
+autonomous systems. This increase in performance has, however,
+come with a corresponding increase in complexity, making these systems
+less interpretable to those who build and deploy them.
+As neural networks enter high-stakes environments,
+where errors carry legal, financial, or human cost, interpretability becomes a necessity. The concern is not merely technical but ethical: a fundamental principle of accountability holds that the creator of a tool can only be held responsible for its outcomes to the extent that those outcomes could have been reasonably foreseen.
+A system whose internal reasoning cannot be understood is, by definition,
+one whose failures cannot be anticipated.
+
+Mechanistic interpretability aims to reverse-engineer the internal computations
+of neural networks into their simplest forms, such that they can be expressed as humanly interpretable
+algorithms.\\
+Many of the current popular methods within this space, such as sparse autoencoders \cite{sparseautoencodershighlyinterpretable},
+circuit analysis, and probing, primarily operate in activation space.
+However, each of these methods comes with its own set of limitations.
+Sparse autoencoders treat features as independent directions and discard
+the geometric structure between them,
+despite growing evidence that this structure carries meaningful information
+(Leask et al., 2025; Mendel, 2024; Engels et al., 2024). 
+Moreover, sparse autoencoders are trained to reconstruct activations and do not to explicitly identify the computational units that produced them. \cite{sparseautoencoderscanonicalunits, absorptionstudyingfeaturesplitting}
+The resulting decomposition may be functionally equivalent at a given layer, while
+not resembling the mechanisms that the network employs.
+Circuit-level methods face the deeper issue that neural networks are densely connected,
+meaning any given output can be equally well attributed to a multitude of causal pathways, leaving the choice of circuit underdetermined.
+
+A more recent line of work aims to decompose the parameters of the network directly, rather than the activations.
+More concretely, these methods aim to decompose a network's weights into a sum of simpler components, 
+each of which corresponds to a concrete "mechanism". This reframing sidesteps several of the issues above:
+mechanisms are no longer constrained to specific architectural components, such as neurons or attention heads,
+and can instead be distributed across multiple architectural components. Moreover,
+they decompose the network into functional units rather than representational directions,
+which may further enhance their interpretability.
+\\
+Recently proposed methods guided by the principle of minimum description
+length have shown promising results in this direction, aiming to decompose a network
+into parameter components that are faithful to the original weights, minimal in the number
+required per input, and individually as simple as possible.
+\\
+One such method, Stochastic Parameter Decomposition (Bushnaq et al., 2025), decomposes networks into rank-one subcomponents. Since not all components are relevant for every input, the method learns a function that estimates each component's causal importance for a given input. However, each component's importance is calculated independently, relying only on its own activation. As noted in the original work, this is likely too restrictive for non-toy models, as it prevents each component's importance from being informed by the state of other components. This work replaces the independent importance functions with a graph neural network that determines each component's importance conditioned on its relationships to all other components, while preserving explainability through its generalised additive structure.
+Additionally the use of an additive importance function, generalizes the decomposition to k-dimensional components.
+This generalizsation is motivated by the growing evidence, that transformer models, learn features
+which occupy irreducible multidimensional subspaces.
+
+
 \section{Notes}
 Putting the minimality lsos entropy higher, encourages diagonals?
 Instead of capturing two features in the same component.
 
 Increasing minimality loss encourages feature grouping.
 
+SAE: learn to decompose activations, i.e the output of a layer,
+Transcoders: learn to approximate the input-output function of a layer
 
+
+
+\[
+\int p(a,b)\,da\,db
+= w \int p_A(a)\,da \int \delta(b)\,db
++ (1-w)\int\!\!\int p_{AB}(a,b)\,da\,db
+= w + (1-w)
+= 1
+\]
+
+to read:
+Terence Tao, \emph{An Introduction to Measure Theory}:
+Section 1.1 Prologue: The problem of measure --- sets up why measure theory exists and why "lower-dimensional sets have measure zero" is the central idea. This alone might give you the intuition you need.
+Section 1.2 Lebesgue measure --- gives you "measure zero," "Lebesgue measure on $\mathbb{R}^n$," and the fact that lines/planes/etc. have measure zero in higher-dimensional ambient spaces. This is the technical core for your question.
+Section 2.3 Probability spaces --- short section that frames everything in probability language, which is what you actually want.
 \end{document}
