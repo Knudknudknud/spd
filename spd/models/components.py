@@ -149,61 +149,102 @@ from performer_pytorch import FastAttention
     
 
 
-class PerformerAttention(nn.Module):
-    def __init__(self, in_channels, out_channels, hidden_channels, nb_features=None):
-        super().__init__()
-        self.W_q = nn.Linear(in_channels, hidden_channels)
-        self.W_k = nn.Linear(in_channels, hidden_channels)
-        self.W_v = nn.Linear(in_channels, hidden_channels)
+# class Transformer(nn.Module):
+#     def __init__(self, in_channels, out_channels, hidden_channels, nb_features=None):
+#         super().__init__()
+#         self.W_q = nn.Linear(in_channels, hidden_channels)
+#         self.W_k = nn.Linear(in_channels, hidden_channels)
+#         self.W_v = nn.Linear(in_channels, hidden_channels)
 
-        self.fast_attn = FastAttention(
-            dim_heads=hidden_channels,
-            nb_features=nb_features,
-            causal=False,
-        )
+#         self.fast_attn = FastAttention(
+#             dim_heads=hidden_channels,
+#             nb_features=nb_features,
+#             causal=False,
+#         )
 
-        # Passthrough path: in_channels -> 1
-        self.x_proj = nn.Linear(in_channels, out_channels)
+#         # Passthrough path: in_channels -> 1
+#         self.x_proj = nn.Linear(in_channels, out_channels)
 
-        # Attention correction: hidden_channels -> 1, zero-init
-        self.attn_proj = nn.Linear(hidden_channels, out_channels)
-        nn.init.zeros_(self.attn_proj.weight)
-        nn.init.zeros_(self.attn_proj.bias)
+#         # Attention correction: hidden_channels -> 1, zero-init
+#         self.attn_proj = nn.Linear(hidden_channels, out_channels)
+#         nn.init.zeros_(self.attn_proj.weight)
+#         nn.init.zeros_(self.attn_proj.bias)
 
-    def forward_batched(self, x_batch):
-        Q = self.W_q(x_batch).unsqueeze(1)
-        K = self.W_k(x_batch).unsqueeze(1)
-        V = self.W_v(x_batch).unsqueeze(1)
+#     def forward(self, x_batch):
+#         Q = self.W_q(x_batch).unsqueeze(1)
+#         K = self.W_k(x_batch).unsqueeze(1)
+#         V = self.W_v(x_batch).unsqueeze(1)
 
-        attn_out = self.fast_attn(Q, K, V).squeeze(1)
+#         attn_out = self.fast_attn(Q, K, V).squeeze(1)
 
-        return self.x_proj(x_batch) + self.attn_proj(attn_out)
+#         return self.x_proj(x_batch) + self.attn_proj(attn_out)
+
+# class Transformer(nn.Module):
+#     def __init__(self, in_channels, out_channels, hidden_channels):
+#         super().__init__()
+#         self.W_q = nn.Linear(in_channels, hidden_channels)
+#         self.W_k = nn.Linear(in_channels, hidden_channels)
+#         self.W_v = nn.Linear(in_channels, hidden_channels)
+        
+#         self.self_proj = nn.Sequential(
+#             nn.Linear(in_channels, hidden_channels),
+#             nn.ReLU(),
+#             nn.Linear(hidden_channels, out_channels),
+#         )
+        
+#         self.attn_proj = nn.Linear(hidden_channels, in_channels)
+
+#     def forward_batched(self, x_batch):
+#         Q = self.W_q(x_batch)
+#         K = self.W_k(x_batch)
+#         V = self.W_v(x_batch)
+#         attn_out = F.scaled_dot_product_attention(Q, K, V)
+#         y = x_batch + attn_out
+#         y = y + self.self_proj(y)
+
+#         return y
 
 class Transformer(nn.Module):
-    def __init__(self, in_channels, out_channels, hidden_channels):
+    def __init__(self, in_channels, out_channels, hidden_channels, num_heads=1):
         super().__init__()
-        self.W_q = nn.Linear(in_channels, hidden_channels)
-        self.W_k = nn.Linear(in_channels, hidden_channels)
-        self.W_v = nn.Linear(in_channels, hidden_channels)
-        
-        self.self_proj = nn.Sequential(
-            nn.Linear(in_channels, hidden_channels),
-            nn.ReLU(),
-            nn.Linear(hidden_channels, out_channels),
+
+        # Project input into hidden space first
+        self.input_proj = nn.Linear(in_channels, hidden_channels)
+
+        # Attention operates entirely in hidden space
+        self.attn = nn.MultiheadAttention(
+            embed_dim=hidden_channels,
+            num_heads=num_heads,
+            batch_first=True
         )
-        
-        self.attn_proj = nn.Linear(hidden_channels, out_channels)
 
-    def forward_batched(self, x_batch):
-        Q = self.W_q(x_batch)
-        K = self.W_k(x_batch)
-        V = self.W_v(x_batch)
-        attn_out = F.scaled_dot_product_attention(Q, K, V)
-        y = x_batch + attn_out
-        y = y + self.self_proj(attn_out)
+        self.norm1 = nn.LayerNorm(hidden_channels)
+        self.norm2 = nn.LayerNorm(hidden_channels)
 
-        return y
-    
+        self.ff = nn.Sequential(
+            nn.Linear(hidden_channels, hidden_channels * 4),
+            nn.ReLU(),
+            nn.Linear(hidden_channels * 4, hidden_channels),
+        )
+
+        # Project to output dim
+        self.out_proj = nn.Linear(hidden_channels, out_channels)
+
+    def forward(self, x):
+
+        #I had another experiment, where i scaled the attention down to the input stream instead of input to hidden that seemed tow ork better for geometry.
+        # Upscale: (B, T, in_channels) -> (B, T, hidden_channels)
+        x = self.input_proj(x)
+
+        # Attention block with residual + norm
+        attn_out, _ = self.attn(x, x, x)
+        x = self.norm1(x + attn_out)
+
+        # FF block with residual + norm
+        x = self.norm2(x + self.ff(x))
+
+        # Project to output: (B, T, hidden_channels) -> (B, T, out_channels)
+        return self.out_proj(x)
     
 class TensorGNAN(nn.Module):
     def __init__(self, in_channels, out_channels, n_layers, hidden_channels=None, bias=True, dropout=0.0,

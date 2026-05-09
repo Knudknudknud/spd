@@ -71,7 +71,7 @@ class TMSAnalyzer:
         Bs = linear1_component.B.detach().cpu()  # (C, n_hidden)
 
         # Calculate subnets: (n_features, C) x (C, n_hidden) -> (C, n_features, n_hidden)
-        subnets = torch.einsum("f C, C h -> C f h", As, Bs)
+        subnets = torch.einsum("f C K, C K h -> C f h", As, Bs)
         return subnets
 
     def compute_cosine_similarities(
@@ -408,7 +408,7 @@ class FullNetworkDiagramPlotter:
         assert isinstance(linear1_component, LinearComponent)
         As = linear1_component.A.detach().cpu()
         Bs = linear1_component.B.detach().cpu()
-        linear1_subnets = torch.einsum("f C, C h -> C f h", As, Bs)
+        linear1_subnets = torch.einsum("f C K, C K h -> C f h", As, Bs)
 
         # Get hidden layer decompositions if they exist
         hidden_layer_components = None
@@ -420,7 +420,7 @@ class FullNetworkDiagramPlotter:
                 assert isinstance(hidden_comp, LinearComponent)
                 hidden_A = hidden_comp.A.detach().cpu()
                 hidden_B = hidden_comp.B.detach().cpu()
-                hidden_weights = torch.einsum("h C, C j -> C h j", hidden_A, hidden_B)
+                hidden_weights = torch.einsum("h C K, C K j -> C h j", hidden_A, hidden_B)
                 hidden_layer_components.append(hidden_weights)
 
         # Determine which components are significant in linear1 vs hidden layers
@@ -764,7 +764,7 @@ class HiddenLayerPlotter:
 
         hidden_A = hidden_component.A.detach().cpu()
         hidden_B = hidden_component.B.detach().cpu()
-        hidden_weights = torch.einsum("f C, C h -> C f h", hidden_A, hidden_B)
+        hidden_weights = torch.einsum("f C K, C K h -> C f h", hidden_A, hidden_B)
 
         # Sort by norm
         weights_norm = hidden_weights.norm(dim=(-1, -2))
@@ -969,9 +969,14 @@ def main():
     # Define run configurations with custom PlotConfig for each
     run_configs = {
         # "wandb:spd-tms/runs/f63itpo1": {"config": PlotConfig(), "name": "5-2"},
-        "wandb:spd-tms/runs/8bxfjeu5": {
+        #softmax
+        #"wandb:spd-spd_experiments_tms/runs/fbavwyuy":
+        #sparsemax
+        #"wandb:spd-spd_experiments_tms/runs/r8yi4gf8":
+        "wandb:spd-spd_experiments_tms/runs/e4ebfsei":
+        {
             "config": PlotConfig(subnet_norm_threshold=0.03, hidden_layer_threshold=0.0115),
-            "name": "5-2-identity",
+            "name": "5-2 TMS",
         },
         # "wandb:spd-tms/runs/xq1ivc6b": {"config": PlotConfig(), "name": "40-10"},
         # "wandb:spd-tms/runs/xyq22lbc": {"config": PlotConfig(), "name": "40-10-identity"},

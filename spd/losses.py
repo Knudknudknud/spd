@@ -122,15 +122,22 @@ def calc_importance_minimality_loss(
     # Sum over the C dimension and mean over the other dimensions
     return total_loss.sum(dim=-1).mean()
 
+def entropy(g, eps=1e-9):
+    
+    return -(g * (g + eps).log()).sum(dim=-1)
 
-def calc_importance_minimality_loss_entropy(ci_upper_leaky, pnorm):
-    total_loss = torch.zeros_like(next(iter(ci_upper_leaky.values())))
+def calc_importance_minimality_loss_entropy(
+    ci_upper_leaky: dict[str, Float[Tensor, "... C"]],
+    pnorm: float,
+) -> Float[Tensor, ""]:
+
+    total_loss = torch.zeros_like(next(iter(ci_upper_leaky.values()))[..., 0])
 
     for layer_ci_upper_leaky in ci_upper_leaky.values():
-        layer_entropy = entropy(layer_ci_upper_leaky)  # [..., C]
-        layer_loss = layer_entropy.sum(dim=-1)         # [...]
+        # entropy over C → shape [...]
+        layer_entropy = entropy(layer_ci_upper_leaky)
 
-        total_loss = total_loss + layer_loss
+        total_loss = total_loss + layer_entropy
 
     return total_loss.mean()
 
@@ -291,9 +298,6 @@ def calc_ce_losses(
 
     return ce_losses
 
-
-def entropy(g, eps=1e-9):
-    return -(g * (g + eps).log()).sum(dim=-1)
 
     
 def load_balance_loss(causal_importances):
