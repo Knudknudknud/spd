@@ -6,8 +6,8 @@ wandb_run_name_prefix: ""
 
 # --- General ---
 seed: 20
-C: 40
-K: 1
+C: 80
+K: 2
 n_mask_samples: 1
 n_ci_mlp_neurons: 16
 target_module_patterns: ["linear1", "linear2"]
@@ -15,10 +15,10 @@ target_module_patterns: ["linear1", "linear2"]
 # --- Loss Coefficients ---
 faithfulness_coeff: 1.0
 recon_coeff: null
-stochastic_recon_coeff: 1
+stochastic_recon_coeff: 1.0
 recon_layerwise_coeff: null
 stochastic_recon_layerwise_coeff: 1.0
-importance_minimality_coeff: 0.0001
+importance_minimality_coeff: 1e-3
 pnorm: 1.0
 output_loss_type: mse
 

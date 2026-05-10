@@ -123,6 +123,10 @@ class Config(BaseModel):
         ...,
         description="The rank of of each component, i.e the number of columns in A. The SPD paper uses k=1",
     )
+    temperature: PositiveFloat = Field(
+        default=1.0,
+        description="Temperature parameter for calculating causal importances. Lower values make the importance distribution sharper.",
+    )
     n_mask_samples: PositiveInt = Field(
         ...,
         description="Number of stochastic masks to sample when using stochastic recon losses",
