@@ -725,6 +725,49 @@
       \verb https://arxiv.org/abs/2405.14860
       \endverb
     \endentry
+    \entry{jermyn2024tanhPenaltyDictionaryLearning}{online}{}{}
+      \name{author}{2}{}{%
+        {{hash=9e635bbfed4ce26bfc9e300638b09fdc}{%
+           family={Jermyn},
+           familyi={J\bibinitperiod},
+           given={Adam},
+           giveni={A\bibinitperiod}}}%
+        {{hash=69a3bf7850ebb0075e2e11888dbca888}{%
+           family={Templeton},
+           familyi={T\bibinitperiod},
+           given={Adly},
+           giveni={A\bibinitperiod}}}%
+      }
+      \list{organization}{1}{%
+        {Transformer Circuits}%
+      }
+      \strng{namehash}{9c3aafdaa89ee79aa326c12310c92dd1}
+      \strng{fullhash}{9c3aafdaa89ee79aa326c12310c92dd1}
+      \strng{fullhashraw}{9c3aafdaa89ee79aa326c12310c92dd1}
+      \strng{bibnamehash}{9c3aafdaa89ee79aa326c12310c92dd1}
+      \strng{authorbibnamehash}{9c3aafdaa89ee79aa326c12310c92dd1}
+      \strng{authornamehash}{9c3aafdaa89ee79aa326c12310c92dd1}
+      \strng{authorfullhash}{9c3aafdaa89ee79aa326c12310c92dd1}
+      \strng{authorfullhashraw}{9c3aafdaa89ee79aa326c12310c92dd1}
+      \field{labelalpha}{JT24}
+      \field{sortinit}{J}
+      \field{sortinithash}{b2f54a9081ace9966a7cb9413811edb4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Section in the February 2024 update post}
+      \field{title}{Tanh Penalty in Dictionary Learning}
+      \field{urlday}{10}
+      \field{urlmonth}{5}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://transformer-circuits.pub/2024/feb-update/index.html
+      \endverb
+      \verb{url}
+      \verb https://transformer-circuits.pub/2024/feb-update/index.html
+      \endverb
+    \endentry
     \entry{sparseautoencoderscanonicalunits}{misc}{}{}
       \name{author}{8}{}{%
         {{hash=8f8e9b8d82198f627d03b1124af6f0e6}{%
@@ -1337,6 +1380,121 @@
       \endverb
       \verb{url}
       \verb https://www.lesswrong.com/posts/tojtPCCRpKLSHBdpn/the-strong-feature-hypothesis-could-be-wrong
+      \endverb
+    \endentry
+    \entry{vaswani2023attentionneed}{misc}{}{}
+      \name{author}{8}{}{%
+        {{hash=7f28e84700536646dd6620a0db07ad09}{%
+           family={Vaswani},
+           familyi={V\bibinitperiod},
+           given={Ashish},
+           giveni={A\bibinitperiod}}}%
+        {{hash=62efade83d70f0323fe248755e6c90c5}{%
+           family={Shazeer},
+           familyi={S\bibinitperiod},
+           given={Noam},
+           giveni={N\bibinitperiod}}}%
+        {{hash=06649ebab1ea5cac0250746a19764975}{%
+           family={Parmar},
+           familyi={P\bibinitperiod},
+           given={Niki},
+           giveni={N\bibinitperiod}}}%
+        {{hash=831027ee0ebf22375e2a86afc1881909}{%
+           family={Uszkoreit},
+           familyi={U\bibinitperiod},
+           given={Jakob},
+           giveni={J\bibinitperiod}}}%
+        {{hash=2fd2982e30ebcec93ec1cf76e0d797fd}{%
+           family={Jones},
+           familyi={J\bibinitperiod},
+           given={Llion},
+           giveni={L\bibinitperiod}}}%
+        {{hash=27b07e4eacbf4ef7a1438e3badb7dd8d}{%
+           family={Gomez},
+           familyi={G\bibinitperiod},
+           given={Aidan\bibnamedelima N.},
+           giveni={A\bibinitperiod\bibinitdelim N\bibinitperiod}}}%
+        {{hash=f2bc899b1160163417da7bf510f15d33}{%
+           family={Kaiser},
+           familyi={K\bibinitperiod},
+           given={Lukasz},
+           giveni={L\bibinitperiod}}}%
+        {{hash=95595a0fefb86187cbc36e551017d332}{%
+           family={Polosukhin},
+           familyi={P\bibinitperiod},
+           given={Illia},
+           giveni={I\bibinitperiod}}}%
+      }
+      \strng{namehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{fullhash}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \strng{fullhashraw}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \strng{bibnamehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{authorbibnamehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{authornamehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{authorfullhash}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \strng{authorfullhashraw}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \field{labelalpha}{Vas+23}
+      \field{sortinit}{V}
+      \field{sortinithash}{afb52128e5b4dc4b843768c0113d673b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.CL}
+      \field{eprinttype}{arXiv}
+      \field{title}{Attention Is All You Need}
+      \field{year}{2023}
+      \verb{eprint}
+      \verb 1706.03762
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/1706.03762
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/1706.03762
+      \endverb
+    \endentry
+    \entry{wright2024featureSuppressionSAEs}{online}{}{}
+      \name{author}{2}{}{%
+        {{hash=3c009158523db8b8a27accb2dcdea1f8}{%
+           family={Wright},
+           familyi={W\bibinitperiod},
+           given={Benjamin},
+           giveni={B\bibinitperiod}}}%
+        {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
+           family={Sharkey},
+           familyi={S\bibinitperiod},
+           given={Lee},
+           giveni={L\bibinitperiod}}}%
+      }
+      \list{organization}{1}{%
+        {AI Alignment Forum}%
+      }
+      \strng{namehash}{b8275ce0b115b5162de56e2f5c345fd3}
+      \strng{fullhash}{b8275ce0b115b5162de56e2f5c345fd3}
+      \strng{fullhashraw}{b8275ce0b115b5162de56e2f5c345fd3}
+      \strng{bibnamehash}{b8275ce0b115b5162de56e2f5c345fd3}
+      \strng{authorbibnamehash}{b8275ce0b115b5162de56e2f5c345fd3}
+      \strng{authornamehash}{b8275ce0b115b5162de56e2f5c345fd3}
+      \strng{authorfullhash}{b8275ce0b115b5162de56e2f5c345fd3}
+      \strng{authorfullhashraw}{b8275ce0b115b5162de56e2f5c345fd3}
+      \field{labelalpha}{WS24}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{16}
+      \field{month}{2}
+      \field{title}{Addressing Feature Suppression in SAEs}
+      \field{urlday}{10}
+      \field{urlmonth}{5}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.alignmentforum.org/posts/3JuSjTZyMzaSeTxKk/addressing-feature-suppression-in-saes
+      \endverb
+      \verb{url}
+      \verb https://www.alignmentforum.org/posts/3JuSjTZyMzaSeTxKk/addressing-feature-suppression-in-saes
       \endverb
     \endentry
   \enddatalist
