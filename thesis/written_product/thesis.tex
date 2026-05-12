@@ -20,7 +20,7 @@
 \author{Knud Rasmus Sønderbek}
 \maketitle
 \begin{abstract}
-Some super cool abstract of all my findings
+Some super cool abstract of all my findings \footnote{Very important to add quantization somewhere. https://arxiv.org/pdf/2303.13506}
 \end{abstract}
 
 \section{Introduction}
@@ -366,56 +366,6 @@ the orthogonality structure the hypothesis posits.
 
 Remember to add an experiment that shows if softmax enforce the orthogonality constraint from engels.
 
-\subsubsection{ Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}
-Following the extension to rank-$k$ subcomponents, and the alternative formulation of the GNAN,
-the output $g^{l}_{c} \in [0, 1]^{k}$ is a per feature importance value, and thus the masking can be applied independently to each feature.
-The intuition behind this is that if a mechanism captures a 1 dimensional feature, it would only need of the $k$ dimensions to be active.
-\\
-Likewise if this actually ends up working, k can be considered an upper bound or a so called "capacity" of a mechanism,
-it also follows nicely with the descriptive length principle found in the appendix of APD.
-
-To determine the effective rank of each subcomponent, the stochastic masking becomes:
-\begin{equation}
-    [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
-\end{equation}
-for each j in $1,\dots,k$
-\\
-Notably this treats each feature independently, which may not be desirable,
-as such we could modify it ever so slightly:
-
-\begin{equation}
-        [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)][g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)][g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
-\end{equation}
-The signal becomes an importance of two factors,
-if the component is important and both features are important, it remains active,
-if only one feature is important, the other will be pushed to zero
-
-The masked weight matrix becomes:
-\begin{equation}
-    W^{\prime l}(x, r) = \sum_{c=1}^{C} 
-    U_{c}^{l} \, \mathrm{diag}\!\left(
-    \mathbf{m}_{c}^{l}(x, r)\right) V_{c}^{l\top}
-\end{equation}
-Where the diagonal matrix is the per-feature mask for subcomponent $c$.
-
-The importance minimality loss penalises all $k$ dimensions of 
-all subcomponents toward zero:
-\begin{equation}
-    \mathcal{L}_{\text{import}} = \sum_{l=1}^{L} \sum_{c=1}^{C} 
-    \sum_{j=1}^{k} \left|[g_{c}^{l}(x)]_{j}\right|^{p}
-\end{equation}
-This follows the same logic by which SPD selects the number of 
-active subcomponents: the minimality loss drives unused components 
-toward zero, and only those that are genuinely required to 
-reconstruct the target model's output survive.
-
-This makes $k$ a soft upper bound rather than a sensitive 
-hyperparameter. In practice, $k$ can be set conservatively large 
-and the effective rank of each subcomponent is learned from the 
-data.
-
-
-
 
 \section{Results}
 \subsection{Overview of experiments}
@@ -531,16 +481,17 @@ Feature dim / Model rank
 \label{tbl:Experiment_overview}
 
 \end{table*}
-\subsection{SPD Baseline}
-\subsubsection{Toy Model of Superposition}
 
-The Toy Model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition} is trained to reconstruct sparse feature activations, random vectors in $\mathbb{R}^{d_{\text{features}}}$ where each entry is drawn independently from a uniform distribution over $[0, 1]$. These features are passed through a lower-dimensional bottleneck that forces the model to learn features in superposition. The architecture is a single-hidden-layer autoencoder with tied weights:
+\subsection{Toy Model of Superposition}
+\label{sec:tms-experiments}
+
+The Toy Model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition} is trained to reconstruct sparse feature activations through a lower-dimensional bottleneck that forces the model to learn features in superposition. The architecture is a single-hidden-layer autoencoder with tied weights:
 \begin{equation}
     \hat{x} = \mathrm{ReLU}(W^{\top}Wx + b), \qquad W \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{features}}}, \quad d_{\text{features}} \gg d_{\text{hidden}}.
 \end{equation}
-As each feature is independent and one-dimensional, the ground-truth decomposition is a set of $d_{\text{features}}$ rank-one matrices, each non-zero only along the $c$-th column $W_{:,c}$ of the target weights.
+TMS is studied in two regimes: one with independent features, reproducing the original SPD setup, and one with paired features that introduces statistical dependence. For both regimes, the rank of each subcomponent is kept at $1$, both because this is the ground-truth structure and to isolate the effect of softmax-and-attention.
 
-To quantify how well these features are recovered, the learned subcomponents are compared against the target model in terms of both directional alignment and magnitude. The mean max cosine similarity (MMCS) measures directional alignment between each target feature and its best-matching learned subcomponent:
+To quantify how well the learned subcomponents recover the target model, two metrics are computed across both regimes. The mean max cosine similarity (MMCS) \footnote{Remember to add reference} measures directional alignment between each target feature and its best-matching learned subcomponent:
 \begin{equation}
 \text{MMCS}
 =
@@ -558,9 +509,7 @@ To quantify how well these features are recovered, the learned subcomponents are
 \end{equation}
 where $c \in C$ is the parameter component index and $j \in \{1, \ldots, d_{\text{features}}\}$ is the input feature index. A value of $1$ indicates that every target feature has a perfectly aligned subcomponent.
 
-Apart from the directional alignment, the strength of the alignment is also computed, to see if the method is sensitive to feature shrinkage,
-a problem that is apparent in both Sparse Autoencoders and Attribution-Based Parameter Decomposition \autocite{jermyn2024tanhPenaltyDictionaryLearning,wright2024featureSuppressionSAEs,AttributionBasedParameterDecomposition}.
-To quantify feature shrinkage, the mean $L_{2}$ ratio (ML2R) is computed between the euclidean norm of the best-aligned subcomponent and the target feature.
+Apart from directional alignment, the strength of the alignment is also measured, to detect feature shrinkage, a problem apparent in both Sparse Autoencoders and Attribution-Based Parameter Decomposition \autocite{jermyn2024tanhPenaltyDictionaryLearning,wright2024featureSuppressionSAEs,AttributionBasedParameterDecomposition}. The mean $L_{2}$ ratio (ML2R) compares the euclidean norm of the best-aligned subcomponent to the target feature:
 \begin{equation}
 \text{ML2R}
 =
@@ -572,9 +521,13 @@ To quantify feature shrinkage, the mean $L_{2}$ ratio (ML2R) is computed between
 \left\| W_{:,j} \right\|_2
 }
 \end{equation}
-where $\mathrm{mcs}(j)$ is the index of the most aligned subcomponent for feature $j$. A ratio near $1$ indicates the feature is fully captured by its best-aligned subcomponent.\
+where $\mathrm{mcs}(j)$ is the index of the most aligned subcomponent for feature $j$. A ratio near $1$ indicates the feature is fully captured by its best-aligned subcomponent.
 
-Like in the original SPD paper, two TMS models are trained: $\mathrm{TMS}_{5\text{-}2}$ with $d_{\text{features}}=5$ and $d_{\text{hidden}}=2$, and $\mathrm{TMS}_{40\text{-}10}$ with $d_{\text{features}}=40$ and $d_{\text{hidden}}=10$ with an additional identity layer. For these experiments the matrices are kept at rank $1$, as this is both the ground-truth structure and isolates the effect of softmax.
+\subsubsection{Independent features}
+
+Each feature is drawn independently from a uniform distribution over $[0, 1]$. As each feature is one-dimensional and independent of the others, the ground-truth decomposition is a set of $d_{\text{features}}$ rank-one matrices, each non-zero only along the $c$-th column $W_{:,c}$ of the target weights.
+
+Like in the original SPD paper, two TMS models are trained: $\mathrm{TMS}_{5\text{-}2}$ with $d_{\text{features}}=5$ and $d_{\text{hidden}}=2$, and $\mathrm{TMS}_{40\text{-}10}$ with $d_{\text{features}}=40$ and $d_{\text{hidden}}=10$ with an additional identity layer.
 
 \begin{figure}[h!]
     \centering
@@ -583,65 +536,23 @@ Like in the original SPD paper, two TMS models are trained: $\mathrm{TMS}_{5\tex
     \label{fig:tms_5_2}
 \end{figure}
 
-\newpage
-SPD achieves near perfect alignment on both the small and large TMS models, with MMCS and ML2R approximately equal to $1$. The softmax and attention variant, while achieving near-zero losses, does not concentrate the entire feature magnitude within a single subcomponent, resulting in a lower ML2R with high variance. For the larger model this skews the geometry of the decomposition further (Table~\ref{tab:tms_baseline} and Figure~\ref{fig:tms_5_2}).
+SPD achieves near perfect alignment on both models, with MMCS and ML2R approximately equal to $1$. The softmax and attention variant, while achieving near-zero losses, does not manage to perfectly align its components with the target model nor concentrate the entire feature magnitude within a single subcomponent, resulting in a lower ML2R with high variance. For the larger model this skews the geometry further.
 
-\begin{table}[h!]
-\centering
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{lcccc}
-\toprule
-& \multicolumn{2}{c}{$\mathrm{TMS}_{5\text{-}2}$} & \multicolumn{2}{c}{$\mathrm{TMS}_{40\text{-}10}$} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
-& SPD & Softmax & SPD & Softmax \\
-\midrule
-MMCS  & $1.00$ & $0.985 \pm 0.016$ & $1.00$ & TBD \\
-ML2R  & $1.00$ & $0.797 \pm 0.205$ & $1.055 \pm 0.045$ & TBD \\
-\bottomrule
-\end{tabular}
-\caption{Decomposition quality on the TMS baseline. SPD refers to the original method \autocite{stochasticparameterdecomposition}, while Softmax refers to the relational importance function of Section~\ref{sec:rank-k-attention}.}
-\label{tab:tms_baseline}
-\end{table}
-While softmax does not recover the exact geometry,
-it does manage to correctly concentrate the entire magnitude on the correct number of subcomponents, with the remaining subcomponents pruned to near-zero.
-In terms of the causal importance values, the softmax and original SPD method show 
-the same onehot assignment for each of the five features in $\mathrm{TMS}_{5\text{-}2}$, 
-with some degradation in the larger model, where certain subcomponents are causally important for multiple features.
+While the softmax variant does not recover the exact geometry, it correctly concentrates the entire magnitude on the right number of subcomponents, with the rest pruned to near-zero (Figure~\ref{fig:tms_5_2}). In terms of causal importance values, the softmax and original SPD method show the same one-hot assignment for each of the five features in $\mathrm{TMS}_{5\text{-}2}$, with some degradation in the larger model where certain subcomponents are causally important for multiple features.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=7cm]{tms_5_2_plot_causal_importances.jpg}
-    \caption{Causal importance values for the softmax on $\mathrm{TMS}_{5\text{-}2}$, showing a one-hot assignment for each of the five features.}
+    \caption{Causal importance values for the softmax variant on $\mathrm{TMS}_{5\text{-}2}$, showing a one-hot assignment for each of the five features.}
 \end{figure}
 
-
-\subsubsection{Toy model of compressed computation}
-
-
-\label{sec:spd-independent-features}
-\subsubsection{Sensitivity to hyperparameters}
-\label{sec:spd-sensitivity}
-\subsection{Softmax without attention}
-
-
-
-\subsection{TMS with tied weights and synced inputs}
+\subsubsection{Paired features}
 \label{sec:tms-tied-experiment}
 
+In this regime, features are sampled in pairs to create the simplest form of dependence. Features are partitioned into pairs $\{f_{2i-1}, f_{2i}\}_{i=1}^{20}$, with each pair zero with probability $1-p$, and otherwise each pair member drawn independently from $\mathcal{U}(\epsilon, 1)$. The setup uses $d_{\text{features}} = 40$ and $d_{\text{hidden}} = 10$.
 
-
-To examine how SPD and the softmax-and-attention extension handle
-irreducible features, we reuse the model of superposition introduced
-in Section~\ref{sec:spd-independent-features}. The architecture is
-a single-hidden-layer autoencoder with tied weights (For a detailed description see Section~\ref{sec:spd-independent-features}):
-\begin{equation}
-    f(x) = W^{\top} \sigma(Wx + b), \qquad W \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{features}}}, \quad d_{\text{features}} \gg d_{\text{hidden}}
-\end{equation}
-Like before, the model is trained to reconstruct sparse features.
-However this time, the features are sampled in pairs, creating statistical dependence and thus irreducibility (Section~\ref{sec:irreducibility})
-features. The ground-truth decomposition thus becomes $d_{features} / 2$ matrices, each non-zero along two columns of the target weights, corresponding to the paired features.
-Concretely, for this experiment, $d_{features}=40$ and $d_{hidden}=10$, with the features partitioned into 20 pairs $\{f_{2i-1}, f_{2i}\}_{i=1}^{20}$. Each pair is zero with probability $1-p$, and with probability $p$ both features are independently drawn from $\mathcal{U} \sim (\epsilon, 1)$.
-Zero is reserved to indicate the absence of a feature.
-Interestingly, the target TMS model learns to group the paired features along a single direction, with near-perfect collinearity in the groups, and near-orthogonal directions across groups (Table~\ref{tab:tms-paired-cosine-similarity}).
+Each paired feature is a 2-dimensional input feature, but the trained model aligns both pair members along a single direction
+(Table~\ref{tab:tms-paired-cosine-similarity}), with within-group cosine similarity averaging $0.999$ and across-group similarity averaging $0.053$. The pair's hidden representation therefore collapses to a 1D subspace. Due to this lower-dimensional mapping, paired features can be captured with a single rank-1 subcomponent, without needing to split them across multiple subcomponents.
 
 \begin{table}[h]
 \centering
@@ -653,82 +564,68 @@ Within-group & $0.999$ & $0.010$ & $[0.997, 1.000]$ \\
 Across-group & $0.053$ & $0.223$ & $[-1.000, 0.038]$ \\
 \hline
 \end{tabular}
-\caption{Cosine similarity between encoder columns $W_{:,i}$ and
-$W_{:,j}$, partitioned by group membership.}
+\caption{Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$, partitioned by group membership.}
 \label{tab:tms-paired-cosine-similarity}
 \end{table}
 
-As described in the multi-dimensional superposition hypothesis,
-the dimension of the input feature specifies an upper bound on the rank required to represent it, 
-but does not enforce the model to use all dimensions.
-In this case, the model learns to represent it in a one-dimensional subspace.
-The SPD decomposition should thus be able to capture each pair within a single rank-one subcomponent, without needing to split the features across multiple subcomponents.
+The ground-truth decomposition is therefore $20$ rank-1 subcomponents, with feature indices $\{2i-1, 2i\}$ assigned to subcomponent $i$, which the causal importance function should recover.
 
-This therefore acts as the most minimal extension to SPD, same setup, multidimensional features that collapse into 1D.
-We keep the subcomponents at rank 1, as this is the ground-truth structure and isolates the differences between softmax and SPD.
+Both methods achieve near-perfect reconstruction and faithfulness, with losses around $10^{-6}$, but differ significantly in their importance predictions. SPD correctly identifies that features should be paired in single subcomponents but does not isolate each pair into its own subcomponent, with several subcomponents carrying importance for multiple feature pairs. The softmax and attention variant correctly assigns each feature pair to a single subcomponent, with the exception of one pair (Figure~\ref{fig:both}).
 
-but the observed near-collinearity suggests that the model learns to represent each pair along a single direction, effectively collapsing the representation to a one-dimensional subspace. This allows rank-one subcomponents to capture full features without needing to split them across multiple subcomponents, thus maintaining interpretability and faithfulness to the original SPD formulation.
-the model musn't use all $d_{fi}=2$ dimensions o
-Under the multi-dimensional superposition hypothesis (Section \ref{sec:irreducibility}),
-the formal dimensionality $d_{fi} = 2$, which provides an upper bound on the rank required to represent each feature.
-The observed near-collinearity within pairs suggests that this representation essentially collapses to a one-dimensional subspace.
-
-
-\subsubsection{Comparison of vanilla SPD and the softmax-and-attention extension}
-
-Both decompositions are trained with $C = 150$ subcomponents and
-the hyperparameters proposed in the original SPD paper, with the
-exception of the minimality loss, which is set to $x$ for vanilla
-SPD and $y$ for the softmax-and-attention extension. We use
-$k = 1$, since each pair was shown to be representable along a
-single direction in hidden space. The ground truth decomposition is one where each pair is captured by a single subcomponent.
-
-
-\begin{figure}[H]
+\begin{figure}[h!]
     \centering
-    \includegraphics[width=\linewidth, height=15cm]{tms_comparison_rank_1_paired.png}
-    \caption{Left: Attention and softmax only at like 15k steps vs 40k steps, Right: Vanilla spd.}
+    \includegraphics[width=0.48\linewidth,height=10cm]{spd_40_10_paired.jpg}
+    \hfill
+    \includegraphics[width=0.48\linewidth,height=10cm]{softmax_40_10_paired.jpg}
+    \caption{Left: SPD decomposition of the paired TMS model. Right: Softmax of the paired TMS model. SPD finds the correct structure of pairing features together but does not attribute one feature pair per subcomponent. Softmax achieves the desired importance decomposition, with the exception of one feature pair. SPD was trained with $200$ subcomponents and Softmax with $100$, as these yielded the best results for each method.}
+    \label{fig:both}
 \end{figure}
-\label{fig:tms-paired-comparison}
 
-Text explaining what we see, this will change so wait for now.
--Something about if both decompositions are faithful, and if they are faithful to one of the two hypotheses, if they are delta orthogonal, and if the importance values are interpretable.
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{2}{c}{$\mathrm{TMS}_{5\text{-}2}$} & \multicolumn{2}{c}{$\mathrm{TMS}_{40\text{-}10}$} & \multicolumn{2}{c}{$\mathrm{TMS}_{40\text{-}10}$ paired} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+& SPD & Softmax & SPD & Softmax & SPD & Softmax \\
+\midrule
+MMCS  & $1.00$ & $0.985 \pm 0.016$ & $1.00$ & $0.812 \pm 0.105$ & $0.9997$ & $0.9920 \pm 0.003$ \\
+ML2R  & $1.00$ & $0.797 \pm 0.205$ & $1.055 \pm 0.045$ & $0.623 \pm 0.231$ & $0.796 \pm 0.434$ & $0.732 \pm 0.350$ \\
+\bottomrule
+\end{tabular}
+\caption{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite{stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it's because its smaller than $0.001$.}
+\label{tab:tms_results}
+\end{table}
 
-To verify a successful decomposition, each matrix $V_{i}$ should also be $\delta$-orthogonal to the others.
+SPD with sigmoid gating produces better results on both MMCS and ML2R across all three settings, despite the more entangled importance assignments observed in the paired regime (Figure~\ref{fig:both}). The MMCS gap is consistently small, but the ML2R gap is substantial: the softmax variant exhibits magnitude shrinkage in both regimes, while SPD recovers each feature at close to full magnitude.
+
+A diagnostic at the subcomponent level identifies a structural cause for this shrinkage. For each target feature, two subcomponents are compared: the one selected by MMCS (highest cosine similarity with the target direction) and the one carrying the largest norm in the target's representation. For SPD on $\mathrm{TMS}_{40\text{-}10}$, these two subcomponents coincide for $X$ of $Y$ features, so MMCS and ML2R agree and both report values close to $1$. For the softmax variant, the two subcomponents differ for $X$ of $Y$ features (Figure~\ref{fig:dir-vs-mag}). The MMCS-selected subcomponent has a cosine similarity of approximately $X$ with a norm ratio of $Y$, while the magnitude-carrying subcomponent has a slightly lower cosine similarity of $X'$ with a norm ratio close to $1$.
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=0.9\linewidth]{direction_vs_magnitude_softmax.png}
+%     \caption{Cosine similarity against norm ratio for each subcomponent's contribution to each target feature, on $\mathrm{TMS}_{40\text{-}10}$ with the softmax variant. Stars mark the MMCS-selected subcomponent for each feature; squares mark the largest-norm subcomponent. For most features, the two markers occupy different positions: the magnitude lives in a slightly rotated subcomponent, while the best directional alignment is provided by a smaller-norm subcomponent.}
+%     \label{fig:dir-vs-mag}
+% \end{figure}
+
+The softmax variant therefore separates direction and magnitude across distinct subcomponents. One subcomponent anchors the direction with a tight cosine alignment but carries little magnitude, while another carries most of the magnitude but points in a direction slightly rotated from the target. The reconstruction loss near $10^{-6}$ is preserved because these subcomponents sum coherently, but no single subcomponent simultaneously carries the target's direction and its magnitude. MMCS and ML2R, which both evaluate a single subcomponent in isolation, penalise this split: MMCS picks the well-aligned but low-norm subcomponent, and ML2R then reports the low norm of that same subcomponent.
+
+This explains why the metric pattern persists even in the paired regime, where the importance figure (Figure~\ref{fig:both}) shows the softmax variant assigning each pair to a single subcomponent. The importance function presents a clean one-to-one assignment, but the underlying parameter components encode each feature through a direction-magnitude split rather than a single anchored representation. The softmax variant produces interpretable importance patterns at the cost of geometric concentration within individual subcomponents.
 
 
-The multi-dimensional superposition hypothesis predicts that the
-projection matrices for different irreducible features are pairwise
-$\delta$-orthogonal. At the parameter level, the recovered $V_c$
-matrices are the operational counterpart, and the prediction
-translates to the requirement that recovered atoms have small
-pairwise overlap in their input-side directions.
-
-For each method, we compute the pairwise cosine similarity \footnote{Maybe even UV combined? Only read or write?}
-\begin{equation}
-    M_{cc'} = \frac{V_c^\top V_{c'}}{\|V_c\| \|V_{c'}\|}
-\end{equation}
-
-compared against the across-group cosine similarity of the
-trained model's encoder ($0.053$, \ref{tab:tms-paired-cosine-similarity}), the softmax-and-attention shows "something"
-and the baseline model finds that "something else".
-
-here we have four nice plots, overall alligment, across V's, across U's, entire thing?
-Reference to original model and maybe a table?
+\subsubsection{Toy model of compressed computation}
+Talk about sampling differences,
+the softmax performs much better,
+when we sample one hot rather than sparsely.
+But this is obviously expected, as
+we want to maximize the probability of ownership.
 
 
-% \begin{table}[h]
-% \centering
-% \begin{tabular}{lcc}
-% \toprule
-%                            & Vanilla SPD & Softmax-attention \\
-% \midrule
-% Mean $|M_{cc'}|$ off-diag  & x.xx        & y.yy \\
-% Max $|M_{cc'}|$ off-diag   & x.xx        & y.yy \\
-% \bottomrule
-% \end{tabular}
-% \caption{Pairwise overlap of recovered atoms.}
-% \end{table}
+\label{sec:spd-independent-features}
+\subsubsection{Sensitivity to hyperparameters}
+\label{sec:spd-sensitivity}
+\subsection{Softmax without attention}
 
 
 \subsubsection{Noes for this}
@@ -767,52 +664,6 @@ Intra cluster cosine has a -1. Two features are perfectly alligned to a factor o
 can this cause issues with decomposition? Same component could capture both features, if they read from the same input.
 However they shouldnt as its distinctly different feature indices.
 
-
-
-\subsection{TMS with paired features}
-\label{sec:tms-tied-experiment}
-
-The baseline established that softmax-and-attention recovers the correct number of independent features but does not perfectly concentrate their magnitudes. This experiment extends to the simplest dependent case: features that always co-occur in pairs, creating statistical dependence between their activations.
-
-The architecture is unchanged from Section~\ref{sec:spd-independent-features}; only the input distribution changes. Features are partitioned into pairs $\{f_{2i-1}, f_{2i}\}_{i=1}^{20}$, with each pair zero with probability $1-p$, and otherwise each pair member drawn independently from $\mathcal{U}(\epsilon, 1)$. The setup uses $d_{\text{features}} = 40$ and $d_{\text{hidden}} = 10$.
-
-Each paired feature constitutes a 2-dimensional irreducible feature in the sense of Section~\ref{sec:irreducibility}: its joint distribution is neither separable, since the two components co-occur, nor a disjoint mixture. The multi-dimensional superposition hypothesis allows the model to represent such features in a subspace of dimension up to $d_{f_i} = 2$, but does not enforce the use of all dimensions when the geometry permits a lower-rank embedding.
-
-The trained model exploits this freedom. Cosine similarity within and across pairs (Table~\ref{tab:tms-paired-cosine-similarity}) shows near-perfect collinearity within pairs and approximate orthogonality across them. The model has collapsed each 2-dimensional feature into a 1-dimensional subspace, encoding each pair along a single shared direction.
-
-\begin{table}[h]
-\centering
-\begin{tabular}{lccc}
-\hline
-Group        & Mean    & Std Dev & Range \\
-\hline
-Within-group & $0.999$ & $0.010$ & $[0.997, 1.000]$ \\
-Across-group & $0.053$ & $0.223$ & $[-1.000, 0.038]$ \\
-\hline
-\end{tabular}
-\caption{Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$, partitioned by group membership.}
-\label{tab:tms-paired-cosine-similarity}
-\end{table}
-
-This collapse places the ground-truth decomposition within the reach of rank-1 subcomponents: each pair should be captured by a single subcomponent whose direction matches the shared encoder column. The experiment isolates the question of whether each method's importance function correctly groups co-occurring features into the same subcomponent, rather than splitting them across two. Both decompositions are trained at rank $1$ with $C = 150$ subcomponents, matching the model's effective representation.
-
-\subsubsection{Grouping by causal importance}
-
-The expected pattern of causal importance values is straightforward: for each pair $\{f_{2i-1}, f_{2i}\}$, both feature instances should activate the same subcomponent. A method that splits paired features across two subcomponents would show a two-hot pattern within each pair; one that correctly groups them would show a single-hot pattern shared across the pair members.
-
-[insert importance comparison figure]
-
-[discussion: SPD groups / fails to group, softmax-and-attention groups / fails to group, with quantitative summary if useful]
-
-\subsubsection{Cross-pair separation}
-
-As a secondary check, the recovered subcomponents are tested for $\delta$-orthogonality across pairs. The encoder's across-group cosine similarity ($0.053$) provides the reference: a faithful decomposition should reproduce this separation in its $V_c$ matrices.
-
-\begin{equation}
-    M_{cc'} = \frac{V_c^\top V_{c'}}{\|V_c\| \|V_{c'}\|}
-\end{equation}
-
-[brief comparison table or single figure, kept short — full $V$ alignment analysis is deferred to Section~\ref{sec:geometric-experiment}]
 
 
 \subsection{Extending to Rank-k: When Higher-Dimensional Structure Matters}
@@ -859,7 +710,46 @@ we compare how input spaces are alligned over training, does the softmax encoura
 
 
 
+\subsubsection{things that didnt make it into tms paired}
+
+To verify a successful decomposition, each matrix $V_{i}$ should also be $\delta$-orthogonal to the others.
+
+
+The multi-dimensional superposition hypothesis predicts that the
+projection matrices for different irreducible features are pairwise
+$\delta$-orthogonal. At the parameter level, the recovered $V_c$
+matrices are the operational counterpart, and the prediction
+translates to the requirement that recovered atoms have small
+pairwise overlap in their input-side directions.
+
+For each method, we compute the pairwise cosine similarity \footnote{Maybe even UV combined? Only read or write?}
+\begin{equation}
+    M_{cc'} = \frac{V_c^\top V_{c'}}{\|V_c\| \|V_{c'}\|}
+\end{equation}
+
+compared against the across-group cosine similarity of the
+trained model's encoder ($0.053$, \ref{tab:tms-paired-cosine-similarity}), the softmax-and-attention shows "something"
+and the baseline model finds that "something else".
+
+here we have four nice plots, overall alligment, across V's, across U's, entire thing?
+Reference to original model and maybe a table?
+
+
+%
+
+
 \subsection{Checking for orthogonality throughout training with softmax and attention / compare to baseline spd.}
+
+\subsection{New toy model}
+Quantization paper computes the parity of a string mod 2,
+it proposes control bit sequence, that decide which subset
+of the string that is active and should be computed on,
+
+we can sample this with the mixture
+\[
+    \text{mixture} = p(\text{string}, \delta\text{control=0} + p(\text{string}, \delta\text{control neq 0})
+\]
+
 
 \subsection{Toy model of learning gates}
 Remember to mention that softmax is all or nothing,
@@ -907,8 +797,17 @@ Consider trainng on exactly one active.
 The original spd method produces hard zeroes,
 something that softmax cannot do. Entmax didnt work either nor did sparsemax,
 however non hard zeroes do cause magnitude to leak even if marginal, which may increase with more components..
-important to mention that the structure that spd decomposes into is not clearsometimes one hots
-ome
+important to mention that the str
+ucture that spd decomposes into is not clearsometimes one hots
+ome.
+
+Talk about how its unclear what structure spd wants.
+Even rank 1 is not the smallest possible, as we can align
+two things to the same direction, but these do not split.
+
+Relate back to the interesting thing that one feature per component
+and rank 1 matrices does in fact not mean the smallest possible decomposition,
+as we have shown with TMSs and TMS paired, one is in a way strictly larger, but they result in the same thing!
 \section{Acknowledgements}
 
 \section{Other things to consider?}
@@ -1104,4 +1003,92 @@ Terence Tao, \emph{An Introduction to Measure Theory}:
 Section 1.1 Prologue: The problem of measure --- sets up why measure theory exists and why "lower-dimensional sets have measure zero" is the central idea. This alone might give you the intuition you need.
 Section 1.2 Lebesgue measure --- gives you "measure zero," "Lebesgue measure on $\mathbb{R}^n$," and the fact that lines/planes/etc. have measure zero in higher-dimensional ambient spaces. This is the technical core for your question.
 Section 2.3 Probability spaces --- short section that frames everything in probability language, which is what you actually want.
+
+
+\subsubsection{Hard maybes}
+
+\subsubsection{ Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}
+Following the extension to rank-$k$ subcomponents, and the alternative formulation of the GNAN,
+the output $g^{l}_{c} \in [0, 1]^{k}$ is a per feature importance value, and thus the masking can be applied independently to each feature.
+The intuition behind this is that if a mechanism captures a 1 dimensional feature, it would only need of the $k$ dimensions to be active.
+\\
+Likewise if this actually ends up working, k can be considered an upper bound or a so called "capacity" of a mechanism,
+it also follows nicely with the descriptive length principle found in the appendix of APD.
+
+To determine the effective rank of each subcomponent, the stochastic masking becomes:
+\begin{equation}
+    [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
+\end{equation}
+for each j in $1,\dots,k$
+\\
+Notably this treats each feature independently, which may not be desirable,
+as such we could modify it ever so slightly:
+
+\begin{equation}
+        [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)][g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)][g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
+\end{equation}
+The signal becomes an importance of two factors,
+if the component is important and both features are important, it remains active,
+if only one feature is important, the other will be pushed to zero
+
+The masked weight matrix becomes:
+\begin{equation}
+    W^{\prime l}(x, r) = \sum_{c=1}^{C} 
+    U_{c}^{l} \, \mathrm{diag}\!\left(
+    \mathbf{m}_{c}^{l}(x, r)\right) V_{c}^{l\top}
+\end{equation}
+Where the diagonal matrix is the per-feature mask for subcomponent $c$.
+
+The importance minimality loss penalises all $k$ dimensions of 
+all subcomponents toward zero:
+\begin{equation}
+    \mathcal{L}_{\text{import}} = \sum_{l=1}^{L} \sum_{c=1}^{C} 
+    \sum_{j=1}^{k} \left|[g_{c}^{l}(x)]_{j}\right|^{p}
+\end{equation}
+This follows the same logic by which SPD selects the number of 
+active subcomponents: the minimality loss drives unused components 
+toward zero, and only those that are genuinely required to 
+reconstruct the target model's output survive.
+
+This makes $k$ a soft upper bound rather than a sensitive 
+hyperparameter. In practice, $k$ can be set conservatively large 
+and the effective rank of each subcomponent is learned from the 
+data.
+
+
+\section{To add:}
+https://arxiv.org/pdf/2303.13506 quantization, multidimensional feature crossover
+We use the method from the irreducibility paper to quantize how well it is seperable,
+mixture like.
+Rewrite irreducibility to mkae it clear that it is the function
+
+
+The method is quite complex,
+we practically look for the input space to see where a feature comes from and its dimension
+but when we look to decompose a layer, we look at f, the projection of the input space to see 
+its rank, but we look for the values that the input space get mapped to.
+So in other words, the f decides how many subcomponents we need,
+but the f decides how many features are inside of it?
+
+quantization and spd clustering
+
+why softmax + attention instead of only softmax + minimality.
+
+Somewhere add this whole thing of importance maybe being
+an interpretability trap? Or that it should be seen as a caution thing,
+it will predict what is responsible, not the model alignment.
+
+
+
+The thing that makes multifeature hypothesis perfect
+
+Multifeature hypothesis says that there exists a transformation f,
+to a lower dimensional space, in this case any W linear map,
+
+that can be be paired with some new $V_{i}$ that describes the hidden state,
+in this case it's the SPD components!!!!
+These perfectly make this up
+and pair this wiht quantization and we are golden.
+
+Remark rewrite TMS paired into TMS, they should be the same section.
 \end{document}

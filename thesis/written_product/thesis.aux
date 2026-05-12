@@ -89,69 +89,67 @@
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{elhage2022toymodelssuperposition}
 \abx@aux@segm{0}{0}{elhage2022toymodelssuperposition}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.2} Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}{6}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4}Results}{6}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Overview of experiments}{6}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Overview of the toy models and their properties. Each experiment is chosen to isolate a specific property of the irreducibility definition. The baseline is trivially irreducible: a 1D scalar cannot be split into multiple components. }}{6}{}\protected@file@percent }
+\newlabel{tbl:Experiment_overview}{{1}{6}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Toy Model of Superposition}{6}{}\protected@file@percent }
+\newlabel{sec:tms-experiments}{{4.2}{6}{}{}{}}
 \abx@aux@cite{0}{jermyn2024tanhPenaltyDictionaryLearning}
 \abx@aux@segm{0}{0}{jermyn2024tanhPenaltyDictionaryLearning}
 \abx@aux@cite{0}{wright2024featureSuppressionSAEs}
 \abx@aux@segm{0}{0}{wright2024featureSuppressionSAEs}
 \abx@aux@cite{0}{AttributionBasedParameterDecomposition}
 \abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Overview of the toy models and their properties. Each experiment is chosen to isolate a specific property of the irreducibility definition. The baseline is trivially irreducible: a 1D scalar cannot be split into multiple components. }}{7}{}\protected@file@percent }
-\newlabel{tbl:Experiment_overview}{{1}{7}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}SPD Baseline}{7}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Toy Model of Superposition}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Independent features}{7}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Decomposition of $\mathrm  {TMS}_{5\text  {-}2}$. The first two panels show the target model's weight columns and the sum of learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ carry meaningful norm and contribute to reconstruction, while the remaining $15$ have negligible weight and are effectively pruned by the method. Each active subcomponent recovers primarily one feature direction, with minor leakage across components.}}{7}{}\protected@file@percent }
+\newlabel{fig:tms_5_2}{{1}{7}{}{}{}}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Decomposition of $\mathrm  {TMS}_{5\text  {-}2}$. The first two panels show the target model's weight columns and the sum of learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ carry meaningful norm and contribute to reconstruction, while the remaining $15$ have negligible weight and are effectively pruned by the method. Each active subcomponent recovers primarily one feature direction, with minor leakage across components.}}{8}{}\protected@file@percent }
-\newlabel{fig:tms_5_2}{{1}{8}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Decomposition quality on the TMS baseline. SPD refers to the original method \blx@tocontentsinit {0}\autocite {stochasticparameterdecomposition}, while Softmax refers to the relational importance function of Section~\ref {sec:rank-k-attention}.}}{8}{}\protected@file@percent }
-\newlabel{tab:tms_baseline}{{2}{8}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Causal importance values for the softmax on $\mathrm  {TMS}_{5\text  {-}2}$, showing a one-hot assignment for each of the five features.}}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Toy model of compressed computation}{9}{}\protected@file@percent }
-\newlabel{sec:spd-independent-features}{{4.2.2}{9}{}{}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Sensitivity to hyperparameters}{9}{}\protected@file@percent }
-\newlabel{sec:spd-sensitivity}{{4.2.3}{9}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Softmax without attention}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}TMS with tied weights and synced inputs}{9}{}\protected@file@percent }
-\newlabel{sec:tms-tied-experiment}{{4.4}{9}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$, partitioned by group membership.}}{9}{}\protected@file@percent }
-\newlabel{tab:tms-paired-cosine-similarity}{{3}{9}{}{}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Comparison of vanilla SPD and the softmax-and-attention extension}{10}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Left: Attention and softmax only at like 15k steps vs 40k steps, Right: Vanilla spd.}}{10}{}\protected@file@percent }
-\newlabel{fig:tms-paired-comparison}{{4.4.1}{10}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Causal importance values for the softmax variant on $\mathrm  {TMS}_{5\text  {-}2}$, showing a one-hot assignment for each of the five features.}}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Paired features}{8}{}\protected@file@percent }
+\newlabel{sec:tms-tied-experiment}{{4.2.2}{8}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$, partitioned by group membership.}}{8}{}\protected@file@percent }
+\newlabel{tab:tms-paired-cosine-similarity}{{2}{8}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Decomposition quality across both TMS regimes. SPD refers to the original method \blx@tocontentsinit {0}\autocite {stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref {sec:rank-k-attention}. If the standard deviation is not reported, it's because its smaller than $0.001$.}}{8}{}\protected@file@percent }
+\newlabel{tab:tms_results}{{3}{8}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Left: SPD decomposition of the paired TMS model. Right: Softmax of the paired TMS model. SPD finds the correct structure of pairing features together but does not attribute one feature pair per subcomponent. Softmax achieves the desired importance decomposition, with the exception of one feature pair. SPD was trained with $200$ subcomponents and Softmax with $100$, as these yielded the best results for each method.}}{9}{}\protected@file@percent }
+\newlabel{fig:both}{{3}{9}{}{}{}}
 \abx@aux@cite{0}{effectiverank}
 \abx@aux@segm{0}{0}{effectiverank}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Noes for this}{11}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Effective rank of paired-feature encoder blocks. Values near $1$ indicate collapse to a single direction.}}{11}{}\protected@file@percent }
-\newlabel{tbl:mean-effective-rank}{{4}{11}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}TMS with paired features}{11}{}\protected@file@percent }
-\newlabel{sec:tms-tied-experiment}{{4.5}{11}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$, partitioned by group membership.}}{12}{}\protected@file@percent }
-\newlabel{tab:tms-paired-cosine-similarity}{{5}{12}{}{}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.1}Grouping by causal importance}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.2}Cross-pair separation}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Extending to Rank-k: When Higher-Dimensional Structure Matters}{12}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces SPD decomposed with k=1,2,3 from left to right.}}{13}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Softmax-and-Attention decomposed with k=1,2,3 from left to right.}}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Checking for orthogonality throughout training with softmax and attention / compare to baseline spd.}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Toy model of learning gates}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.1}Remark for experiments}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Acknowledgements}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Other things to consider?}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}That some features are multidimensional}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}References}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Toy model of compressed computation}{10}{}\protected@file@percent }
+\newlabel{sec:spd-independent-features}{{4.2.3}{10}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.4}Sensitivity to hyperparameters}{10}{}\protected@file@percent }
+\newlabel{sec:spd-sensitivity}{{4.2.4}{10}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Softmax without attention}{10}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Noes for this}{10}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Effective rank of paired-feature encoder blocks. Values near $1$ indicate collapse to a single direction.}}{10}{}\protected@file@percent }
+\newlabel{tbl:mean-effective-rank}{{4}{10}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Extending to Rank-k: When Higher-Dimensional Structure Matters}{10}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces SPD decomposed with k=1,2,3 from left to right.}}{11}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Softmax-and-Attention decomposed with k=1,2,3 from left to right.}}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}things that didnt make it into tms paired}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Checking for orthogonality throughout training with softmax and attention / compare to baseline spd.}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}New toy model}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Toy model of learning gates}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.1}Remark for experiments}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Acknowledgements}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Other things to consider?}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}That some features are multidimensional}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}References}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Appendix}{14}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {9.0.1}GNAN-based importance functions}{14}{}\protected@file@percent }
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
-\@writefile{toc}{\contentsline {section}{\numberline {9}Appendix}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {9.0.1}GNAN-based importance functions}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10}Notes}{17}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Notes}{16}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.1}Hard maybes}{16}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.2} Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}{16}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11}To add:}{17}{}\protected@file@percent }
 \abx@aux@read@bbl@mdfivesum{96F7FD0E756D50543D1BC757DFB4B3CE}
 \abx@aux@defaultrefcontext{0}{stochasticparameterdecomposition}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{AttributionBasedParameterDecomposition}{anyt/global//global/global/global}
@@ -177,4 +175,4 @@
 \abx@aux@defaultrefcontext{0}{smith2024strong}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{vaswani2023attentionneed}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{wright2024featureSuppressionSAEs}{anyt/global//global/global/global}
-\gdef \@abspage@last{18}
+\gdef \@abspage@last{17}

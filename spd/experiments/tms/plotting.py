@@ -124,6 +124,86 @@ class TMSAnalyzer:
 
         return filtered_subnets, subnets_indices, n_significant
 
+    #Temp code
+    def diagnose_direction_vs_magnitude(self, eps: float = 1e-12) -> dict[str, float]:
+        """For each target feature, identify the MMCS-selected and magnitude-carrying
+        subcomponents, and report how often they differ."""
+        subnets = self.extract_subnets()  # (C, n_features, n_hidden)
+        target_weights = self.target_model.linear1.weight.T  # (n_features, n_hidden)
+
+        # Cosine similarities (C, n_features)
+        subnets_norm = subnets / (torch.norm(subnets, dim=-1, keepdim=True) + eps)
+        target_dir = target_weights / (torch.norm(target_weights, dim=-1, keepdim=True) + eps)
+        cosine_sims = torch.einsum("C f h, f h -> C f", subnets_norm, target_dir)
+
+        # Subcomponent norms in each feature's representation (C, n_features)
+        subnet_norms = torch.norm(subnets, dim=-1)
+        target_norms = torch.norm(target_weights, dim=-1)  # (n_features,)
+
+        # Indices: best direction vs largest norm, per feature
+        cos_argmax = cosine_sims.argmax(dim=0)        # MMCS-selected
+        norm_argmax = subnet_norms.argmax(dim=0)      # Magnitude-carrier
+
+        differ = (cos_argmax != norm_argmax)
+        n_features = cosine_sims.shape[1]
+
+        # Stats for each role
+        feat_idx = torch.arange(n_features)
+        cos_selected_cos = cosine_sims[cos_argmax, feat_idx]
+        cos_selected_norm = subnet_norms[cos_argmax, feat_idx] / (target_norms + eps)
+        norm_selected_cos = cosine_sims[norm_argmax, feat_idx]
+        norm_selected_norm = subnet_norms[norm_argmax, feat_idx] / (target_norms + eps)
+
+        return {
+            "n_features": n_features,
+            "n_differ": int(differ.sum().item()),
+            "frac_differ": float(differ.float().mean().item()),
+            "mmcs_selected_mean_cos": float(cos_selected_cos.mean().item()),
+            "mmcs_selected_mean_norm_ratio": float(cos_selected_norm.mean().item()),
+            "magnitude_carrier_mean_cos": float(norm_selected_cos.mean().item()),
+            "magnitude_carrier_mean_norm_ratio": float(norm_selected_norm.mean().item()),
+        }
+    
+
+#Also temp
+def plot_direction_vs_magnitude(self, eps: float = 1e-12) -> Figure:
+    """Scatter plot of cosine similarity vs norm ratio per (subcomponent, feature)."""
+    subnets = self.analyzer.extract_subnets()
+    target_weights = self.analyzer.target_model.linear1.weight.T
+
+    subnets_norm = subnets / (torch.norm(subnets, dim=-1, keepdim=True) + eps)
+    target_dir = target_weights / (torch.norm(target_weights, dim=-1, keepdim=True) + eps)
+    cosine_sims = torch.einsum("C f h, f h -> C f", subnets_norm, target_dir).cpu().numpy()
+
+    subnet_norms = torch.norm(subnets, dim=-1).cpu().numpy()
+    target_norms = torch.norm(target_weights, dim=-1).cpu().numpy()
+    norm_ratios = subnet_norms / (target_norms[None, :] + eps)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    n_features = target_weights.shape[0]
+    colors = plt.colormaps["viridis"](np.linspace(0, 1, n_features))
+
+    for j in range(n_features):
+        active = subnet_norms[:, j] > 0.01
+        ax.scatter(cosine_sims[active, j], norm_ratios[active, j],
+                   color=colors[j], alpha=0.4, s=20)
+
+        # MMCS-selected (star)
+        cos_idx = cosine_sims[:, j].argmax()
+        ax.scatter(cosine_sims[cos_idx, j], norm_ratios[cos_idx, j],
+                   color=colors[j], marker="*", s=200, edgecolor="black", zorder=5)
+
+        # Magnitude-carrier (square)
+        norm_idx = subnet_norms[:, j].argmax()
+        ax.scatter(cosine_sims[norm_idx, j], norm_ratios[norm_idx, j],
+                   color=colors[j], marker="s", s=100, edgecolor="black", zorder=5)
+
+    ax.axhline(1.0, color="gray", linestyle="--", alpha=0.5)
+    ax.axvline(1.0, color="gray", linestyle="--", alpha=0.5)
+    ax.set_xlabel("Cosine similarity with target feature")
+    ax.set_ylabel("Subcomponent norm / target feature norm")
+    ax.set_title("Subcomponent contributions per target feature")
+    return fig
 
 class VectorPlotter:
     """Handles 2D vector plotting for subnetworks."""
@@ -960,6 +1040,15 @@ class TMSPlotter:
         if hasattr(self.analyzer.target_model, "b_final"):
             print(f"Mean bias: {self.analyzer.target_model.b_final.mean():.4f}")
 
+        #Temp code
+        diag = self.analyzer.diagnose_direction_vs_magnitude()
+        print(f"\nDirection-vs-magnitude diagnostic:")
+        print(f"  Features where MMCS-selected ≠ magnitude-carrier: "
+            f"{diag['n_differ']}/{diag['n_features']} ({100*diag['frac_differ']:.1f}%)")
+        print(f"  MMCS-selected:    cos={diag['mmcs_selected_mean_cos']:.4f}, "
+            f"norm_ratio={diag['mmcs_selected_mean_norm_ratio']:.4f}")
+        print(f"  Magnitude-carrier: cos={diag['magnitude_carrier_mean_cos']:.4f}, "
+            f"norm_ratio={diag['magnitude_carrier_mean_norm_ratio']:.4f}")
 
 def main():
     """Main execution function."""
