@@ -64,6 +64,48 @@
       \verb https://arxiv.org/abs/2506.20790
       \endverb
     \endentry
+    \entry{bhagat2025compressed}{misc}{}{}
+      \name{author}{4}{}{%
+        {{hash=0910913d267e93b385ad23da7ef2ed73}{%
+           family={Bhagat},
+           familyi={B\bibinitperiod},
+           given={Jai},
+           giveni={J\bibinitperiod}}}%
+        {{hash=92c0d619f707aeb50220290d4ab1244d}{%
+           family={Molas\bibnamedelima Medina},
+           familyi={M\bibinitperiod\bibinitdelim M\bibinitperiod},
+           given={Sara},
+           giveni={S\bibinitperiod}}}%
+        {{hash=facef30e8d7a2b104523424f57b7a478}{%
+           family={Giglemiani},
+           familyi={G\bibinitperiod},
+           given={Giorgi},
+           giveni={G\bibinitperiod}}}%
+        {{hash=2165acec5551840a430d770554b4bd4a}{%
+           family={Hex},
+           familyi={H\bibinitperiod},
+           given={Stefan},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{704b9f995eec298e9ab5d7da00ac63c7}
+      \strng{fullhash}{12b921780ec324afc69f2d124629f239}
+      \strng{fullhashraw}{12b921780ec324afc69f2d124629f239}
+      \strng{bibnamehash}{704b9f995eec298e9ab5d7da00ac63c7}
+      \strng{authorbibnamehash}{704b9f995eec298e9ab5d7da00ac63c7}
+      \strng{authornamehash}{704b9f995eec298e9ab5d7da00ac63c7}
+      \strng{authorfullhash}{12b921780ec324afc69f2d124629f239}
+      \strng{authorfullhashraw}{12b921780ec324afc69f2d124629f239}
+      \field{labelalpha}{Bha+25}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://www.lesswrong.com/posts/ZxFchCFJFcgysYsT9/compressed-computation-is-probably-not-computation-in}}
+      \field{month}{6}
+      \field{note}{LessWrong post}
+      \field{title}{Compressed Computation is (probably) not Computation in Superposition}
+      \field{year}{2025}
+    \endentry
     \entry{AttributionBasedParameterDecomposition}{misc}{}{}
       \name{author}{5}{}{%
         {{hash=375c93d04783a8b8c5887d391db14e08}{%
@@ -1141,6 +1183,51 @@
       \verb https://arxiv.org/abs/2311.03658
       \endverb
     \endentry
+    \entry{peters2019sparsesequencetosequencemodels}{misc}{}{}
+      \name{author}{3}{}{%
+        {{hash=c5d967fd93e7b18f947bcc25ac7d7496}{%
+           family={Peters},
+           familyi={P\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod}}}%
+        {{hash=7fb1184b4b06404ea26547130860771e}{%
+           family={Niculae},
+           familyi={N\bibinitperiod},
+           given={Vlad},
+           giveni={V\bibinitperiod}}}%
+        {{hash=9480c28f63984e2f3cbe6ce914f8aa8b}{%
+           family={Martins},
+           familyi={M\bibinitperiod},
+           given={André\bibnamedelimb F.\bibnamedelimi T.},
+           giveni={A\bibinitperiod\bibinitdelim F\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \strng{namehash}{459b99d6d993050650f349a8607dc26a}
+      \strng{fullhash}{459b99d6d993050650f349a8607dc26a}
+      \strng{fullhashraw}{459b99d6d993050650f349a8607dc26a}
+      \strng{bibnamehash}{459b99d6d993050650f349a8607dc26a}
+      \strng{authorbibnamehash}{459b99d6d993050650f349a8607dc26a}
+      \strng{authornamehash}{459b99d6d993050650f349a8607dc26a}
+      \strng{authorfullhash}{459b99d6d993050650f349a8607dc26a}
+      \strng{authorfullhashraw}{459b99d6d993050650f349a8607dc26a}
+      \field{labelalpha}{PNM19}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.CL}
+      \field{eprinttype}{arXiv}
+      \field{title}{Sparse Sequence-to-Sequence Models}
+      \field{year}{2019}
+      \verb{eprint}
+      \verb 1905.05702
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/1905.05702
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/1905.05702
+      \endverb
+    \endentry
     \entry{effectiverank}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=e963ebbeb84e66462245bfe8e4b6639a}{%
@@ -1498,6 +1585,7 @@
       \endverb
     \endentry
   \enddatalist
+  \missing{Bra+25}
 \endrefsection
 \endinput
 

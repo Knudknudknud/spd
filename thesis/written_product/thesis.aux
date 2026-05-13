@@ -115,43 +115,76 @@
 \newlabel{tab:tms-paired-cosine-similarity}{{2}{8}{}{}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Decomposition quality across both TMS regimes. SPD refers to the original method \blx@tocontentsinit {0}\autocite {stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref {sec:rank-k-attention}. If the standard deviation is not reported, it's because its smaller than $0.001$.}}{8}{}\protected@file@percent }
 \newlabel{tab:tms_results}{{3}{8}{}{}{}}
+\abx@aux@cite{0}{bhagat2025compressed}
+\abx@aux@segm{0}{0}{bhagat2025compressed}
+\abx@aux@cite{0}{stochasticparameterdecomposition}
+\abx@aux@segm{0}{0}{stochasticparameterdecomposition}
+\abx@aux@cite{0}{AttributionBasedParameterDecomposition}
+\abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Left: SPD decomposition of the paired TMS model. Right: Softmax of the paired TMS model. SPD finds the correct structure of pairing features together but does not attribute one feature pair per subcomponent. Softmax achieves the desired importance decomposition, with the exception of one feature pair. SPD was trained with $200$ subcomponents and Softmax with $100$, as these yielded the best results for each method.}}{9}{}\protected@file@percent }
 \newlabel{fig:both}{{3}{9}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Toy model of compressed computation}{9}{}\protected@file@percent }
+\abx@aux@cite{0}{AttributionBasedParameterDecomposition}
+\abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
+\abx@aux@cite{0}{stochasticparameterdecomposition}
+\abx@aux@segm{0}{0}{stochasticparameterdecomposition}
+\abx@aux@cite{0}{peters2019sparsesequencetosequencemodels}
+\abx@aux@segm{0}{0}{peters2019sparsesequencetosequencemodels}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Sampling effect on loss}{10}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Reconstruction quality across sampling regimes for the Residual MLP. \textit  {To be filled with final numbers.}}}{10}{}\protected@file@percent }
+\newlabel{tab:resid_mlp_sampling}{{4}{10}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Causal importance}{10}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}Differences in norm}{10}{}\protected@file@percent }
+\abx@aux@cite{0}{Bra+25}
+\abx@aux@segm{0}{0}{Bra+25}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Cause of the lying?}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.4}Sampling regimes}{11}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Reconstruction quality across sampling regimes for the Residual MLP. \textit  {To be filled with final numbers.}}}{11}{}\protected@file@percent }
+\newlabel{tab:resid_mlp_sampling}{{5}{11}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.5}Causal importance}{11}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Causal importance values for the softmax variant on the Residual MLP. \textit  {Left:} heatmaps for $W_{\text  {in}}$ and $W_{\text  {out}}$, showing near-diagonal one-hot routing of features to subcomponents. \textit  {Right:} histogram of all importance values, bimodal at 0 and 1.}}{11}{}\protected@file@percent }
+\newlabel{fig:resid_mlp_ci}{{4}{11}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.6}Neuron contributions}{11}{}\protected@file@percent }
 \abx@aux@cite{0}{effectiverank}
 \abx@aux@segm{0}{0}{effectiverank}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Toy model of compressed computation}{10}{}\protected@file@percent }
-\newlabel{sec:spd-independent-features}{{4.2.3}{10}{}{}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.4}Sensitivity to hyperparameters}{10}{}\protected@file@percent }
-\newlabel{sec:spd-sensitivity}{{4.2.4}{10}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Softmax without attention}{10}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Noes for this}{10}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Effective rank of paired-feature encoder blocks. Values near $1$ indicate collapse to a single direction.}}{10}{}\protected@file@percent }
-\newlabel{tbl:mean-effective-rank}{{4}{10}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Extending to Rank-k: When Higher-Dimensional Structure Matters}{10}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces SPD decomposed with k=1,2,3 from left to right.}}{11}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Softmax-and-Attention decomposed with k=1,2,3 from left to right.}}{11}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}things that didnt make it into tms paired}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Checking for orthogonality throughout training with softmax and attention / compare to baseline spd.}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}New toy model}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Toy model of learning gates}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.1}Remark for experiments}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Acknowledgements}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Other things to consider?}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}That some features are multidimensional}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}References}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9}Appendix}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {9.0.1}GNAN-based importance functions}{14}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Per-neuron contributions for the Residual MLP. \textit  {Top:} target model contributions for the first 30 features, with the top-contributing neurons labelled. \textit  {Bottom:} the dominant SPD subcomponent for each feature, with neuron labels propagated from the target panel.}}{12}{}\protected@file@percent }
+\newlabel{fig:resid_mlp_neurons}{{5}{12}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.7}Subcomponent norms}{12}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Sorted Frobenius norms $\|A_c B_c\|_F$ of all $C = 200$ subcomponents for $W_{\text  {in}}$ (left) and $W_{\text  {out}}$ (right). A clear cliff separates roughly 80 high-norm subcomponents from a long tail of $\sim 120$ low-but-nonzero subcomponents.}}{12}{}\protected@file@percent }
+\newlabel{fig:resid_mlp_norms}{{6}{12}{}{}{}}
+\newlabel{sec:spd-independent-features}{{4.3.7}{12}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.8}Sensitivity to hyperparameters}{12}{}\protected@file@percent }
+\newlabel{sec:spd-sensitivity}{{4.3.8}{12}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Softmax without attention}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Noes for this}{12}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Effective rank of paired-feature encoder blocks. Values near $1$ indicate collapse to a single direction.}}{12}{}\protected@file@percent }
+\newlabel{tbl:mean-effective-rank}{{6}{12}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Extending to Rank-k: When Higher-Dimensional Structure Matters}{13}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces SPD decomposed with k=1,2,3 from left to right.}}{13}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Softmax-and-Attention decomposed with k=1,2,3 from left to right.}}{14}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.1}things that didnt make it into tms paired}{14}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Checking for orthogonality throughout training with softmax and attention / compare to baseline spd.}{14}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}New toy model}{14}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Toy model of learning gates}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.1}Remark for experiments}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Acknowledgements}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Other things to consider?}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}That some features are multidimensional}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}References}{15}{}\protected@file@percent }
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
-\@writefile{toc}{\contentsline {section}{\numberline {10}Notes}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.1}Hard maybes}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.2} Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {11}To add:}{17}{}\protected@file@percent }
-\abx@aux@read@bbl@mdfivesum{96F7FD0E756D50543D1BC757DFB4B3CE}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Appendix}{17}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {9.0.1}GNAN-based importance functions}{17}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Notes}{18}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.1}Hard maybes}{19}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.2} Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}{19}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11}To add:}{19}{}\protected@file@percent }
+\abx@aux@read@bbl@mdfivesum{FCCAAFEA1248F5255924BFA53C7F868F}
 \abx@aux@defaultrefcontext{0}{stochasticparameterdecomposition}{anyt/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{bhagat2025compressed}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{AttributionBasedParameterDecomposition}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{bricken2023monosemanticity}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{chrisman2025identifyingsparselyactivecircuits}{anyt/global//global/global/global}
@@ -170,9 +203,10 @@
 \abx@aux@defaultrefcontext{0}{nanda2023progressmeasuresgrokkingmechanistic}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{olah2020zoomin}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{park2024linearrepresentationhypothesisgeometry}{anyt/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{peters2019sparsesequencetosequencemodels}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{effectiverank}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{sharkey2025openproblemsmechanisticinterpretability}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{smith2024strong}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{vaswani2023attentionneed}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{wright2024featureSuppressionSAEs}{anyt/global//global/global/global}
-\gdef \@abspage@last{17}
+\gdef \@abspage@last{20}

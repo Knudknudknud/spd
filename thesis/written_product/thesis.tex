@@ -598,28 +598,223 @@ ML2R  & $1.00$ & $0.797 \pm 0.205$ & $1.055 \pm 0.045$ & $0.623 \pm 0.231$ & $0.
 \label{tab:tms_results}
 \end{table}
 
-SPD with sigmoid gating produces better results on both MMCS and ML2R across all three settings, despite the more entangled importance assignments observed in the paired regime (Figure~\ref{fig:both}). The MMCS gap is consistently small, but the ML2R gap is substantial: the softmax variant exhibits magnitude shrinkage in both regimes, while SPD recovers each feature at close to full magnitude.
 
-A diagnostic at the subcomponent level identifies a structural cause for this shrinkage. For each target feature, two subcomponents are compared: the one selected by MMCS (highest cosine similarity with the target direction) and the one carrying the largest norm in the target's representation. For SPD on $\mathrm{TMS}_{40\text{-}10}$, these two subcomponents coincide for $X$ of $Y$ features, so MMCS and ML2R agree and both report values close to $1$. For the softmax variant, the two subcomponents differ for $X$ of $Y$ features (Figure~\ref{fig:dir-vs-mag}). The MMCS-selected subcomponent has a cosine similarity of approximately $X$ with a norm ratio of $Y$, while the magnitude-carrying subcomponent has a slightly lower cosine similarity of $X'$ with a norm ratio close to $1$.
+Overall across the three settings, SPD with sigmoid gating produces better results on both MMCS and ML2R, despite the more entangled importance assignments observed in the paired regime (Figure~\ref{fig:both}). The MMCS gap is generally small, but with substantially larger variation in ML2R. Notably, lower ML2R values are frequently associated with decompositions in which individual SPD subcomponents are assigned importance for multiple features.
 
-% \begin{figure}[h!]
-%     \centering
-%     \includegraphics[width=0.9\linewidth]{direction_vs_magnitude_softmax.png}
-%     \caption{Cosine similarity against norm ratio for each subcomponent's contribution to each target feature, on $\mathrm{TMS}_{40\text{-}10}$ with the softmax variant. Stars mark the MMCS-selected subcomponent for each feature; squares mark the largest-norm subcomponent. For most features, the two markers occupy different positions: the magnitude lives in a slightly rotated subcomponent, while the best directional alignment is provided by a smaller-norm subcomponent.}
-%     \label{fig:dir-vs-mag}
-% \end{figure}
+Referring back to the $\mathrm{TMS}_{5\text{-}2}$ decomposition shown
+in Figure~\ref{fig:tms_5_2}, the softmax method appears to recover a
+slightly rotated geometry, with residual feature magnitude distributed
+across adjacent features. The geometric offset may arise as a compensatory
+mechanism for this residual leakage, allowing the combined subcomponents
+to maintain accurate reconstruction despite imperfect feature isolation.
 
-The softmax variant therefore separates direction and magnitude across distinct subcomponents. One subcomponent anchors the direction with a tight cosine alignment but carries little magnitude, while another carries most of the magnitude but points in a direction slightly rotated from the target. The reconstruction loss near $10^{-6}$ is preserved because these subcomponents sum coherently, but no single subcomponent simultaneously carries the target's direction and its magnitude. MMCS and ML2R, which both evaluate a single subcomponent in isolation, penalise this split: MMCS picks the well-aligned but low-norm subcomponent, and ML2R then reports the low norm of that same subcomponent.
+Add the part about how We get one-hot importance values,
+but they don't seem to contribute to the 
 
-This explains why the metric pattern persists even in the paired regime, where the importance figure (Figure~\ref{fig:both}) shows the softmax variant assigning each pair to a single subcomponent. The importance function presents a clean one-to-one assignment, but the underlying parameter components encode each feature through a direction-magnitude split rather than a single anchored representation. The softmax variant produces interpretable importance patterns at the cost of geometric concentration within individual subcomponents.
+input * output reading plot.
+
+Could this be because of U? that is technically not penalized
+also comment on the norm.
+
+
+I think this is the solution:
+After the first hidden layer,
+the projection lives in a 50 dimensional subspace, but we 
+have an overcomplete basis with the 100 subcomponents,
+necessarily these cannot project into 100 orthogonal directions,
+so they must contribute to multiple features.
 
 
 \subsubsection{Toy model of compressed computation}
-Talk about sampling differences,
-the softmax performs much better,
-when we sample one hot rather than sparsely.
-But this is obviously expected, as
-we want to maximize the probability of ownership.
+The Toy Model of Compressed Computation \autocite{bhagat2025compressed,stochasticparameterdecomposition,AttributionBasedParameterDecomposition},
+is a toy model trained to learn the function $y_{i}= x_{i}+relu(x_{i})$,
+consisting of an embedding matrix, $W_{E}$, uenembedding matrix, $W_{U}=W_{E}^T$,
+100 input features and a residual MLP, $MLP_{in} \in \mathbb{R}^{d_{50},d_{embedding}}$, and similarly $MLP_{out} \in \mathbb{R}^{d_{embedding},d_{50}}$.
+
+The full computation becomes:
+\[
+    y =W_{U} (W_{E}(x) + W_{in}(\mathrm{ReLU}(W_{E}(x))))
+\]
+
+A naive solution to this problem is to learn a monosemantic decomposition, where
+each neuron in the MLP is responsible for computing one relu activation.
+However this will perform poorly on the task, as 50 neurons are forced to guess.
+
+To compare results with the original SPD decomposition,
+$d_{features}= 100,$
+$d_{mlp}= 50,$
+$C = 200$.
+Predictably, for the $MLP_{in}$ the ground truth mechanism should be to have each subcomponent learn one feature each,
+however for the $MLP_{out}$ the ground truth mechanism is substantially less clear.
+Originally presented in APD \autocite{AttributionBasedParameterDecomposition},
+they found that the output layer, also learnt a monosemantic representation,
+where each subcomponent was responsible for one feature. Whereas SPD \autocite{stochasticparameterdecomposition},
+learns to capture the output layer within 50 subcomponents, where each
+contributes to the computation of multiple features, and the remaining 150 subcomponents are pruned to near-zero norm.
+
+
+\subsection{Sampling effect on loss}
+
+
+We first take the chance to look at how the sampling distribution affects the decomposition for SPD and SOftmax.
+We compare the one-hot sampling to the randomly initialized one.
+
+Notably we find that Softmax, produces greatly lower losses under one-hot sampling,
+most certainly because we aim to maximize the probability of ownership,
+and one-hot sampling removes any noisy or even meaningless features that may come from random activaiton.
+sigmoids on the other hand do not have this problem, as they do not enforce competition,but rather
+if the parts together sum up to be important. We will later see a consequence of this, when exploring the toy model of geometry,
+where the features become multi-dimensional, and thus require to be grouped together.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{SPD} & \multicolumn{2}{c}{Softmax} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Metric & One-hot & At-least-zero & One-hot & At-least-zero \\
+\midrule
+Faithfulness & & & & \\
+Stochastic reconstruction & & & & \\
+Layerwise stochastic reconstruction & & & & \\
+\bottomrule
+\end{tabular}
+\caption{Reconstruction quality across sampling regimes for the Residual MLP. \textit{To be filled with final numbers.}}
+\label{tab:resid_mlp_sampling}
+\end{table}
+
+\subsubsection{Causal importance}
+
+
+
+In the case of our softmax variant, we also manage to replicate the results of APD,
+where we manage to find almost one hot decomposition for both the input and output layers,
+however this interpretation is likely to be misleading.
+
+Plot of causal importances.
+
+Notably, we train the causal importance function to predict the importance of a subcomponent based on
+$V^T(x)$, the layer input projected into the subcomponents "input" reading.
+
+However, by computing the neuron contribution of each subcomponent, for each feature,
+we find that the subcomponents manages to produce meaningful contirbution to more than one feature each,
+despite achieving one-hot importance values. Initially this seems paradoxal, as 
+how can a mechanism be completely ablated for one feature, while still contributing meaningful weight to it's output space.
+
+Plot of activation contribution.
+
+This is likely a consequence of the overcomplete basis that the 100 subcomponents learn,
+namely that if 100 subcomponents learn to project into the same 50 dimensional subspace through a linear mapping,
+they must necessarily share output direction, and thus contribute to multiple features, even if the importance function assigns them to a single feature.
+
+Plot of cosine similarity of U vectors.
+
+
+\subsubsection{Differences in norm}
+
+
+A second experiment we would like to run is to see, how softmax affects the norms of the subcomponents,
+likely we hypothesize that a more expressive MLP may learn to disentangle neurons that contribute similarly,
+and may not even need to shrink the norm to maximize the probability of ownership, as we do not directly enforce the norm to shrink.
+We show the difference in norms between SPD and Softmax in the figure below.
+Another hypothesis for this could be that the softmax does not manage to produce "hard zeroes", which was the reason the original
+SPD paper chose to use hard sigmoid gating instead. However Plotting the causal importances of the subcomponents,
+clearly shows that this is not the case, likewise emperical results, with sparsemax produce the same results. \autocite{peters2019sparsesequencetosequencemodels}
+
+
+Placeholder plot for causal importance frequency.
+
+Interestingly as expected, all subcomponents produce substantially lower norms, after the first 50 subcomponents.
+However the norm distribution after this drop off differs substantially between the two methods.
+In particular, SPD manages to prune the norm to zero for all remaining subcomponents,
+where as softmax has many subcomponents with low norm, without being causally important for any features.
+
+Referencing back to the TMS experiment, this is likely part of the explanation for why we observed significant feature shrinkage.
+The faithfulness loss, is trained to minimze the MSE between the layers weight matrix,
+while it does not care where it is distributed, as long as they sum up to be equal.
+That means if the minimality loss only partially ablates the weights to be "insignificant",
+albeit non-zero, the faithfulness loss will not reassign the missing norm to
+the dominant subcomponents.
+
+
+\subsubsection{Cause of the lying?}
+
+Returning to the question of one-hot importance, we fear that this may be an illusion of interpretability,
+or while not an illusion it is misguiding. The model has very likely learnt
+to disambiguate the subcomponents, but the subcomponents or perhaps particularly their
+U matrices, are not constrained to project orthogonally to eachother and
+are not represented in this importance calculation.
+
+
+
+Also need to relate back to the multidimensional feature hypothesis.
+
+
+
+\subsubsection{Sampling regimes}
+
+We compare two sampling regimes for the masks during stochastic reconstruction: \textbf{one-hot sampling}, where exactly one subcomponent is forced active per feature, and \textbf{at-least-zero sampling}, the relaxed regime used during normal training. Both regimes converge to similar reconstruction quality, but they place different pressures on the structure of the recovered decomposition.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{SPD} & \multicolumn{2}{c}{Softmax} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Metric & One-hot & At-least-zero & One-hot & At-least-zero \\
+\midrule
+Faithfulness & & & & \\
+Stochastic reconstruction & & & & \\
+Layerwise stochastic reconstruction & & & & \\
+\bottomrule
+\end{tabular}
+\caption{Reconstruction quality across sampling regimes for the Residual MLP. \textit{To be filled with final numbers.}}
+\label{tab:resid_mlp_sampling}
+\end{table}
+
+\subsubsection{Causal importance}
+
+The softmax variant achieves near-perfect one-hot causal importance, with each feature routing essentially all its mass to a single subcomponent (Figure~\ref{fig:resid_mlp_ci}). The histogram of importance values is bimodal at 0 and 1, with negligible off-peak mass --- the same property the original SPD method achieves through its sigmoid-and-minimality combination, here recovered through softmax-with-entropy.
+
+\begin{figure}[h]
+\centering
+% \includegraphics[width=\textwidth]{figures/resid_mlp_causal_importance.png}
+\caption{Causal importance values for the softmax variant on the Residual MLP. \textit{Left:} heatmaps for $W_{\text{in}}$ and $W_{\text{out}}$, showing near-diagonal one-hot routing of features to subcomponents. \textit{Right:} histogram of all importance values, bimodal at 0 and 1.}
+\label{fig:resid_mlp_ci}
+\end{figure}
+
+This is a non-trivial result on its own. Replacing the importance minimality loss with entropy preserves the routing property that SPD's heatmaps are known for, suggesting that the routing structure can be recovered without the Schatten-style parameter penalty that the original method relies on.
+
+\subsubsection{Neuron contributions}
+
+Following \cite{Bra+25}, we visualize the per-neuron contribution of each subcomponent compared to the target model's per-feature neuron contributions. For each feature, we identify the subcomponent with the largest neuron contribution (the ``dominant'' subcomponent) and plot its full neuron pattern alongside the target's.
+
+\begin{figure}[h]
+\centering
+% \includegraphics[width=\textwidth]{figures/resid_mlp_neuron_contributions.png}
+\caption{Per-neuron contributions for the Residual MLP. \textit{Top:} target model contributions for the first 30 features, with the top-contributing neurons labelled. \textit{Bottom:} the dominant SPD subcomponent for each feature, with neuron labels propagated from the target panel.}
+\label{fig:resid_mlp_neurons}
+\end{figure}
+
+The dominant subcomponents recover the correct neurons for each feature, matching the target's labels. However, the magnitudes are visibly shifted: the subcomponent contributions do not consistently reproduce the target's magnitudes, with the same neuron often appearing across multiple subcomponents at non-trivial weight. Despite clean routing, the parameter directions are not isolated to single features.
+
+This is a different failure mode than TMS exhibits. In TMS the softmax variant produced shrinkage on the dominant subcomponents themselves; here, the dominant subcomponents are approximately correct, but additional subcomponents carry residual weight on the same neurons.
+
+\subsubsection{Subcomponent norms}
+
+To make this concrete, we plot the Frobenius norm $\|A_c B_c\|_F$ of each rank-1 subcomponent, sorted by magnitude (Figure~\ref{fig:resid_mlp_norms}).
+
+\begin{figure}[h]
+\centering
+% \includegraphics[width=\textwidth]{figures/resid_mlp_subcomponent_norms.png}
+\caption{Sorted Frobenius norms $\|A_c B_c\|_F$ of all $C = 200$ subcomponents for $W_{\text{in}}$ (left) and $W_{\text{out}}$ (right). A clear cliff separates roughly 80 high-norm subcomponents from a long tail of $\sim 120$ low-but-nonzero subcomponents.}
+\label{fig:resid_mlp_norms}
+\end{figure}
+
+The distribution is bimodal but not clean. The first $\sim 80$ subcomponents sit at full norm ($\sim 1.0\text{--}1.4$ for $W_{\text{in}}$, $\sim 2.0$ for $W_{\text{out}}$), followed by a sharp drop, and then a long tail of $\sim 120$ subcomponents at norm $0.15\text{--}0.35$. The tail is small relative to the head but unambiguously \textbf{non-zero} --- these subcomponents have not been pruned.
+
+This contrasts with the TMS$_{5\text{-}2}$ result, where the softmax variant correctly pruned the unused subcomponents to near-zero norm despite the ML2R shrinkage on the active ones. In the Residual MLP setting, neither property is fully recovered: active subcomponents experience some magnitude drift, and inactive subcomponents are not driven to zero.
+
 
 
 \label{sec:spd-independent-features}
@@ -1090,5 +1285,7 @@ in this case it's the SPD components!!!!
 These perfectly make this up
 and pair this wiht quantization and we are golden.
 
-Remark rewrite TMS paired into TMS, they should be the same section.
+Remark rewrite TMS paired into TMS, they should be the same section.Rme
+Remember V is the
+ input reading so if w
 \end{document}
