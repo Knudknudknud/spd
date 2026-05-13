@@ -1060,12 +1060,17 @@ def main():
         # "wandb:spd-tms/runs/f63itpo1": {"config": PlotConfig(), "name": "5-2"},
         #softmax
         #"wandb:spd-spd_experiments_tms/runs/fbavwyuy":
-        #sparsemax
-        #"wandb:spd-spd_experiments_tms/runs/r8yi4gf8":
-        "wandb:spd-spd_experiments_tms/runs/e4ebfsei":
+        #softmax 40-10 paired
+        "wandb:spd-spd_experiments_tms/runs/8it3wu6r":
+        #40-10 softmax
+        #"wandb:spd-spd_experiments_tms/runs/tnh4vs0o":
+        #5-2 softmax
+        #"wandb:spd-spd_experiments_tms/runs/e4ebfsei":
+        #5-2 softmax exactly one active
+        #"wandb:spd-spd_experiments_tms/runs/24clywwq":
         {
             "config": PlotConfig(subnet_norm_threshold=0.03, hidden_layer_threshold=0.0115),
-            "name": "5-2 TMS",
+            "name": "40-10 TMS",
         },
         # "wandb:spd-tms/runs/xq1ivc6b": {"config": PlotConfig(), "name": "40-10"},
         # "wandb:spd-tms/runs/xyq22lbc": {"config": PlotConfig(), "name": "40-10-identity"},

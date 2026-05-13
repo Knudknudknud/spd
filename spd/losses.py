@@ -101,26 +101,7 @@ def calc_schatten_loss(
     return total_loss
 
 
-def calc_importance_minimality_loss(
-    ci_upper_leaky: dict[str, Float[Tensor, "... C"]], pnorm: float
-) -> Float[Tensor, ""]:
-    """Calculate the importance minimality loss on the upper leaky relu causal importances.
 
-    Args:
-        ci_upper_leaky: Dictionary of causal importances upper leaky relu for each layer.
-        pnorm: The pnorm to use for the importance minimality loss. Must be positive.
-
-    Returns:
-        The importance minimality loss on the upper leaky relu causal importances.
-    """
-    total_loss = torch.zeros_like(next(iter(ci_upper_leaky.values())))
-
-    for layer_ci_upper_leaky in ci_upper_leaky.values():
-        # Note, the paper uses an absolute value but our layer_ci_upper_leaky is already > 0
-        total_loss = total_loss + layer_ci_upper_leaky**pnorm
-
-    # Sum over the C dimension and mean over the other dimensions
-    return total_loss.sum(dim=-1).mean()
 
 def entropy(g, eps=1e-9):
     
@@ -134,7 +115,7 @@ def calc_importance_minimality_loss_entropy(
     total_loss = torch.zeros_like(next(iter(ci_upper_leaky.values()))[..., 0])
 
     for layer_ci_upper_leaky in ci_upper_leaky.values():
-        # entropy over C → shape [...]
+        # entropy over C
         layer_entropy = entropy(layer_ci_upper_leaky)
 
         total_loss = total_loss + layer_entropy
@@ -462,6 +443,8 @@ def calculate_losses(
         )
         total_loss += config.embedding_recon_coeff * embedding_recon_loss
         loss_terms["loss/embedding_recon"] = embedding_recon_loss.item()
+
+        
     
 
     return total_loss, loss_terms
