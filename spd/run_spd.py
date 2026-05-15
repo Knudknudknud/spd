@@ -120,14 +120,14 @@ def optimize(
 
 
     component_params: list[torch.nn.Parameter] = []
-    gnan_params = list(model.gnan.parameters())
+    gates_params = list(model.gates.parameters())
 
     for name, component in components.items():
         component_params.extend(list(component.parameters()))
     assert len(component_params) > 0, "No parameters found in components to optimize"
-    assert len(gnan_params) > 0, "No parameters found in GNAN to optimize"
+    assert len(gates_params) > 0, "No parameters found in gates to optimize"
     
-    optimizer = optim.AdamW(component_params + gnan_params, lr=config.lr, weight_decay=0)
+    optimizer = optim.AdamW(component_params + gates_params, lr=config.lr, weight_decay=0)
 
     lr_schedule_fn = get_lr_schedule_fn(config.lr_schedule, config.lr_exponential_halflife)
     logger.info(f"Base LR scheduler created: {config.lr_schedule}")
@@ -173,7 +173,7 @@ def optimize(
 
         #T = get_temperature(step, config.steps, t_start=1.5, t_end=0.3)
         causal_importances, causal_importances_upper_leaky = calc_causal_importances(
-            pre_weight_acts=pre_weight_acts, As=As, gnan=model.gnan, detach_inputs=False,
+            pre_weight_acts=pre_weight_acts, As=As, gates=model.gates, detach_inputs=False,
             temperature=config.temperature,
         )
         log_data["temperature"] = config.temperature
@@ -262,7 +262,7 @@ def optimize(
                     fig_dict = plot_results_fn(
                         model=model,
                         components=components,
-                        gnan = model.gnan,
+                        gates = model.gates,
                         batch_shape=batch.shape,
                         device=device,
                     )

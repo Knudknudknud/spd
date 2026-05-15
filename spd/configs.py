@@ -64,6 +64,27 @@ class ResidualMLPTaskConfig(BaseModel):
         description="Strategy for generating synthetic data for residual-MLP training",
     )
 
+class QuantizationTaskConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    task_name: Literal["quantization"] = Field(
+        default="quantization",
+        description="Identifier for the quantization decomposition task",
+    )
+    feature_probability: Probability = Field(
+        ...,
+        description="Probability that a given feature is active in generated data",
+    )
+    data_generation_type: Literal[
+        "exactly_one_active", "at_least_zero_active"
+    ] = Field(
+        ...,
+        description="Strategy for generating synthetic data for quantization MLP training",
+    )
+    label_type: Literal["scalar", "vector"] = Field(
+        ...,
+        description="Whether to use scalar or vector labels for the quantization MLP task. Vector labels return one label per group, scalar labels return the sum of the vector labels.",
+    )
+
 
 class LMTaskConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -261,7 +282,7 @@ class Config(BaseModel):
     )
 
     # --- Task Specific ---
-    task_config: TMSTaskConfig | ResidualMLPTaskConfig | LMTaskConfig | GeometryTaskConfig = Field(
+    task_config: TMSTaskConfig | ResidualMLPTaskConfig | LMTaskConfig | GeometryTaskConfig | QuantizationTaskConfig = Field(
     ...,
     discriminator="task_name",
     description="Nested task-specific configuration selected by the `task_name` discriminator",
