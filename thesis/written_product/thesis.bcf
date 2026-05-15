@@ -2395,28 +2395,38 @@
     <bcf:citekey order="16" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
     <bcf:citekey order="17" intorder="1">stochasticparameterdecomposition</bcf:citekey>
     <bcf:citekey order="18" intorder="1">christensen2025decompositionsmalltransformermodels</bcf:citekey>
-    <bcf:citekey order="19" intorder="1">chrisman2025identifyingsparselyactivecircuits</bcf:citekey>
-    <bcf:citekey order="20" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
-    <bcf:citekey order="21" intorder="1">stochasticparameterdecomposition</bcf:citekey>
-    <bcf:citekey order="22" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
-    <bcf:citekey order="23" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="19" intorder="1">seshadri2026crosslayer</bcf:citekey>
+    <bcf:citekey order="20" intorder="1">chrisman2025identifyingsparselyactivecircuits</bcf:citekey>
+    <bcf:citekey order="21" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
+    <bcf:citekey order="22" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="23" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
     <bcf:citekey order="24" intorder="1">stochasticparameterdecomposition</bcf:citekey>
-    <bcf:citekey order="25" intorder="1">elhage2022toymodelssuperposition</bcf:citekey>
-    <bcf:citekey order="25" intorder="2">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
-    <bcf:citekey order="26" intorder="1">smith2024strong</bcf:citekey>
+    <bcf:citekey order="25" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="26" intorder="1">elhage2022toymodelssuperposition</bcf:citekey>
     <bcf:citekey order="26" intorder="2">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
-    <bcf:citekey order="27" intorder="1">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
-    <bcf:citekey order="28" intorder="1">vaswani2023attentionneed</bcf:citekey>
-    <bcf:citekey order="29" intorder="1">stochasticparameterdecomposition</bcf:citekey>
-    <bcf:citekey order="30" intorder="1">elhage2022toymodelssuperposition</bcf:citekey>
-    <bcf:citekey order="31" intorder="1">jermyn2024tanhPenaltyDictionaryLearning</bcf:citekey>
-    <bcf:citekey order="31" intorder="2">wright2024featureSuppressionSAEs</bcf:citekey>
-    <bcf:citekey order="31" intorder="3">AttributionBasedParameterDecomposition</bcf:citekey>
-    <bcf:citekey order="32" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="27" intorder="1">smith2024strong</bcf:citekey>
+    <bcf:citekey order="27" intorder="2">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
+    <bcf:citekey order="28" intorder="1">engels2025languagemodelfeaturesonedimensionally</bcf:citekey>
+    <bcf:citekey order="29" intorder="1">vaswani2023attentionneed</bcf:citekey>
+    <bcf:citekey order="30" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="31" intorder="1">elhage2022toymodelssuperposition</bcf:citekey>
+    <bcf:citekey order="32" intorder="1">jermyn2024tanhPenaltyDictionaryLearning</bcf:citekey>
+    <bcf:citekey order="32" intorder="2">wright2024featureSuppressionSAEs</bcf:citekey>
+    <bcf:citekey order="32" intorder="3">AttributionBasedParameterDecomposition</bcf:citekey>
     <bcf:citekey order="33" intorder="1">stochasticparameterdecomposition</bcf:citekey>
-    <bcf:citekey order="34" intorder="1">effectiverank</bcf:citekey>
+    <bcf:citekey order="34" intorder="1">stochasticparameterdecomposition</bcf:citekey>
     <bcf:citekey order="35" intorder="1">stochasticparameterdecomposition</bcf:citekey>
-    <bcf:citekey order="36" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="36" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
+    <bcf:citekey order="37" intorder="1">bhagat2025compressed</bcf:citekey>
+    <bcf:citekey order="38" intorder="1">bhagat2025compressed</bcf:citekey>
+    <bcf:citekey order="39" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
+    <bcf:citekey order="40" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="41" intorder="1">bhagat2025compressed</bcf:citekey>
+    <bcf:citekey order="42" intorder="1">AttributionBasedParameterDecomposition</bcf:citekey>
+    <bcf:citekey order="43" intorder="1">stochasticparameterdecomposition</bcf:citekey>
+    <bcf:citekey order="44" intorder="1">bhagat2025compressed</bcf:citekey>
+    <bcf:citekey order="45" intorder="1">peters2019sparsesequencetosequencemodels</bcf:citekey>
+    <bcf:citekey order="46" intorder="1">effectiverank</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="anyt">

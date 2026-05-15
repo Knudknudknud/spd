@@ -20,8 +20,11 @@
 \author{Knud Rasmus Sønderbek}
 \maketitle
 \begin{abstract}
-Some super cool abstract of all my findings \footnote{Very important to add quantization somewhere. https://arxiv.org/pdf/2303.13506}
+Some super cool abstract of all my findings \footnote{Very important to add quantization somewhere. https://arxiv.org/pdf/2303.13506 also paper on clustering in spd. Perhaps manifold clustering stearng too.}
 \end{abstract}
+
+\tableofcontents
+
 
 \section{Introduction}
 
@@ -73,8 +76,6 @@ to encourage that features that are manipulated jointly are grouped together, by
 My experiment findings
 
 
-
-
 \section{Related work}
 \subsection{The linear representation hypothesis}
 A widespread view in mechanistic interpretability is the linear representation hypothesis: high-level concepts are encoded as directions in a network's representation space \autocite{park2024linearrepresentationhypothesisgeometry}. Together with the superposition hypothesis \autocite{elhage2022toymodelssuperposition}, it forms a central tenet of interpretability: each feature corresponds to a single direction, and a hidden state is a sparse linear combination of feature directions.
@@ -107,7 +108,8 @@ line of Attribution-based Parameter Decomposition
 Stochastic Parameter Decomposition (SPD)
 \autocite{stochasticparameterdecomposition}, which has
 recently been explored in small transformer models
-\autocite{christensen2025decompositionsmalltransformermodels}.
+\autocite{christensen2025decompositionsmalltransformermodels}
+and cross-layer clustering \autocite{seshadri2026crosslayer}.
 While APD decomposes a network into multidimensional
 components,
 the method is sensitive to hyperparameters, and does not scale beyond toy settings due
@@ -598,37 +600,234 @@ ML2R  & $1.00$ & $0.797 \pm 0.205$ & $1.055 \pm 0.045$ & $0.623 \pm 0.231$ & $0.
 \label{tab:tms_results}
 \end{table}
 
-SPD with sigmoid gating produces better results on both MMCS and ML2R across all three settings, despite the more entangled importance assignments observed in the paired regime (Figure~\ref{fig:both}). The MMCS gap is consistently small, but the ML2R gap is substantial: the softmax variant exhibits magnitude shrinkage in both regimes, while SPD recovers each feature at close to full magnitude.
 
-A diagnostic at the subcomponent level identifies a structural cause for this shrinkage. For each target feature, two subcomponents are compared: the one selected by MMCS (highest cosine similarity with the target direction) and the one carrying the largest norm in the target's representation. For SPD on $\mathrm{TMS}_{40\text{-}10}$, these two subcomponents coincide for $X$ of $Y$ features, so MMCS and ML2R agree and both report values close to $1$. For the softmax variant, the two subcomponents differ for $X$ of $Y$ features (Figure~\ref{fig:dir-vs-mag}). The MMCS-selected subcomponent has a cosine similarity of approximately $X$ with a norm ratio of $Y$, while the magnitude-carrying subcomponent has a slightly lower cosine similarity of $X'$ with a norm ratio close to $1$.
+Overall across the three settings, SPD with sigmoid gating produces better results on both MMCS and ML2R, despite the more entangled importance assignments observed in the paired regime (Figure~\ref{fig:both}). The MMCS gap is generally small, but with substantially larger variation in ML2R. Notably, lower ML2R values are frequently associated with decompositions in which individual SPD subcomponents are assigned importance for multiple features.
 
-% \begin{figure}[h!]
-%     \centering
-%     \includegraphics[width=0.9\linewidth]{direction_vs_magnitude_softmax.png}
-%     \caption{Cosine similarity against norm ratio for each subcomponent's contribution to each target feature, on $\mathrm{TMS}_{40\text{-}10}$ with the softmax variant. Stars mark the MMCS-selected subcomponent for each feature; squares mark the largest-norm subcomponent. For most features, the two markers occupy different positions: the magnitude lives in a slightly rotated subcomponent, while the best directional alignment is provided by a smaller-norm subcomponent.}
-%     \label{fig:dir-vs-mag}
-% \end{figure}
+Referring back to the $\mathrm{TMS}_{5\text{-}2}$ decomposition shown
+in Figure~\ref{fig:tms_5_2}, the softmax method appears to recover a
+slightly rotated geometry, with residual feature magnitude distributed
+across adjacent features. The geometric offset may arise as a compensatory
+mechanism for this residual leakage, allowing the combined subcomponents
+to maintain accurate reconstruction despite imperfect feature isolation.
 
-The softmax variant therefore separates direction and magnitude across distinct subcomponents. One subcomponent anchors the direction with a tight cosine alignment but carries little magnitude, while another carries most of the magnitude but points in a direction slightly rotated from the target. The reconstruction loss near $10^{-6}$ is preserved because these subcomponents sum coherently, but no single subcomponent simultaneously carries the target's direction and its magnitude. MMCS and ML2R, which both evaluate a single subcomponent in isolation, penalise this split: MMCS picks the well-aligned but low-norm subcomponent, and ML2R then reports the low norm of that same subcomponent.
+\subsection{ Toy Model of Compressed Computation }
 
-This explains why the metric pattern persists even in the paired regime, where the importance figure (Figure~\ref{fig:both}) shows the softmax variant assigning each pair to a single subcomponent. The importance function presents a clean one-to-one assignment, but the underlying parameter components encode each feature through a direction-magnitude split rather than a single anchored representation. The softmax variant produces interpretable importance patterns at the cost of geometric concentration within individual subcomponents.
+The Toy Model of Compressed Computation,
+a model that was already studied by SPD \autocite{stochasticparameterdecomposition}, APD \autocite{AttributionBasedParameterDecomposition} and more recently by \autocite{bhagat2025compressed}, is a
+toy model trained to compute the elementwise function $y_i = x_i + \mathrm{ReLU}(x_i)$ through a residual MLP with a lower-dimensional hidden layer.
+
+The architecture consists of an embedding matrix $W_E$, an unembedding matrix $W_U = W_E^\top$, and a residual MLP with input projection $W_{\text{in}} \in \mathbb{R}^{50 \times d_{\text{emb}}}$ and output projection $W_{\text{out}} \in \mathbb{R}^{d_{\text{emb}} \times 50}$.
+The input vectors are sparse activations sampled from a uniform distribution over $[-1, 1]$, with the model trained to minimize the MSE between the output and the target function. The model's computation can be expressed as:
+\[
+    y = W_U \big( W_E x + W_{\text{out}}(\mathrm{ReLU}(W_{\text{in}} W_E x)) \big).
+\]
+For comparability with previous work, the experiments use $d_{\text{features}} = 100$, $d_{\text{MLP}} = 50$, rank $k=1$ matrices and $C = 200$ subcomponents and lastly an embedding dimension $d_{\text{emb}} = 1000$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=10cm, height=5cm]{CCmodel.png}
+    \caption{Architecture of the Toy Model of Compressed Computation. Picture taken from \autocite{bhagat2025compressed}}
+\end{figure}
+
+A naive decomposition of this model would be to let
+each of the neurons in the hidden layer compute one of the $100$ ReLU computations.
+However this would would perform poorly, on the remaining $50$ neurons. Instead,
+to achieve a better reconstruction, the model seems to learn a more efficient representation by assigning
+multiple features to the same neuron.
+
+The ground truth for $W_{\text{in}}$ seem reasonably clear:
+each subcomponent should be causally important for one input feature
+matching the independent one-dimensional structure of the inputs.
+
+For $W_{\text{out}}$, the ground truth is less clear.
+APD \autocite{AttributionBasedParameterDecomposition} initially suspected a monosemantic decomposition where each subcomponent corresponds to one output feature,
+to be the most truthful decomposition. SPD \autocite{stochasticparameterdecomposition} on the other hand
+reports a polysemantic decomposition in which $50$ subcomponents
+each contribute to multiple features while the remaining
+are pruned to near-zero norm and no causal importance.
 
 
-\subsubsection{Toy model of compressed computation}
-Talk about sampling differences,
-the softmax performs much better,
-when we sample one hot rather than sparsely.
-But this is obviously expected, as
-we want to maximize the probability of ownership.
+Another paper \autocite{bhagat2025compressed}
+supports the interpretation of SPD, showing that 
+the model does not implement $100$ separate computations
+through superposition but rather that they jointly operate within a shared
+$50$-dimensional subspace.
 
 
-\label{sec:spd-independent-features}
-\subsubsection{Sensitivity to hyperparameters}
-\label{sec:spd-sensitivity}
-\subsection{Softmax without attention}
+\subsubsection{Sampling effect on loss}
+Before analyzing the decomposition, this experiment will also be used to compare the effect of different sampling distributions on the loss
+and decomposition quality. Here the two methods SPD and SPD with softmax are compared across two sampling regimes: one-hot sampling, where only one feature is active at a time, and at-least-zero sampling, where each feature is independently sampled from a distribution with support over $[0, 1]$.
+
+Softmax generally produces lower losses when sampling is done with one-hot inputs rather than sampling every feature independently.
+Most noticeably, the Minimality loss, does not converge under at-least-zero sampling.
+This is unsurprising, with how the loss is defined to maximize the probability of a feature belonging to a single subcomponent.
+however if the input distribution is not one-hot, the input is a noisy and potentially meaningless combination of unrelated features.
+
+Sigmoid-based importance does not exhibit a significant difference between
+the two sampling methods, likely since 
+each subcomponent's importance is evaluated independently,
+and the loss measures the magnitude of subcomponent activation (Section \ref{spd_minimality})
+to the correct contribution.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{SPD} & \multicolumn{2}{c}{Softmax} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Metric & One-hot & At-least-zero & One-hot & At-least-zero \\
+\midrule
+Faithfulness & $1.5 \times 10^{-6}$ & $1.4 \times 10^{-6}$ & $3 \times 10^{-5}$ & $5 \times 10^{-5}$ \\
+Stochastic reconstruction &$1.8 \times 10^{-4}$ & $1 \times 10^{-5}$ & $9 \times 10^{-5}$ & $1 \times 10^{-4}$ \\
+Layerwise stochastic reconstruction & $1 \times 10^{-5}$ & $1 \times 10^{-5}$ & $7 \times 10^{-5}$ & $9 \times 10^{-5}$ \\
+Output reconstruction & $3 \times 10^{-6}$ & $4 \times 10^{-6}$ & $8 \times 10^{-5}$ & $1.6 \times 10^{-4}$ \\
+Minimality & $3.83$ & $3.95$ & $8 \times 10^{-5}$ & $4.06$ \\
+\bottomrule
+\end{tabular}
+\caption{Reconstruction quality across sampling regimes for the Residual MLP.}
+\label{tab:resid_mlp_sampling}
+\end{table}
+
+\subsubsection{Causal importance}
+The experimentation with Softmax seems to replicate a similar structure to that 
+found in APD \autocite{AttributionBasedParameterDecomposition},
+where one subcomponent is causally important for one feature,
+while the remaining subcomponents have negligible importance for that feature in both layers.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=8cm]{softmax_CC.jpg}
+    \caption{Causal importance values for Softmax on the Toy Model of Compressed Computation. Each input feature activates a near one-hot importance pattern across subcomponents. Sampled using one-hot sampling.}
+    \label{fig:cc_importance}
+\end{figure}
+
+If this reading is taken at face value,
+there should only be two possible interpretations, either
+each subcomponent learns a monosemantic representation for one feature, and the remaining
+subcomponents are unimportant and can be ablated. Alternatively,
+the minimality loss is too strong and forces the model to concentrate all importance on a single subcomponent, at the cost of reconstruction
+which should be reflected in a high reconstruction error.
+Surprisingly, as seen in figure \ref{tab:resid_mlp_sampling},
+Softmax produces near-zero reconstruction error,
+and should therefore have recovered a monosemantic decomposition.
+
+To examine this, the neuron contributions for both the target model and softmax are plotted in figure \ref{fig:cc_contribution}.
+The computation of the contribution is computed as in SPD \autocite{stochasticparameterdecomposition}
+\begin{align}
+    \text{NeuronContribution}_{\text{model}}(i) &= \left( W_{U[i,:]}W_{out} \right) \odot \left( W_{in}W_{E}[:,i] \right) \\
+    \text{NeuronContribution}_{\text{subcomponent}}(i) &= \max_{c \in C} \left[\left( W_{U[i,:]} U_{\text{out}} V_{\text{out}^{T}} \right) \odot \left(U_{\text{in}[:,c]}V^{T}_{in}[c,:] W_{E}[:,i] \right) \right] 
+\end{align}
+where $W_{E[:,i]}$ and $W_{U[i,:]}$ are the $i$-th column and row of the embedding and unembedding matrices
+and $\odot$ denotes elementwise multiplicaiton.
+
+$ W_{U[i,:]}W_{out} $ measures how strongly the neurons contribute to the "reconstruction" of the output,
+while $ W_{in}W_{E}[:,i] $ measures how strongly the neurons are activated by the input feature $i$.
+If both produce high values, the product will be high, indicating that the neuron contributes strongly to the feature's computation.
+Otherwise if either is low, the contribution will be low, indicating that the neuron does not contribute significantly to that feature.
+
+As seen in figure \ref{fig:cc_contribution},
+Softmax, like SPD, find subcomponents that contribute to multiple features,
+which also replicates the behaviour of the target model.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=8cm]{component_contribution_soft_max.jpg}
+    \caption{Per-feature contribution of each subcomponent at the neuron level. Subcomponents contribute to multiple features simultaneously, even when their causal importance is concentrated on a single feature.}
+    \label{fig:cc_contribution}
+\end{figure}
+
+The one-hot importance assignment is therefore not equivalent to a monosemantic
+parameter decomposition. One initial reading would be that the subcomponents
+represent multiple features in superposition, with the observed interference
+arising from near-orthogonal subcomponents. However,this is contradictory to the results found by \autocite{bhagat2025compressed}, which show that the trained $W_{\text{out}}$ operates within a shared $50$-dimensional subspace rather than implementing $100$ separate computations.
+
+If softmax was genuinely encoding $100$ features in superposition,
+the $U_c$ and $V_c$ vectors of its $100$ active subcomponents would have to be near-orthogonal.
+To examine this, the pairwise cosine similarity between the $U_c$ and $V_c$
+vectors of the causally important subcomponents are computed
+in figure \ref{fig:CC_cosines}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth,height=7cm]{CC_softmax_cosines.jpg}
+    \hfill
+    \includegraphics[width=0.48\linewidth,height=7cm]{CC_spd_cosines.jpg}
+    \caption{Left: Softmax. Right: SPD. Pairwise cosine similarity between the $U_c$ and $V_c$ vectors of the causally important subcomponents for both layers. Subcomponents are ordered by decreasing norm.}
+    \label{fig:CC_cosines}
+\end{figure}
+
+For $W_{\text{in}}$, both methods recover near-orthogonal $V$ vectors,
+an expected result, as the embedding dimension is large enough
+to accommodate all pairwise orthogonal input features.
+
+The $U$ vectors, by contrast, must project into the $50$-dimensional
+MLP hidden space and therefore cannot be pairwise orthogonal.
+Interestingly, the two methods find wildly different projections in the $U$ space.
+Softmax finds two clusters, where the first $80$ subcomponents have large positive cosine similarities with each other and large negative similarities with the remaining $20$, while the final $20$ are positively correlated among themselves.
+SPD on the other hand find many subcomponents sharing similar directions, but without the clear two-cluster structure observed in SPD.
+
+For $W_{\text{out}}$, the two methods diverge in their representation. In SPD, the $50$ causally important subcomponents recover orthogonal directions in both $U$ and $V$, while the remaining subcomponents are entangled but carry negligible norm and contribute nothing to the final projection.
+
+The softmax variant, which assigns causal importance to $100$ subcomponents, 
+presents a more entangled picture: the first $80$ subcomponents have small pairwise cosine similarities in $V$, while the remaining $20$ collapse onto highly similar directions.
+The $U$ vectors on the otherhand, find the same two-cluster pattern as in $W_{\text{in}}$, with the first $80$ subcomponents having small positive cosine similarities with each other and large negative similarities with the remaining $20$,
+while the final $20$ practically collapse onto the same direction.
+
+\subsection{Subcomponent Norm Distributions}
+
+As briefly mentioned in TMS, but also observed in the CC model,
+softmax produces feature shrinkage, even when it produces the right feature directions.
+To quantify if this could be the cause of insufficient norm concentration, the norms of the subcomponents are examined. (Figure \ref{fig:CC_norms})
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth,height=5cm]{CC_norms_softmax.jpg}
+    \hfill
+    \includegraphics[width=0.48\linewidth,height=5cm]{CC_norms_spd.jpg}
+    \caption{Left: Softmax. Right: SPD. Norms of the subcomponents, ordered by decreasing norm. Matrix norm is the fribenius norm of the subcomponent matrix $U_c V_c^T$. Subcomponents are ordered by decreasing norm.}
+    \label{fig:CC_norms}
+\end{figure}
+
+The two methods recover very different norm distributions.
+Consistent with the cosine similarity analysis, softmax
+separates into two broad clusters: approximately the first 80 subcomponents have
+substantially larger norms, while the remaining 120 retain smaller but non-negligible norms in both $W_{in}$ and $W_{out}$.
+
+Notably, the softmax does not drive unused subcomponents to zero norm, but rather to a small but non-negligible value.
+
+SPD, by contrast, concentrates norm almost exclusively in the causally important subcomponents: approximately 100 subcomponents for $\mathrm{MLP}{\text{in}}$ and 50 for $\mathrm{MLP}{\text{out}}$. The remaining subcomponents are effectively pruned, with norms close to zero rather than forming the residual low-norm tail observed in the softmax decomposition.
+
+A further observation is that the norm contributions differ systematically between the two layers. In $\mathrm{MLP}{\text{in}}$, the norm is dominated primarily by the $V$ vectors, whereas in $\mathrm{MLP}{\text{out}}$ the dominant contribution instead comes from the $U$ vectors. This pattern is consistent across both decomposition methods.
+
+An initial hypothesis for why the softmax formulation fails to produce hard-zero norms was that, unlike the hard-sigmoid gating used in SPD, the softmax distribution cannot exactly suppress components. However, the distribution of causal importance values appears to rule out this explanation.
+The learned importance assignments are nearly bimodal, with most 
+concentrated close to either $0$ or $1$, and only a small fraction occupying
+intermediate values. (Figure \ref{fig:CC_causal_importance_hist}) The absence of hard-zero norms therefore seems
+not to arise from the gating distribution itself, but rather from how
+reconstruction mass is distributed across subcomponents during optimisation.
+Empirically, this hypothesis was further weakened by replacing the softmax gating with sparsemax \autocite{peters2019sparsesequencetosequencemodels}, which is capable of producing exact zeros in the gating distribution. Despite this, the resulting norm distributions remained qualitatively identical to those obtained with softmax.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth,height=5cm]{cc_softmax_causal_importance_hist.jpg}
+    \hfill
+    \includegraphics[width=0.48\linewidth,height=5cm]{cc_softmax_causal_importance_hist2.jpg}
+    \caption{Distributions of causal importance values for the softmax decomposition on both layers.}
+    \label{fig:CC_causal_importance_hist}
+\end{figure}
+
+More generally, this behaviour is likely related to the feature
+shrinkage phenomenon previously observed in both TMS and CC.
+The faithfulness objective is computed additively as the MSE between
+the summed subcomponent reconstruction and the target weight matrix,
+making it largely indifferent to how reconstruction mass is allocated
+across subcomponents, provided their aggregate reconstruction remains
+accurate. Consequently, if the importance regularisation only weakly
+penalises low-magnitude subcomponents, optimisation may converge
+to solutions in which a small set of dominant subcomponents carry
+most of the semantic structure, while a long tail of weakly active
+components absorbs residual reconstruction error.
 
 
-\subsubsection{Noes for this}
+\subsubsection{Noes for geometry}
 To quantify this, the effective rank of each pair's submatrix, $W_{:,2i-1:2i} \in \mathbb{R}^{d_{\text{hidden}} \times 2}$ is computed using the entropy-based definition of \autocite{effectiverank}.
 \begin{equation}
     r_{\text{eff}}(W_g) = \exp\!\left(-\sum_{k=1}^{Q} p_k \log p_k\right),
@@ -656,7 +855,6 @@ $1.0003$ & $0.01$  & $[1.0, 1.05]$ \\
 near $1$ indicate collapse to a single direction.}
 \label{tbl:mean-effective-rank}
 \end{table}
-% Note: numbers are placeholders pending final results.
 
 
 \textbf{Remarks for this section}
@@ -708,39 +906,7 @@ allows a non diagonal representation of the features. Had it been perfect, then 
 Same plots i was going to do for the TMS experiment, perhaps this gets its own section,
 we compare how input spaces are alligned over training, does the softmax encourage $\delta$ orthogonality better?
 
-
-
-\subsubsection{things that didnt make it into tms paired}
-
-To verify a successful decomposition, each matrix $V_{i}$ should also be $\delta$-orthogonal to the others.
-
-
-The multi-dimensional superposition hypothesis predicts that the
-projection matrices for different irreducible features are pairwise
-$\delta$-orthogonal. At the parameter level, the recovered $V_c$
-matrices are the operational counterpart, and the prediction
-translates to the requirement that recovered atoms have small
-pairwise overlap in their input-side directions.
-
-For each method, we compute the pairwise cosine similarity \footnote{Maybe even UV combined? Only read or write?}
-\begin{equation}
-    M_{cc'} = \frac{V_c^\top V_{c'}}{\|V_c\| \|V_{c'}\|}
-\end{equation}
-
-compared against the across-group cosine similarity of the
-trained model's encoder ($0.053$, \ref{tab:tms-paired-cosine-similarity}), the softmax-and-attention shows "something"
-and the baseline model finds that "something else".
-
-here we have four nice plots, overall alligment, across V's, across U's, entire thing?
-Reference to original model and maybe a table?
-
-
-%
-
-
-\subsection{Checking for orthogonality throughout training with softmax and attention / compare to baseline spd.}
-
-\subsection{New toy model}
+\subsection{Toy model Quantization:}
 Quantization paper computes the parity of a string mod 2,
 it proposes control bit sequence, that decide which subset
 of the string that is active and should be computed on,
@@ -751,44 +917,7 @@ we can sample this with the mixture
 \]
 
 
-\subsection{Toy model of learning gates}
-Remember to mention that softmax is all or nothing,
-we have to one hot sample here aftwards!
-However we need to do this on an affine transformation no?
-
-We learn $(a \wedge b) \lor a$. Ground truth interestingly becomes
-one component active for each
-
-similar directions
-but project into the same output direction.
-
-\textbf{Remark: }
-Im not sure we can sample binary values, double check the distribution, i think it requires a continuous thing with b not fixed?
-Could always train an addition model, but they already did that in the original paper?
-Can we just use that one to prove the claim?
-
-
-
-To test the case of enges, where the probability distribution is in fact reducable.
-We could train it to learn logic gates i.e
-1+0 = 0,
-1 + 1 = 1,
-0 + 0 = 0,
-0 + 1 = 1,
-in such a view each could occur independently ,but nlywhen 
-both are active, the output is active,
-we then sample independently from the two features and see if
-it compacts them in a single unit or not.
-
-
-The concept here is clear:
-The ideal decomposition here is one that produces independent features,
-that can co occur, however the atomic solution is independence.
-
-We also need to probe for a paired result here. The ground truth should show
-part ownership across 2 components.
-
-bool A, bool B are independnet their joint result shoul be shared ownership.
+Remember to add an experiment that shows if softmax enforce the orthogonality constraint from engels.
 
 
 \subsubsection{Remark for experiments}
@@ -808,6 +937,12 @@ two things to the same direction, but these do not split.
 Relate back to the interesting thing that one feature per component
 and rank 1 matrices does in fact not mean the smallest possible decomposition,
 as we have shown with TMSs and TMS paired, one is in a way strictly larger, but they result in the same thing!
+
+
+Talk about how softmax if working corretly, is probably better at extracting
+relevant features, not how it decomposes of smaller parts.
+Here it could be nice to touch on, when there genuinely is a one hot solution contra not,
+i.e in a lower dimnsional subspace.
 \section{Acknowledgements}
 
 \section{Other things to consider?}
@@ -837,146 +972,6 @@ if it is better explained by a rank 1 component than rank 2.
 Descriptive length thing?
 + approximation of attention experiment
 
-\subsubsection{GNAN-based importance functions}
-In SPD, each importance function $\gamma_{c}^{l}$ is an 
-independent MLP that receives only its own inner activation. 
-Intuitively, however, causal importance is relational: whether 
-a subcomponent can be ablated without affecting the output may 
-well depend on which other subcomponents are active alongside it.
-
-To address this, the independent MLPs are replaced with a Graph Neural Additive Network (GNAN)
-that can relate each subcomponent to its neighbourhood.
-
-The $C$ subcomponents are treated as nodes in a graph, with node 
-features given by their inner activation vectors 
-$\mathbf{h}_{c}^{l}(x) \in \mathbb{R}^{k}$. The GNAN updates 
-each node's representation through an additive neighbourhood 
-aggregation. For node $i$ in layer $l$ and feature dimension $k$ \footnote{I am very open to alternative equations, i.e perhaps we delete the layer distance inside rho, however it seemed necessary to use cosine similarity, as otherwise the signal was useless as described in some earlier section}:
-\begin{equation}
-    [\mathbf{z}_{i}]_{k} = \sum_{j=1}^{N} 
-    \frac{1}{|\mathcal{L}(j)|} \cdot 
-   \rho\!\left(\frac{1}{1 + \mathrm{dist}(j, i)},\; 
-\mathrm{cos}(j, i)\right) \cdot 
-    f_{k}\!\left([\mathbf{h}_{j}]_{k}\right)
-\end{equation}
-OBS: Implementation ill present today is this:
-
-\begin{equation}
-    \mathbf{z}_{i} = \sum_{j=1}^{N} \rho \left( \text{layer distance}, \text{cosine similarity} \right) \cdot f_{k}\left( [\mathbf{h}_{j}]_{k} \right)
-\end{equation}
-where $f_{k}$ is a learned function applied to the $k$-th inner 
-activation of each neighbouring node $j$; $|\mathcal{L}(j)|$ is 
-the number of nodes in the same layer as $j$, which normalises 
-the contribution of each 
-layer; $\mathrm{dist}(j, i)$ is the layer distance between 
-nodes $j$ and $i$\footnote{The layer distance, could later be signed to differentiate between
-previous and future layers}; $\mathrm{cos}(j, i)$ is the cosine similarity 
-between their parameter vectors; and $\rho$ is a learned function 
-that maps both the distance kernel and the cosine similarity to a 
-scalar weight.
-
-$z_{i}$ becomes a vector in $\mathbb{R}^{k}$, which 
-fits perfectly with the current activation vectors.
-
-A separate MLP is trained to combine the aggregated neighbourhood information and the node's own activation into an importance value in $[0, 1]$:
-Producing a single importance value per subcomponent and passing it through 
-a leaky hard sigmoid, following 
-SPD \autocite{stochasticparameterdecomposition}:
-\begin{equation}
-   g_{c}^{l} = \sigma_{H}(AGG(\mathbf{z}_{i}^l, \mathbf{h}_{i}^l))
-\end{equation}
-The self-connection through $f_{\text{self}}$ (or just the raw activation) ensures that each 
-node retains its own identity after aggregation, mitigating 
-the oversmoothing that can occur in GNNs. \{Clever cite here, i.e gnn book\}
-
-
-\textbf{Alternative formulation, that would work with the next section} \\
-
-After the GNAN update, the per-dimension importance values are 
-computed from the updated representation and passed through a 
-leaky hard sigmoid, following 
-SPD \autocite{stochasticparameterdecomposition}:
-\begin{equation}
-    \mathbf{g}_{c}^{l}(x) = \sigma_{H}\!\left(\mathbf{h}_{c}^{l}(x)\right)
-    \in [0, 1]^{k}
-\end{equation}
-in other words, the importance function becomes multidimensional,
-and each column can be masked independently.
-
-\textbf{Remarks:} \\
-For now the edge set construction is left as the fully connected graph,
-which remains reasonably computationally expensive for small models.
-However it could very easily be made more efficient, for other architectures,
-or by considering only the k-hop neighbourhood of each node, or only considering prior neighbours or later neighbourhoods.
-Likewise we could store both distances as sparse structures as they are symmetric. $\cos (j,i) = \cos (i,j)$
-\\
-\textbf{Remark 2:} \\
-The choice of edge set construction and distance function is a very important design choice,
-e.g using the layer distance on a fully connected graph encodes the same signal for all nods in a layer:
-For nodes $i_1, i_2$ in the same layer $l$:
-\begin{equation}
-    \forall\, j \colon \quad 
-    \mathrm{dist}(j, i_1) = \mathrm{dist}(j, i_2) = |k_j - l|
-\end{equation}
-and therefore
-\begin{equation}
-    [\mathbf{h}_{i_1}]_k = \sum_{j=1}^{N} 
-    \frac{1}{\#\mathrm{dist}_{i_1}(j, i_1)} \cdot 
-    \rho\!\left(\frac{1}{1 + |k_j - l|}\right) \cdot 
-    f_k([\mathbf{x}_j]_k) 
-    = [\mathbf{h}_{i_2}]_k
-\end{equation}
-since no term in the sum depends on the identity of $i$ 
-within layer $l$, only on the layer index $l$ itself.
-\\
-Additionally this produces a counterproductive signal,
-the gnan tries to boost or suppress all nodes in a layer together, instead
-of learning to differentiate between them.
-
-\textbf{Remark 3:} \\
-The choice of distance should probably be reconsidered in general,
-I have a feeling that the function needs to be from an asymmetric metric space,
-i.e
-\begin{equation}
-    dist(i, j) \neq dist(j, i)    
-\end{equation}
-Atleast if the intution is if component A in layer k, is highly active, perhaps component B in layer
-k+1 should likely be inactive, as the other component needs to handle this feature,
-thus the distance from A to B should be different, as otherwise both are boosted or suppressed together. 
-
-\textbf{Remark 4:} \\
-The current experiments are more sensitive to hyperparameters,
-than the original code seems to be, if the minimality pressure is too low, then all components are active, and doesn't "kill" any of them
-
-\textbf{Remark 5:} \\
-I haven't been able to find any "benefit" in setting k higher,
-this is ofcourse because hte ground truth of all the models we have
-are rank 1 independent features, we need to find a scenario where the dependence and or rank k is actually necessary:
-
-My ideas
-\renewcommand\labelitemi{\tiny$\bullet$}
-\begin{itemize}
-    \setlength\itemsep{0em}
-    \item Sample points from the unit circle, i.e $\cos(\theta)^2+ \sin(\theta)^2 = 1$ then
-    \begin{align*}
-        x = \sqrt{1-\sin (\theta)^2} \text{ or} -\sqrt{1-\sin(\theta)^2} \\
-    \end{align*}
-    i.e sometihng can only be expressed with a rank 2 component?
-    \item we could look for circuits, the goal is then no longer to find N independent features, but suppose we have input groups [0,1,2], [2,3,4], [3,4,5] then we want one component that activates for the first group, one for the second and one for the third
-\end{itemize}
-
-\textbf{Remark 6:} \\
-I added the gnan plots to wandB remember to show them
-
-\textbf{Remark 7:} \\
-The per feature construction with only 1 feature is rather boring, and does not utilize the expressiveness at all.
-
-\textbf{Remark 8:} \\
-I dont think its a code problem,
-as i can reproduce equivalent results to their findings.
-Im just not able to beat them.
-We need to discuss experiments where the k dimensionality and dependence
-actually matters.
 
 
 \section{Notes}
@@ -1090,5 +1085,7 @@ in this case it's the SPD components!!!!
 These perfectly make this up
 and pair this wiht quantization and we are golden.
 
-Remark rewrite TMS paired into TMS, they should be the same section.
+Remark rewrite TMS paired into TMS, they should be the same section.Rme
+Remember V is the
+ input reading so if w
 \end{document}

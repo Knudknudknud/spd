@@ -64,6 +64,48 @@
       \verb https://arxiv.org/abs/2506.20790
       \endverb
     \endentry
+    \entry{bhagat2025compressed}{misc}{}{}
+      \name{author}{4}{}{%
+        {{hash=0910913d267e93b385ad23da7ef2ed73}{%
+           family={Bhagat},
+           familyi={B\bibinitperiod},
+           given={Jai},
+           giveni={J\bibinitperiod}}}%
+        {{hash=92c0d619f707aeb50220290d4ab1244d}{%
+           family={Molas\bibnamedelima Medina},
+           familyi={M\bibinitperiod\bibinitdelim M\bibinitperiod},
+           given={Sara},
+           giveni={S\bibinitperiod}}}%
+        {{hash=facef30e8d7a2b104523424f57b7a478}{%
+           family={Giglemiani},
+           familyi={G\bibinitperiod},
+           given={Giorgi},
+           giveni={G\bibinitperiod}}}%
+        {{hash=2165acec5551840a430d770554b4bd4a}{%
+           family={Hex},
+           familyi={H\bibinitperiod},
+           given={Stefan},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{704b9f995eec298e9ab5d7da00ac63c7}
+      \strng{fullhash}{12b921780ec324afc69f2d124629f239}
+      \strng{fullhashraw}{12b921780ec324afc69f2d124629f239}
+      \strng{bibnamehash}{704b9f995eec298e9ab5d7da00ac63c7}
+      \strng{authorbibnamehash}{704b9f995eec298e9ab5d7da00ac63c7}
+      \strng{authornamehash}{704b9f995eec298e9ab5d7da00ac63c7}
+      \strng{authorfullhash}{12b921780ec324afc69f2d124629f239}
+      \strng{authorfullhashraw}{12b921780ec324afc69f2d124629f239}
+      \field{labelalpha}{Bha+25}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://www.lesswrong.com/posts/ZxFchCFJFcgysYsT9/compressed-computation-is-probably-not-computation-in}}
+      \field{month}{6}
+      \field{note}{LessWrong post}
+      \field{title}{Compressed Computation is (probably) not Computation in Superposition}
+      \field{year}{2025}
+    \endentry
     \entry{AttributionBasedParameterDecomposition}{misc}{}{}
       \name{author}{5}{}{%
         {{hash=375c93d04783a8b8c5887d391db14e08}{%
@@ -1141,6 +1183,51 @@
       \verb https://arxiv.org/abs/2311.03658
       \endverb
     \endentry
+    \entry{peters2019sparsesequencetosequencemodels}{misc}{}{}
+      \name{author}{3}{}{%
+        {{hash=c5d967fd93e7b18f947bcc25ac7d7496}{%
+           family={Peters},
+           familyi={P\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod}}}%
+        {{hash=7fb1184b4b06404ea26547130860771e}{%
+           family={Niculae},
+           familyi={N\bibinitperiod},
+           given={Vlad},
+           giveni={V\bibinitperiod}}}%
+        {{hash=9480c28f63984e2f3cbe6ce914f8aa8b}{%
+           family={Martins},
+           familyi={M\bibinitperiod},
+           given={André\bibnamedelimb F.\bibnamedelimi T.},
+           giveni={A\bibinitperiod\bibinitdelim F\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \strng{namehash}{459b99d6d993050650f349a8607dc26a}
+      \strng{fullhash}{459b99d6d993050650f349a8607dc26a}
+      \strng{fullhashraw}{459b99d6d993050650f349a8607dc26a}
+      \strng{bibnamehash}{459b99d6d993050650f349a8607dc26a}
+      \strng{authorbibnamehash}{459b99d6d993050650f349a8607dc26a}
+      \strng{authornamehash}{459b99d6d993050650f349a8607dc26a}
+      \strng{authorfullhash}{459b99d6d993050650f349a8607dc26a}
+      \strng{authorfullhashraw}{459b99d6d993050650f349a8607dc26a}
+      \field{labelalpha}{PNM19}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.CL}
+      \field{eprinttype}{arXiv}
+      \field{title}{Sparse Sequence-to-Sequence Models}
+      \field{year}{2019}
+      \verb{eprint}
+      \verb 1905.05702
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/1905.05702
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/1905.05702
+      \endverb
+    \endentry
     \entry{effectiverank}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=e963ebbeb84e66462245bfe8e4b6639a}{%
@@ -1173,6 +1260,62 @@
       \field{pages}{606\bibrangedash 610}
       \range{pages}{5}
       \keyw{Entropy;Signal processing;Covariance matrices;Europe;Random processes;Matrix decomposition;Eigenvalues and eigenfunctions}
+    \endentry
+    \entry{seshadri2026crosslayer}{inproceedings}{}{}
+      \name{author}{6}{}{%
+        {{hash=1427840226d72c75a721ffdae5cc38ed}{%
+           family={Seshadri},
+           familyi={S\bibinitperiod},
+           given={Saman},
+           giveni={S\bibinitperiod}}}%
+        {{hash=78bb24abb361a9f1654ddfc2158dbbcb}{%
+           family={Digilov},
+           familyi={D\bibinitperiod},
+           given={Jack},
+           giveni={J\bibinitperiod}}}%
+        {{hash=87ef5d73bc54c83e3beb06b90f77c731}{%
+           family={Esla},
+           familyi={E\bibinitperiod},
+           given={Sean},
+           giveni={S\bibinitperiod}}}%
+        {{hash=2c886d056f50e078a275ad8b37ffb37d}{%
+           family={Hu},
+           familyi={H\bibinitperiod},
+           given={Nathan\bibnamedelima Zixia},
+           giveni={N\bibinitperiod\bibinitdelim Z\bibinitperiod}}}%
+        {{hash=68543e2b0f6d5a3212c4abbfbf0fb52f}{%
+           family={Ivanitskiy},
+           familyi={I\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=f971b91af845fb621243aded4f6278ad}{%
+           family={Bernabeu-Perez},
+           familyi={B\bibinithyphendelim P\bibinitperiod},
+           given={Pablo},
+           giveni={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{0c6dceb13ec5c6ed2dbf811fbb3b864b}
+      \strng{fullhash}{421b1b2e44b3d3981823bf8a6c6bc6a8}
+      \strng{fullhashraw}{421b1b2e44b3d3981823bf8a6c6bc6a8}
+      \strng{bibnamehash}{0c6dceb13ec5c6ed2dbf811fbb3b864b}
+      \strng{authorbibnamehash}{0c6dceb13ec5c6ed2dbf811fbb3b864b}
+      \strng{authornamehash}{0c6dceb13ec5c6ed2dbf811fbb3b864b}
+      \strng{authorfullhash}{421b1b2e44b3d3981823bf8a6c6bc6a8}
+      \strng{authorfullhashraw}{421b1b2e44b3d3981823bf8a6c6bc6a8}
+      \field{labelalpha}{Ses+26}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Workshop on Latent {\&} Implicit Thinking {–} Going Beyond CoT Reasoning}
+      \field{title}{Cross-Layer Clustering for Stochastic Parameter Decomposition}
+      \field{year}{2026}
+      \verb{urlraw}
+      \verb https://openreview.net/forum?id=YiCTDVJJcS
+      \endverb
+      \verb{url}
+      \verb https://openreview.net/forum?id=YiCTDVJJcS
+      \endverb
     \endentry
     \entry{sharkey2025openproblemsmechanisticinterpretability}{misc}{}{}
       \name{author}{29}{}{%
