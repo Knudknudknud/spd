@@ -1,9 +1,8 @@
 """Trains a residual linear model on one-hot input vectors."""
 
-import json
 from datetime import datetime
 from pathlib import Path
-from typing import Literal, Self
+from typing import Literal
 
 import einops
 import torch
@@ -23,6 +22,7 @@ from spd.utils import get_lr_schedule_fn, set_seed
 from spd.wandb_utils import init_wandb
 
 wandb.require("core")
+
 
 
 class QuantizationTrainConfig(BaseModel):
@@ -76,7 +76,7 @@ def train(
     run_name: str,
 ) -> Float[Tensor, ""]:
     if config.wandb_project:
-        config = init_wandb(config, config.wandb_project, name=run_name)
+        wandb.init(project=config.wandb_project, name=run_name)
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -86,7 +86,7 @@ def train(
         yaml.dump(config.model_dump(mode="json"), f, indent=2)
     logger.info(f"Saved config to {config_path}")
     if config.wandb_project:
-        wandb.save(str(config_path), base_path=out_dir, policy="now")
+        wandb.save(str(config_path), base_path=out_dir, policy="end")
 
     # Save the coefficients used to generate the labels
     assert isinstance(dataloader.dataset, QuantizationDataset)
@@ -135,7 +135,7 @@ def train(
     model_path = out_dir / "quantization.pth"
     torch.save(model.state_dict(), model_path)
     if config.wandb_project:
-        wandb.save(str(model_path), base_path=out_dir, policy="now")
+        wandb.save(str(model_path), base_path=out_dir, policy="end")
     print(f"Saved model to {model_path}")
 
     # Calculate final losses by averaging many batches
@@ -169,8 +169,8 @@ def run_train(config: QuantizationTrainConfig, device: str) -> Float[Tensor, ""]
         d_out = 1
     elif config.label_type == "vector":
         d_out = cfg.n_groups    
-    model = QuantizationMLP(config=cfg, d_out=d_out).to(device)
 
+    model = QuantizationMLP(config=cfg, d_out=d_out).to(device)
 
 
     dataset = QuantizationDataset(
@@ -202,20 +202,19 @@ if __name__ == "__main__":
         wandb_project="spd-train-quantization-mlp",
         seed=0,
         quantization_mlp_config=QuantizationMLPConfig(
-            n_features=12,
-            n_groups=4,
-            d_hid=4,
+            n_features=9,        
+            n_groups=3,
+            d_hid=6,             
             in_bias=False,
             out_bias=False,
         ),
-    
         loss_type="bce",
-        feature_probability=0.25,
+        feature_probability=0.3,
         importance_val=1,
         data_generation_type="at_least_zero_active",
         label_type="vector",
-        batch_size=2048,
-        steps=10000,  
+        batch_size=4096,
+        steps=50000,             
         print_freq=1000,
         lr=3e-3,
         lr_schedule="cosine",

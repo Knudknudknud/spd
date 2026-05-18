@@ -631,13 +631,6 @@ def plot_neuron_contribution_pairs(
 
     return fig
 
-def effective_rank(A):
-    # A: activation matrix (N x d) or weight matrix
-    s = np.linalg.svd(A, compute_uv=False)
-    p = s / s.sum()
-    p = p[p > 0]  # avoid log(0)
-    entropy = -np.sum(p * np.log(p))
-    return np.exp(entropy)
 
 def plot_subcomponent_norms(model, save_path=None):
     fig, axes = plt.subplots(
@@ -660,8 +653,6 @@ def plot_subcomponent_norms(model, save_path=None):
             b_norms = comp.B.norm(dim=(1, 2)).cpu().numpy()
 
             W_total = W.sum(dim=0).cpu().numpy()    # (d_in, d_out)
-            er = effective_rank(W_total)
-            print(f"{name} effective rank: {er:.2f}")
 
             # sort by AB importance
             order = np.argsort(ab_norms)[::-1]
