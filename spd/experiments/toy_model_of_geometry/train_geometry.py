@@ -27,7 +27,7 @@ wandb.require("core")
 class GeometryTrainConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     wandb_project: str | None = None
-    geometry_model_config: GeometryModelConfig  # renamed for clarity
+    geometry_model_config: GeometryModelConfig 
     feature_probability: float
     batch_size: PositiveInt
     steps: PositiveInt
@@ -251,7 +251,7 @@ if __name__ == "__main__":
     config = GeometryTrainConfig(
     wandb_project="spd-train-tms",
     geometry_model_config=GeometryModelConfig(
-    ranks=[2, 2, 2, 2],
+    ranks=[2, 2, 2],
     n_hidden=150,
     device=device,
     init_bias_to_zero=False,
@@ -259,7 +259,7 @@ if __name__ == "__main__":
 ),
     feature_probability=0.5,
     batch_size=2048,               
-    steps=50000,
+    steps=10000,
     seed=0,
     lr=1e-3,
     lr_schedule="cosine",

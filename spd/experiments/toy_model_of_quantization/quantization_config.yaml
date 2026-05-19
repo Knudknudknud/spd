@@ -1,0 +1,51 @@
+# ########## quantization MLP ##########
+# --- WandB ---
+wandb_project: spd-quantization-mlp
+wandb_run_name: null
+wandb_run_name_prefix: ""
+
+# --- General ---
+seed: 67
+C: 50
+K: 1
+temperature: 1.0
+n_mask_samples: 1
+n_ci_mlp_neurons: 16
+target_module_patterns:
+  - "mlp_in"
+  - "mlp_out"
+# --- Loss Coefficients ---
+faithfulness_coeff: 1.0
+out_recon_coeff: null
+recon_coeff: null
+stochastic_recon_coeff: 1.0
+recon_layerwise_coeff: null
+stochastic_recon_layerwise_coeff: 1.0
+importance_minimality_coeff: 1e-4
+pnorm: 2
+output_loss_type: kl
+
+# --- Training ---
+batch_size: 1024
+steps: 30_000
+lr: 2e-3
+lr_schedule: constant
+lr_warmup_pct: 0.0
+n_eval_steps: 100
+
+# --- Logging & Saving ---
+image_freq: 5_000
+image_on_first_step: true
+print_freq: 1000
+save_freq: null
+
+# --- Pretrained model info ---
+pretrained_model_class: "spd.experiments.toy_model_of_quantization.models.QuantizationMLP"
+pretrained_model_path: "C:\\Users\\Knud\\uni\\spd\\spd\\experiments\\toy_model_of_quantization\\out\\this\\quantization.pth"
+
+# --- Task Specific ---
+task_config:
+  task_name: quantization
+  feature_probability: 0.5
+  data_generation_type: "exactly_one_active"
+  label_type: "vector"  # "vector" or "scalar"
