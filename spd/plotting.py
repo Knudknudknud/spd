@@ -133,7 +133,7 @@ def _plot_causal_importances_figure(
 def plot_causal_importance_vals(
     model: ComponentModel,
     components: Mapping[str, LinearComponent | EmbeddingComponent],
-    gnan: Mapping[str, Transformer],
+    gates: Mapping[str, Transformer],
     batch_shape: tuple[int, ...],
     device: str | torch.device,
     input_magnitude: float,
@@ -173,7 +173,7 @@ def plot_causal_importance_vals(
     As = {module_name: v.A for module_name, v in components.items()}
 
     ci_raw, ci_upper_leaky_raw = calc_causal_importances(
-        pre_weight_acts=pre_weight_acts, As=As, gnan=gnan, detach_inputs=False
+        pre_weight_acts=pre_weight_acts, As=As, gates=gates, detach_inputs=False
     )
 
     ci = {}
@@ -448,7 +448,7 @@ def plot_ci_histograms(
 def create_toy_model_plot_results(
     model: ComponentModel,
     components: dict[str, LinearComponent | EmbeddingComponent],
-    gnan: dict[str, Transformer],
+    gates: dict[str, Transformer],
     batch_shape: tuple[int, ...],
     device: str | torch.device,
     **_,
@@ -461,7 +461,7 @@ def create_toy_model_plot_results(
     Args:
         model: The ComponentModel
         components: Dictionary of components
-        gnan: Dictionary of transformers
+        gates: Dictionary of transformers
         batch_shape: Shape of the batch
         device: Device to use
         **_: Additional keyword arguments (ignored)
@@ -474,7 +474,7 @@ def create_toy_model_plot_results(
     figures, all_perm_indices = plot_causal_importance_vals(
         model=model,
         components=components,
-        gnan=gnan,
+        gates=gates,
         batch_shape=batch_shape,
         device=device,
         input_magnitude=0.75,

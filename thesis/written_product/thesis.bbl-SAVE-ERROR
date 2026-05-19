@@ -1261,6 +1261,62 @@
       \range{pages}{5}
       \keyw{Entropy;Signal processing;Covariance matrices;Europe;Random processes;Matrix decomposition;Eigenvalues and eigenfunctions}
     \endentry
+    \entry{seshadri2026crosslayer}{inproceedings}{}{}
+      \name{author}{6}{}{%
+        {{hash=1427840226d72c75a721ffdae5cc38ed}{%
+           family={Seshadri},
+           familyi={S\bibinitperiod},
+           given={Saman},
+           giveni={S\bibinitperiod}}}%
+        {{hash=78bb24abb361a9f1654ddfc2158dbbcb}{%
+           family={Digilov},
+           familyi={D\bibinitperiod},
+           given={Jack},
+           giveni={J\bibinitperiod}}}%
+        {{hash=87ef5d73bc54c83e3beb06b90f77c731}{%
+           family={Esla},
+           familyi={E\bibinitperiod},
+           given={Sean},
+           giveni={S\bibinitperiod}}}%
+        {{hash=2c886d056f50e078a275ad8b37ffb37d}{%
+           family={Hu},
+           familyi={H\bibinitperiod},
+           given={Nathan\bibnamedelima Zixia},
+           giveni={N\bibinitperiod\bibinitdelim Z\bibinitperiod}}}%
+        {{hash=68543e2b0f6d5a3212c4abbfbf0fb52f}{%
+           family={Ivanitskiy},
+           familyi={I\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=f971b91af845fb621243aded4f6278ad}{%
+           family={Bernabeu-Perez},
+           familyi={B\bibinithyphendelim P\bibinitperiod},
+           given={Pablo},
+           giveni={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{0c6dceb13ec5c6ed2dbf811fbb3b864b}
+      \strng{fullhash}{421b1b2e44b3d3981823bf8a6c6bc6a8}
+      \strng{fullhashraw}{421b1b2e44b3d3981823bf8a6c6bc6a8}
+      \strng{bibnamehash}{0c6dceb13ec5c6ed2dbf811fbb3b864b}
+      \strng{authorbibnamehash}{0c6dceb13ec5c6ed2dbf811fbb3b864b}
+      \strng{authornamehash}{0c6dceb13ec5c6ed2dbf811fbb3b864b}
+      \strng{authorfullhash}{421b1b2e44b3d3981823bf8a6c6bc6a8}
+      \strng{authorfullhashraw}{421b1b2e44b3d3981823bf8a6c6bc6a8}
+      \field{labelalpha}{Ses+26}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Workshop on Latent {\&} Implicit Thinking {–} Going Beyond CoT Reasoning}
+      \field{title}{Cross-Layer Clustering for Stochastic Parameter Decomposition}
+      \field{year}{2026}
+      \verb{urlraw}
+      \verb https://openreview.net/forum?id=YiCTDVJJcS
+      \endverb
+      \verb{url}
+      \verb https://openreview.net/forum?id=YiCTDVJJcS
+      \endverb
+    \endentry
     \entry{sharkey2025openproblemsmechanisticinterpretability}{misc}{}{}
       \name{author}{29}{}{%
         {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
@@ -1585,7 +1641,6 @@
       \endverb
     \endentry
   \enddatalist
-  \missing{Bra+25}
 \endrefsection
 \endinput
 
