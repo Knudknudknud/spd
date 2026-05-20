@@ -253,14 +253,6 @@ INPUT ./Images/cc_softmax_causal_importance_hist2.jpg
 INPUT ./Images/cc_softmax_causal_importance_hist2.jpg
 INPUT ./Images/cc_softmax_causal_importance_hist2.jpg
 INPUT ./Images/cc_softmax_causal_importance_hist2.jpg
-INPUT ./Images/geom_input_features.jpg
-INPUT ./Images/geom_input_features.jpg
-INPUT ./Images/geom_input_features.jpg
-INPUT ./Images/geom_input_features.jpg
-INPUT ./Images/geom_output_features.jpg
-INPUT ./Images/geom_output_features.jpg
-INPUT ./Images/geom_output_features.jpg
-INPUT ./Images/geom_output_features.jpg
 INPUT ./Images/geom_input_output.jpg
 INPUT ./Images/geom_input_output.jpg
 INPUT ./Images/geom_input_output.jpg

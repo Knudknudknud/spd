@@ -20,7 +20,7 @@
 \author{Knud Rasmus Sønderbek}
 \maketitle
 \begin{abstract}
-Some super cool abstract of all my findings \footnote{Very important to add quantization somewhere. https://arxiv.org/pdf/2303.13506 also paper on clustering in spd. Perhaps manifold clustering stearng too.}
+Some super cool abstract of all my findings \footnote{Very important to add quantization somewhere. https://arxiv.org/pdf/2303.13506, new SPD paper in related work and discussion - prticularly they also say something about their minimality loss, and lastly extend the transformer thing in the paper to be more clear of the architecture. Particulraly no positional encoding?}
 \end{abstract}
 
 \tableofcontents
@@ -861,145 +861,131 @@ However they shouldnt as its distinctly different feature indices.
 
 
 
-\subsection{Extending to Rank-k: When Higher-Dimensional Structure Matters}
-The previous two experiments suggest that SPD outperforms softmax on one-dimensional features,
-albeit with degredation in the paired feature regime, where it finds a faithful reconstruction,
-but one that is not interpretable in terms of the groud truth feature structure.
+\subsection{Toy model of geometry}
 
-This experiment, will relate to two central parts from the introduction,
-first the cube example, where the ground truth decomposition can both be taken,
-to be individual points, sides or the whole cube, and in this regard
-discuss whether SPD and softmax, find either of these decompositions, when their ranks are increased.
-In terms of the decomposition itself, each vertex occupies a single 
-feature, and depending on how the decomposition is done,
-we should see that under f, either one coordinate point,
-one vertex or a simplex should be captured in a signle component.
+In the paired TMS regime, even though input features were
+nominally two-dimensional, the model collapsed them onto
+a single direction, so a rank-1 decomposition per feature
+still suffices. To test the rank-$k$ extension of
+Section~\ref{sec:rank-k-attention}, a setting is needed where
+features cannot collapse to a single direction without losing
+essential structure. This experiment generalizes the cube
+example from the introduction, where the same underlying computation
+admits multiple valid ground-truth decompositions
+depending on what each subcomponent is allowed to represent.
 
-
-Secondly we will examine how rank-k experimentation,
-and different minimality losses influence, how 
-and where routing strength is contained.
-More particularly different k values, manages to influence
-how many directions are captureable in a given component,
-and as such should be able to center all the relevant signal
-to given subcomponents.
-These different subcomponent structures also
-admit vastly different importance values, which should again
-impact how the routing of these subcomponents happen.
-
-
-and perhaps even more interestingly, we will highlight settings,
-where SPD fails to find any interpretable decomposition, and how fragile the decomposition is,
-to the choice of the minimality coefficient.
-
-To construct a setting where the rank-1 assumption of SPD is insufficient,
-we will compute the volume of an n-dimensional simplex,
-which is given by the formula:
+In this experiment, we train a model to compute the volume of an $n$-dimensional simplex from its $n+1$ vertices in $\mathbb{R}^n$.
+The model should learn to compute the volume as follows:
 \begin{equation}
-    \text{Volume} = \frac{1}{n!} \left| \det\!\left( \begin{bmatrix} v_2 - v_1 & v_3 - v_1 & \cdots & v_{n+1} - v_1 \end{bmatrix} \right) \right|
+    \text{Vol}(v_1, \ldots, v_{n+1}) = \frac{1}{n!} \left| \det\!\left( \begin{bmatrix} v_2 - v_1 & v_3 - v_1 & \cdots & v_{n+1} - v_1 \end{bmatrix} \right) \right|.
 \end{equation}
-where $v_1, v_2, \ldots, v_{n+1}$ are the vertices of the simplex in $\mathbb{R}^n$.
+The computation necessarily involves combining all vertices together,
+and would functionally only make sense, if the model captures the joint structure of the vertices rather than treating them as independent features.
 
-The simplex is particularly interesting, as none of the input features can be written as a linear combination of the others,
-and consequently the features are not aligned to a single direction in the input space.
+Perhaps something about affine independence?.
 
+To mirror the paired-feature setup of Section~\ref{sec:tms-tied-experiment}, the model receives $K$ simplices as input, where each simplex is either
+sampled with probability $p$ or all of its coordinates set to zero otherwise.
 
-
-While the previous experiment suggest that softmax is less faithful than SPD,
-it was meant to be an extension to SPD, that would allow it to capture higher-dimensional features.
-For this reason, the next experiment is meant to show a setting where the rank-1 assumption of SPD is insufficient, at least in the sense of an interpretability perspective.
-The rank-1 assumption itself is not a problem for reconstruction, as the additive nature of the loss functions.
-Interestingly, for higher dimensional features, SPD seems to show an importance that is not clearly representative of
-the ground truth feature structure. The Cosine similarities and one hot encodings, show 
-clear structured signal directions, but this is not reflected in the importance values,
-for more than a very slim range of the minimality coefficient [1e-4,5e-4],
-where all other values show a very split importance. This range is also very narrow and very misable.
-
-Secondly from a structured point of view, when exactly $1e-4$ is chosen,
-a clear clustering of the feature structure is observed,
-but in this case is only observeable, as the toy model is designed to disentangle features entirely.
-
-We intentionally do not enforce superposition for this experiment,
-or projections into lower dimensional subspaces..?
-
-The rank-k extension is required in settings where feature representations do not collapse to a single direction. This is illustrated by a model trained to compute the volume of an n-dimensional simplex.
-
-In this experiment, consider a model trained to compute the volume of an n-dimensional simplex:
 \begin{equation}
-    f(x) = W_1 \sigma(W_2 x), \quad W_2 \in \mathbb{R}^{k \cdot n(n+1) \times d_{hidden}}, \quad W_1 \in \mathbb{R}^{d_{hidden} \times k}
+    f(x) = W_1 \text{ReLU}(W_2 x), \quad W_2 \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_1 \in \mathbb{R}^{K \times d_{\text{hidden}}}.
 \end{equation}
-Here, k denotes the number of simplices and n the dimensionality of each simplex, which has n+1 vertices.
+here $n(n+1)$ represents the total number of coordinate points a simplex has in $\mathbb{R}^n$, and $K$ is the number of simplices.
+Unlike TMS, $d_{\text{hidden}}$ is chosen large enough that the model does not need to compress features through superposition.
+This should ensure that the model can learn to assign a subset of its neurons to each simplex, giving a clearer ground truth decomposition.
+Concretely, for this experiment, the simplices are triangles in $\mathbb{R}^2$.
+Secondly, we set $K=3$ and $d_{\text{hidden}} = 150$,
+making the input space $\mathbb{R}^{18}$.
 
-As in Section~\ref{sec:tms-tied-experiment}, the k simplices are sampled together, with each group sampled with probability p, and otherwise set to zero.
-The volume computation cannot be decomposed into independent features,
-nor as a disjoint mixture. [build something here].
+Intuitively it seems reasonable, that a decomposition could recover a coordinate, a vertex, a side or the whole simplex.
+Which decomposition should be recovered depends on 1) the dimensionality that each subcomponent is allowed to represent,
+and secondly how strongly the imporance function penalises spreading importance across multiple subcomponents.
+Particularly, for softmax sampling with entire simplices at a time,
+the entropy minimality maximizes the probability of a simplex belonging to a single subcomponent,
+so we would expect, that given the right dimensionality and sufficient pressure,
+that the decomposition would recover the whole simplex as a single component, rather than splitting it across multiple components.
 
-
-In terms of decomposition, we aim to find a decomposition that captures the entire simplex as a single unit,
-with all n(n+1) features captured in the same subcomponent. To demonstrate, that this is the correct decomposition,
-we compute how much each subcomponent group contributes to the hidden layer, and then how these contribute to the output.
-By aggregating the feature columns into groups of n(n+1) features, for the input transformation.
-For the output, we simply check how much weight each neuron contributes to the output,
-and finally we plot where these two align. In the same manner as compressed computation.
-
-
-\subsubsection{Plots from original model}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth, height=5cm]{geom_input_features.jpg}
-\end{figure}
+To isolate the effect of these two factors, will only vary one of them at a time, while keeping the other fixed.
+Particularly, the rank will be fixated at $k=1$, which will recover the original SPD method,
+and examine how the minimality coefficient $\beta_3$ influences the decomposition. 
+Then, the minimality coefficient will be fixated at a value that produced a clear decomposition, at $k=1$ and examine how increasing the rank allows for different decompositions to be recovered.
 
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth, height=5cm]{geom_output_features.jpg}
-\end{figure}
+
+
+
+\subsection{Toy model of geometry}
+
+In the paired TMS regime, even though input features were nominally two-dimensional, the model collapsed them onto a single direction, so a rank-1 decomposition per feature still suffices. To test the rank-$k$ extension of Section~\ref{sec:rank-k-attention}, a setting is needed where features cannot collapse to a single direction without losing essential structure. This experiment generalizes the cube example from the introduction, where the same underlying computation admits multiple valid ground-truth decompositions depending on what each subcomponent is allowed to represent.
+
+The model is trained to compute the volume of an $n$-dimensional simplex from its $n+1$ vertices in $\mathbb{R}^n$:
+\begin{equation}
+    \text{Vol}(v_1, \ldots, v_{n+1}) = \frac{1}{n!} \left| \det\!\left( \begin{bmatrix} v_2 - v_1 & v_3 - v_1 & \cdots & v_{n+1} - v_1 \end{bmatrix} \right) \right|.
+\end{equation}
+By construction, the $n+1$ vertices of a non-degenerate simplex are affinely independent: no vertex lies in the affine hull of the others. The volume is therefore a genuine function of all vertices jointly, and no subset can be dropped without changing it. This makes the simplex an irreducible feature in the sense of Section~\ref{sec:irreducibility}, with internal dimensionality genuinely greater than one.
+
+To mirror the paired-feature setup of Section~\ref{sec:tms-tied-experiment}, the model receives $K$ simplices as input, each sampled with probability $p$ and otherwise set to zero across all of its coordinates:
+\begin{equation}
+    f(x) = W_1 \text{ReLU}(W_2 x), \quad W_2 \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_1 \in \mathbb{R}^{K \times d_{\text{hidden}}},
+\end{equation}
+where $n(n+1)$ is the total number of coordinates of a simplex in $\mathbb{R}^n$ and $K$ is the number of simplices. Unlike TMS, $d_{\text{hidden}}$ is chosen large enough that the model does not need to compress features through superposition, which should allow it to assign a separate subset of neurons to each simplex and produce a clearer ground-truth decomposition. Concretely, the simplices are triangles in $\mathbb{R}^2$, with $K = 3$ and $d_{\text{hidden}} = 150$, giving an input space of $\mathbb{R}^{18}$.
+
+A decomposition could in principle recover a single coordinate, a vertex, an edge, or an entire simplex. Which of these is recovered depends on two factors: the dimensionality each subcomponent is allowed to represent, and how strongly the importance function penalises spreading importance across multiple subcomponents. For the softmax variant in particular, where entire simplices are sampled together, the entropy minimality maximises the probability of a simplex belonging to a single subcomponent. Given sufficient rank and sufficient minimality pressure, the decomposition is then expected to recover a whole simplex as a single component rather than splitting it across several.
+
+To isolate the effect of these two factors, only one is varied at a time. First, the rank is fixed at $k = 1$, recovering the original SPD formulation, and the minimality coefficient $\beta_3$ is varied to examine its influence on the decomposition. Second, $\beta_3$ is fixed at a value that produced a clear decomposition at $k = 1$, and the rank is increased to examine how higher $k$ allows different decompositions to be recovered.
+
+
+\textbf{Target model structure.}
+Before examining what the decomposition methods recover, it is worth confirming the structure of the target model itself, since a clean ground-truth decomposition exists only if the model processes each simplex through a separable set of neurons.
+
+The input is partitioned into $K$ groups, where group $g$ contains the $n(n+1)$ coordinates of simplex $g$, indexed by the set $\mathcal{C}_g$. The preactivation of hidden neuron $i$ decomposes additively over these groups,
+\begin{equation}
+    \sum_{c} W_{2[i,c]} = \sum_{g=1}^{K} \rho_{i,g}, \qquad \rho_{i,g} := \sum_{c \in \mathcal{C}_g} W_{2[i,c]},
+\end{equation}
+where $\rho_{i,g}$ is the influence of simplex $g$ on neuron $i$. These per-simplex influences are plotted across all neurons and groups in the top panel of Figure~\ref{fig:simplex_target_structure}.
+
+On the output side, the contribution of neuron $i$ to the volume output of simplex $k$ is read directly from $W_1 \in \mathbb{R}^{K \times d_{\text{hidden}}}$ as $W_{1[k,i]}$ (bottom panel of Figure~\ref{fig:simplex_target_structure}).
+
+Lastly, to quantify which input-to-output paths are functionally relevant, only each neuron's dominant input and dominant output are considered. For neuron $i$, let
+\begin{equation}
+    g^*(i) = \arg\max_{g} \rho_{i,g}, \qquad k^*(i) = \arg\max_{k} W_{1[k,i]}
+\end{equation}
+be the simplex that most strongly drives the neuron and the output to which it most strongly contributes
+computing the inner product of these two values gives a measure of,
+how relevant the strongest input-output path through that neuron is.
+These are displayed in the top panel of Figure~\ref{fig:simplex_target_structure}.
+
+
+
+
+. Accumulating the product of these maximal values over all neurons gives the group-to-output matrix
+\begin{equation}
+    M_{g,k} = \sum_{\substack{i\,:\,g^*(i)=g \\ k^*(i)=k}} \rho_{i,g}\, W_{1[k,i]},
+\end{equation}
+where each neuron contributes only to the cell defined by
+its dominant input and output. A large $M_{g,k}$ indicates that
+many high-magnitude neurons read primarily from simplex $g$
+and write primarily to output $k$. The resulting $K \times K$ matrix
+is shown in Figure~\ref{fig:simplex_group_output}, whose diagonal
+structure confirms that each simplex routes to its own output.
+
+Sorting the neurons by their dominant input group and dominant output reveals a clear block structure in both panels: each input group activates a disjoint set of neurons, and each of those neurons contributes to a single output. Sampling complete simplices and measuring the resulting output collapses this into a $K \times K$ group-to-output response (Figure~\ref{fig:simplex_group_output}), which is diagonal: simplex $g$ drives neurons that contribute only to output $g$.
+
+This confirms that the $K$ simplices are processed by $K$ non-overlapping subnetworks. Because subcomponents combine additively to reconstruct the model, and each simplex occupies a disjoint subnetwork, there exists a decomposition in which each subcomponent captures the entire contribution of exactly one simplex, provided the rank is sufficiently large. Recovering this decomposition would make the post-hoc clustering trivial, with one subcomponent mapping to one simplex.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=5cm]{geom_input_output.jpg}
+    \caption{Top: response $\rho_{i,g}$ of each hidden neuron to each input group, when group $g$ is activated in isolation. Bottom: contribution $W_{1[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are sorted by dominant input group then dominant output, with only the $28$ active neurons of $d_{\text{hidden}} = 150$ shown. Both panels show that each simplex occupies a disjoint set of neurons.}
+    \label{fig:simplex_target_structure}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=5cm]{geom_input_output_final.jpg}
+    \caption{Group-to-output response obtained by sampling complete simplices and measuring the volume output. The diagonal structure confirms that simplex $g$ contributes only to output $g$, with no cross-simplex interaction.}
+    \label{fig:simplex_group_output}
 \end{figure}
-
-
-It seems pretty clear, that each input group predominately, contributes to a disjoint
-set of hidden neurons, and similarly that these hidden neurons contribute disjointly to the output.
-
-A reasonable interpretation of this, as the model is not forced into superposition,
-is that it has learnt to disentangle the features into disjoint subspaces.
-
-Secondly, it does not seem to be the case, that like in CC that the model,
-has learnt to jointly operate on all features within a shared subspace.
-
-A reasonably, expected result, is that there exists a decomposition,
-where each simplex is captured by a set of subcomponents, that do not overlap with those of other subcomponents.
-This same interpretation is also expected to hold for the output layer,
-where the disentanglement is equally strong.
-
-
-
-here we compute the inner product between the column of the encoder
-and the simplex vertices,
-so we take 6 columns at a time, compute their output,
-and then either take a percentage contribution 
-to the hideen layer or a total value.
-If they become "one hot" then only one simplex contributes to a given
-hidden neuron,
-if they cluster in 3 clear groups, then we 
-can confidently say that under f these implement a joint feature.
-
-Likewise for layer out we do the same for each output column,
-we see how much they contribute.
-
-
-Secondly the visualization of the contribution of each group of vertices to the hidden layer....
-
-
 
 
 \subsection{Comparison of imporance values}
@@ -1055,67 +1041,6 @@ see if they replicate the layer output.
 We do the input, output plot, where we only probe the causally important subcomponents.
 
 
-
-
-
-
-
-
-\subsection{Toy model Quantization:}
-Quantization paper computes the parity of a string mod 2,
-it proposes control bit sequence, that decide which subset
-of the string that is active and should be computed on,
-
-we can sample this with the mixture
-
-
-The model will have disjoint support, which is good! each control bit,
-will activate a different subset of the string.
-
-How do we define the loss function? MSE? entropy?
-MSE over expected value?
-probably MSE For tracability.
-
-2 layer mlp
-$n_{s}+n_{b}$ bits as input,
-output a scalar or control bit output?
-
-
-We do it in two steps:
-
-First, where only one control bit can be active,
-and later where multiple control bits can be active.
-We squeeze this as the "exactly one" or "at least zero" setup.
-
-Remember to add an experiment that shows if softmax enforce the orthogonality constraint from engels.
-
-
-% https://arxiv.org/pdf/2404.17563 - this briefly mentions SVD, might be relevant.
-% https://arxiv.org/pdf/2303.13506#page=12&zoom=100,144,844
-% https://arxiv.org/pdf/2207.08799
-% https://ericjmichaud.com/quanta/ -> Can i bring the scaling laws into the mix somehow?
-
-Use equations from quantization paper and irreducibility paper
-
-\textbf{Analytical tools:}
-pca+ svd perhaps?
-Effective rank -> Rank of submatrices needed -> But on what? i figure in the first 
-layer we can do this tractably, and examine the columns of the subsets and see
-what rank their group consists of. Trivially here they shouldn't be seperable,
-for the second layer it is nt as obvious
-
-cosine similarities?
-MUST REMEMBER TO SHOW THE MOTIVATION FOR WHY SPD
-IS NOT SUFFICIENT. THE MOTIVATION  FOR THE RANK-K EXTENSION IS NOT JUST TO CAPTURE MORE COMPLEX STRUCTURES, BUT ALSO TO BETTER RECOVER THE GROUND-TRUTH DECOMPOSITION IN SETTINGS WHERE THE ORIGINAL METHOD FAILS TO DO SO, AS DEMONSTRATED IN THE TMS EXPERIMENT
-. ALSO THAT IT DOESNT PRESURE THEM INTO GROUPING.
-
-PCA on the training data, do we see the clustering of featureswe
-would expect
-
-
-
-\subsubsection{Remark for experiments}
-Consider trainng on exactly one active.
 \section{Discussion}
 The original spd method produces hard zeroes,
 something that softmax cannot do. Entmax didnt work either nor did sparsemax,
