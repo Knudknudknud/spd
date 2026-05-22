@@ -502,6 +502,36 @@
       \verb https://arxiv.org/abs/2408.10920
       \endverb
     \endentry
+    \entry{cunningham2023takingfeatures}{misc}{}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{1}{}{%
+        {{hash=81adc00b4f07e3a2483bd1326a644b10}{%
+           family={Cunningham},
+           familyi={C\bibinitperiod},
+           given={Hoagy},
+           giveni={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{fullhash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{fullhashraw}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{bibnamehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authorbibnamehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authornamehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authorfullhash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authorfullhashraw}{a9bfc7f10989cfcbc759919686cfb78e}
+      \field{extraname}{1}
+      \field{labelalpha}{Cun+23}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extraalpha}{1}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://www.alignmentforum.org/posts/z6QQJbtpkEAX3Aojj/interim-research-report-taking-features-out-of-superposition}}
+      \field{note}{Alignment Forum post}
+      \field{title}{Interim research report: Taking features out of superposition with sparse autoencoders}
+      \field{year}{2023}
+    \endentry
     \entry{sparseautoencodershighlyinterpretable}{misc}{}{}
       \name{author}{5}{}{%
         {{hash=81adc00b4f07e3a2483bd1326a644b10}{%
@@ -538,9 +568,11 @@
       \strng{authornamehash}{a9bfc7f10989cfcbc759919686cfb78e}
       \strng{authorfullhash}{71542c9b3d8bb54096acc4edb13b192c}
       \strng{authorfullhashraw}{71542c9b3d8bb54096acc4edb13b192c}
+      \field{extraname}{2}
       \field{labelalpha}{Cun+23}
       \field{sortinit}{C}
       \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extraalpha}{2}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.LG}

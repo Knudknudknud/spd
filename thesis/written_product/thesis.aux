@@ -6,9 +6,9 @@
 \abx@aux@segm{0}{0}{engels2025languagemodelfeaturesonedimensionally}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{}\protected@file@percent }
 \abx@aux@cite{0}{engels2025languagemodelfeaturesonedimensionally}
 \abx@aux@segm{0}{0}{engels2025languagemodelfeaturesonedimensionally}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{}\protected@file@percent }
 \abx@aux@cite{0}{park2024linearrepresentationhypothesisgeometry}
 \abx@aux@segm{0}{0}{park2024linearrepresentationhypothesisgeometry}
 \abx@aux@cite{0}{elhage2022toymodelssuperposition}
@@ -59,15 +59,15 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}The linear representation hypothesis}{3}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Activation-space decomposition}{3}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Parameter-space decomposition}{3}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Method}{3}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Background on SPD}{3}{}\protected@file@percent }
-\newlabel{sec:spd_background}{{3.1}{3}{}{}{}}
 \abx@aux@cite{0}{AttributionBasedParameterDecomposition}
 \abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Method}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Background on SPD}{4}{}\protected@file@percent }
+\newlabel{sec:spd_background}{{3.1}{4}{}{}{}}
 \abx@aux@cite{0}{elhage2022toymodelssuperposition}
 \abx@aux@segm{0}{0}{elhage2022toymodelssuperposition}
 \abx@aux@cite{0}{engels2025languagemodelfeaturesonedimensionally}
@@ -85,15 +85,15 @@
 \abx@aux@segm{0}{0}{vaswani2023attentionneed}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Rank-$k$ subcomponents and relational importance}{6}{}\protected@file@percent }
 \newlabel{sec:rank-k-attention}{{3.3}{6}{}{}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.1}SVD reformulation, capacity maybe per feature ablation TBD}{6}{}\protected@file@percent }
-\newlabel{sec:svd_reformulation}{{3.3.1}{6}{}{}{}}
-\abx@aux@cite{0}{stochasticparameterdecomposition}
-\abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{elhage2022toymodelssuperposition}
 \abx@aux@segm{0}{0}{elhage2022toymodelssuperposition}
+\abx@aux@cite{0}{elhage2022toymodelssuperposition}
+\abx@aux@segm{0}{0}{elhage2022toymodelssuperposition}
+\abx@aux@cite{0}{cunningham2023takingfeatures}
+\abx@aux@segm{0}{0}{cunningham2023takingfeatures}
 \@writefile{toc}{\contentsline {section}{\numberline {4}Results}{7}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Overview of experiments}{7}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Overview of the toy models and their properties. Each experiment is chosen to isolate a specific property of the irreducibility definition. The baseline is trivially irreducible: a 1D scalar cannot be split into multiple components. }}{7}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Overview of the toy models and their properties. }}{7}{}\protected@file@percent }
 \newlabel{tbl:Experiment_overview}{{1}{7}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Toy Model of Superposition}{7}{}\protected@file@percent }
 \newlabel{sec:tms-experiments}{{4.2}{7}{}{}{}}
@@ -103,8 +103,10 @@
 \abx@aux@segm{0}{0}{wright2024featureSuppressionSAEs}
 \abx@aux@cite{0}{AttributionBasedParameterDecomposition}
 \abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
+\abx@aux@cite{0}{stochasticparameterdecomposition}
+\abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Independent features}{8}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Decomposition of $\mathrm  {TMS}_{5\text  {-}2}$. The first two panels show the target model's weight columns and the sum of learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ carry meaningful norm and contribute to reconstruction, while the remaining $15$ have negligible weight and are effectively pruned by the method. Each active subcomponent recovers primarily one feature direction, with minor leakage across components.}}{8}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Decomposition of $\mathrm  {TMS}_{5\text  {-}2}$ using Softmax. The first two panels show the target model's weight columns and the sum of learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ carry meaningful norm and contribute to reconstruction, while the remaining $15$ have negligible weight and are effectively pruned by the method. Each active subcomponent recovers primarily one feature direction, with minor leakage across components.}}{8}{}\protected@file@percent }
 \newlabel{fig:tms_5_2}{{1}{8}{}{}{}}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
@@ -115,8 +117,6 @@
 \newlabel{sec:tms-tied-experiment}{{4.2.2}{9}{}{}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$, partitioned by group membership.}}{9}{}\protected@file@percent }
 \newlabel{tab:tms-paired-cosine-similarity}{{2}{9}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Decomposition quality across both TMS regimes. SPD refers to the original method \blx@tocontentsinit {0}\autocite {stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref {sec:rank-k-attention}. If the standard deviation is not reported, it's because its smaller than $0.001$.}}{9}{}\protected@file@percent }
-\newlabel{tab:tms_results}{{3}{9}{}{}{}}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{AttributionBasedParameterDecomposition}
@@ -127,6 +127,8 @@
 \abx@aux@segm{0}{0}{bhagat2025compressed}
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Left: SPD decomposition of the paired TMS model. Right: Softmax of the paired TMS model. SPD finds the correct structure of pairing features together but does not attribute one feature pair per subcomponent. Softmax achieves the desired importance decomposition, with the exception of one feature pair. SPD was trained with $200$ subcomponents and Softmax with $100$, as these yielded the best results for each method.}}{10}{}\protected@file@percent }
 \newlabel{fig:both}{{3}{10}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Decomposition quality across both TMS regimes. SPD refers to the original method \blx@tocontentsinit {0}\autocite {stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref {sec:rank-k-attention}. If the standard deviation is not reported, it's because its smaller than $0.001$.}}{10}{}\protected@file@percent }
+\newlabel{tab:tms_results}{{3}{10}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3} Toy Model of Compressed Computation }{10}{}\protected@file@percent }
 \abx@aux@cite{0}{AttributionBasedParameterDecomposition}
 \abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
@@ -163,22 +165,30 @@
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Noes for geometry}{15}{}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Effective rank of paired-feature encoder blocks. Values near $1$ indicate collapse to a single direction.}}{15}{}\protected@file@percent }
 \newlabel{tbl:mean-effective-rank}{{5}{15}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Extending to Rank-k: When Higher-Dimensional Structure Matters}{15}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces SPD decomposed with k=1,2,3 from left to right.}}{16}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Softmax-and-Attention decomposed with k=1,2,3 from left to right.}}{17}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Toy model Quantization:}{17}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.1}Remark for experiments}{17}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{17}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Acknowledgements}{18}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Other things to consider?}{18}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}That some features are multidimensional}{18}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}References}{18}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9}Appendix}{19}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10}Notes}{19}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.1}Hard maybes}{19}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.2} Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}{19}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {11}To add:}{20}{}\protected@file@percent }
-\abx@aux@read@bbl@mdfivesum{791CCDF81F8565C7797B1627B555C135}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Toy model of geometry}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Toy model of geometry}{16}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Top: response $\rho _{i,g}$ of each hidden neuron to each input group, when group $g$ is activated in isolation. Bottom: contribution $W_{1[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are sorted by dominant input group then dominant output, with only the $28$ active neurons of $d_{\text  {hidden}} = 150$ shown. Both panels show that each simplex occupies a disjoint set of neurons.}}{18}{}\protected@file@percent }
+\newlabel{fig:simplex_target_structure}{{10}{18}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Group-to-output response obtained by sampling complete simplices and measuring the volume output. The diagonal structure confirms that simplex $g$ contributes only to output $g$, with no cross-simplex interaction.}}{18}{}\protected@file@percent }
+\newlabel{fig:simplex_group_output}{{11}{18}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Comparison of imporance values}{18}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.1}Comparison of importance values across different minimality coefficients}{18}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.2}Comparison of importance values across different ranks for fixed minimality.}{18}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Computing}{20}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{20}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Acknowledgements}{20}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Other things to consider?}{20}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}That some features are multidimensional}{20}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}References}{20}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Appendix}{22}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Notes}{22}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.1}Hard maybes}{22}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.2} Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}{22}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11}To add:}{23}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {11.0.1}SVD reformulation, capacity maybe per feature ablation TBD}{23}{}\protected@file@percent }
+\newlabel{sec:svd_reformulation}{{11.0.1}{23}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {12}Lukas questions}{23}{}\protected@file@percent }
+\abx@aux@read@bbl@mdfivesum{536F3FE926066B3412C804791FB6665C}
 \abx@aux@defaultrefcontext{0}{stochasticparameterdecomposition}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{bhagat2025compressed}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{AttributionBasedParameterDecomposition}{anyt/global//global/global/global}
@@ -187,6 +197,7 @@
 \abx@aux@defaultrefcontext{0}{absorptionstudyingfeaturesplitting}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{christensen2025decompositionsmalltransformermodels}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{csordás2024recurrentneuralnetworkslearn}{anyt/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{cunningham2023takingfeatures}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{sparseautoencodershighlyinterpretable}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{dunefsky2024transcodersinterpretablellmfeature}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{elhage2022toymodelssuperposition}{anyt/global//global/global/global}
@@ -206,4 +217,4 @@
 \abx@aux@defaultrefcontext{0}{smith2024strong}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{vaswani2023attentionneed}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{wright2024featureSuppressionSAEs}{anyt/global//global/global/global}
-\gdef \@abspage@last{20}
+\gdef \@abspage@last{24}
