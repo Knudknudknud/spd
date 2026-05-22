@@ -71,47 +71,47 @@ def combine_images(image_paths, save_path, titles=None,
     return save_path
 
 
-image_paths = [
-    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\SPD_rank_1_softmax\causal_importances_upper_leaky_30000.png", #rank 1
-    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\causal_importances_upper_leaky_30000.png",
-    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\causal_importances_upper_leaky_30000.png",
-    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\causal_importances_upper_leaky_30000.png",
-    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\causal_importances_upper_leaky_30000.png",
-]
+# image_paths = [
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\SPD_rank_1_softmax\causal_importances_upper_leaky_30000.png", #rank 1
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\causal_importances_upper_leaky_30000.png",
+# ]
 
-combine_images(
-    image_paths,
-    save_path="causal_importances_ranks_combined.png",
-    orientation="horizontal",
-    size=6,
-    dpi=150
-)
-
-
-image_paths = [
-                r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\w1_w2_input_hidden_output_translation.png",
-                r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\w1_w2_input_hidden_output_translation.png",
-                r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\w1_w2_input_hidden_output_translation.png",
-               ]
-
-combine_images(
-    image_paths,
-    save_path="input_hidden_output_translation_ranks_combined.png",
-    orientation="vertical",
-    size=6,
-    dpi=150
-)
+# combine_images(
+#     image_paths,
+#     save_path="causal_importances_ranks_combined.png",
+#     orientation="horizontal",
+#     size=6,
+#     dpi=150
+# )
 
 
-image_paths = [r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\group_output_matrix_simplex.png",
-                r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\group_output_matrix_simplex.png",
-                r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\group_output_matrix_simplex.png"
-                ]
+# image_paths = [
+#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\w1_w2_input_hidden_output_translation.png",
+#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\w1_w2_input_hidden_output_translation.png",
+#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\w1_w2_input_hidden_output_translation.png",
+#                ]
 
-combine_images(
-    image_paths,
-    save_path="group_output_matrix_simplex_ranks_combined.png",
-    orientation="horizontal",
-    size=6,
-    dpi=150
-)
+# combine_images(
+#     image_paths,
+#     save_path="input_hidden_output_translation_ranks_combined.png",
+#     orientation="vertical",
+#     size=6,
+#     dpi=150
+# )
+
+
+# image_paths = [r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\group_output_matrix_simplex.png",
+#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\group_output_matrix_simplex.png",
+#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\group_output_matrix_simplex.png"
+#                 ]
+
+# combine_images(
+#     image_paths,
+#     save_path="group_output_matrix_simplex_ranks_combined.png",
+#     orientation="horizontal",
+#     size=6,
+#     dpi=150
+# )

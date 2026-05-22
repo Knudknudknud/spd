@@ -1,0 +1,3 @@
+wandb:  View project at https://wandb.ai/knsoe24-syddansk-universitetsforlag-university-press-of-/spd-spd_experiments_toy_model_of_geometry
+wandb:  View sweep at https://wandb.ai/knsoe24-syddansk-universitetsforlag-university-press-of-/spd-spd_experiments_toy_model_of_geometry/sweeps/yc9nbrw5
+wandb:  View run at https://wandb.ai/knsoe24-syddansk-universitetsforlag-university-press-of-/spd-spd_experiments_toy_model_of_geometry/runs/og6m2208
