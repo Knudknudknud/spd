@@ -30,12 +30,16 @@ If shapes do not match expected dimensions, flip multiplication order.
 from pathlib import Path
 import einops
 from einops import reduce
-
 import matplotlib.pyplot as plt
+from  matplotlib.path import Path as MplPath
+from matplotlib.patches import PathPatch, Rectangle
 import numpy as np
 import torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from image_combiner import combine_images
+
+
+
+
 def get_group_features(
     ranks: list[int],
 ) -> tuple[list[list[int]], list[int], int]:
@@ -50,17 +54,9 @@ def get_group_features(
 
     return groups, group_sizes, n_features
 
-def entropy_effective_rank(singular_values: np.ndarray) -> float:
-    probabilities = singular_values / singular_values.sum()
-    probabilities = probabilities[probabilities > 1e-12]
-
-    entropy = -(probabilities * np.log(probabilities)).sum()
-
-    return float(np.exp(entropy))
-
 
 def save_figure(fig: plt.Figure, save_path: Path) -> None:
-    fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    fig.savefig(save_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -173,27 +169,19 @@ def plot_input_hidden_output_translation(
     n_hidden = W1.shape[0]
     n_outputs = W2.shape[0]
 
-    # ------------------------------------------------------------
-    # Hidden activation per input group
-    # ------------------------------------------------------------
-    # A[group, hidden]
-    #
-    # "If input group g is active,
-    #  how much does hidden neuron h activate?"
-    #
     A = np.zeros((n_groups, n_hidden))
     B = W2
 
 
     for g, feature_ids in enumerate(group_features):
-
+        #(hidden, features)
         group_input = W1[:, feature_ids]
 
-        # sum feature contributions
+        #sum over the feature group, to find the total activation of each hidden neuron from this group.
         hidden_activation = group_input.sum(axis=1)
         A[g, :] = np.maximum(hidden_activation, 0)
 
-    #For every row, 
+    #Across every group, pick the one that maximally activates it.
     dominant_input = np.argmax(A, axis=0)
     dominant_output = np.argmax(B, axis=0)
 
@@ -218,9 +206,7 @@ def plot_input_hidden_output_translation(
     A_sorted = A[:, neuron_order]
     B_sorted = B[:, neuron_order]
 
-    # ------------------------------------------------------------
-    # Plot
-    # ------------------------------------------------------------
+
 
     fig, (ax_strength, ax_top, ax_bottom) = plt.subplots(
         3, 1,
@@ -263,8 +249,8 @@ def plot_input_hidden_output_translation(
     cax_bottom = make_axes_locatable(ax_bottom).append_axes("right", size="2%", pad=0.1)
     plt.colorbar(im_bottom, cax=cax_bottom)
 
-    # ---------------- separators between input groups ----------------
-    # Count how many kept neurons fall in each input group, in plot order
+
+
     sorted_dominant_input = dominant_input[neuron_order]
     group_sizes = np.bincount(sorted_dominant_input, minlength=n_groups)
     boundaries = np.cumsum(group_sizes)[:-1]   # drop the rightmost edge
@@ -350,147 +336,286 @@ def plot_group_output_matrix(
 
 
 
-# def plot_component_input_output_grids(C, group_features, save_dir, title=None,
-#                                        threshold=0.05):
-#     C = np.asarray(C)
-#     n_comp, d_out, d_in = C.shape
-#     n_groups = len(group_features)
 
-#     grids = []
-#     for feature_ids in group_features:
-#         grid = np.zeros((n_comp, d_out))
-#         for c in range(n_comp):
-#             out_c = C[c][:, feature_ids].sum(axis=1)
-#             grid[c] = np.maximum(out_c, 0.0)
-#         grids.append(grid)
+def compute_io_flows(C1, C2, group_features):
 
-#     # keep only components whose peak contribution (across all groups) >= threshold
-#     peaks = np.array([max(g[c].max() for g in grids) for c in range(n_comp)])
-#     keep = np.where(peaks >= threshold)[0]
-#     grids = [g[keep] for g in grids]
-#     comp_labels = [f"C{c}" for c in keep]
-#     n_kept = len(keep)
+    read_per_group = []
 
+    #C1 = (C, d_hid, d_in)
+    #C2 = (C, d_out, d_hid)
+    for g in group_features:
+        C1_g = C1[:, :, g]          # (C, d_hid, |g|)
+        C1_g_sum = np.sum(C1_g, axis=-1)     # (C, d_hid)
+        read_per_group.append(C1_g_sum)
 
+    read = np.stack(read_per_group, axis=-1)  # (C, d_hid, n_groups)
+    read = np.sum(read, axis=-2)              # (C, n_groups)
+
+    write = C2.sum(axis=-1)  # (C2, n_outputs)
+
+    in_h = np.sum(np.abs(C1), axis=-1)   # (C, d_hid)
+    out_h = np.sum(np.abs(C2), axis=-2)  # (C, d_hid)
+    overlap = in_h @ out_h.T            # (C, C)
     
-
-#     vmax = max(max(g.max() for g in grids), 1e-12)   # reverted: global max
-
-#     # widen subplots when there are many output dims so all columns are visible
-#     subplot_w = max(2.2, d_out * 0.03)
-#     fig, axes = plt.subplots(
-#         1, n_groups,
-#         figsize=(subplot_w * n_groups + 1.5, 0.18 * n_kept + 2),
-#         sharey=True,
-#     )
-#     if n_groups == 1:
-#         axes = [axes]
-
-#     # sparse numeric x-ticks for large d_out; explicit "out{i}" labels for small
-#     if d_out <= 20:
-#         xticks = list(range(d_out))
-#         xticklabels = [f"out{o}" for o in range(d_out)]
-#         xlabel = "output"
-#     else:
-#         step = max(1, d_out // 15)
-#         xticks = list(range(0, d_out, step))
-#         xticklabels = [str(o) for o in xticks]
-#         xlabel = "hidden neuron"
-
-#     for g, (ax, grid) in enumerate(zip(axes, grids)):
-#         im = ax.imshow(grid, aspect="auto", cmap="Reds", vmin=0.0, vmax=vmax)
-#         ax.set_title(f"input group {g}")
-#         ax.set_xlabel(xlabel)
-#         ax.set_xticks(xticks)
-#         ax.set_xticklabels(xticklabels)
-#     axes[0].set_ylabel("component")
-#     axes[0].set_yticks(range(n_kept))
-#     axes[0].set_yticklabels(comp_labels)
-
-#     fig.colorbar(im, ax=axes, shrink=0.85, label="contribution")
-#     fig.suptitle(title or f"Component contribution (group one-hot, kept {n_kept}/{n_comp})")
-#     save_path = title.replace(" ", "_").lower() + ".png"
-#     save_figure(fig, save_dir / save_path)
-#     plt.close(fig)
+    return read, overlap, write
 
 
+def pick_components(read, write, coverage=0.95, min_mass=0):
+    """
+    Drop any subcomponent below `min_mass`, then keep the fewest survivors making
+    up `coverage` of the remaining mass. C1 ranked by total read (into hiddens),
+    C2 by total write (into outputs).
+    read: (C1, n_groups)   write: (C2, n_outputs)
+    """
+    contrib1 = read.sum(axis=1)      # (C1,) total read per input subcomponent
+    contrib2 = write.sum(axis=1)     # (C2,) total write per output subcomponent
 
-import matplotlib.colors as mcolors
+    def cover(v):
+        live = np.where(v >= min_mass)[0]
+        if live.size == 0:
+            raise ValueError("No components meet the minimum mass requirement.")
+        
+        order = live[np.argsort(-v[live])]
+        cum = np.cumsum(v[order])
+        total = cum[-1]
+
+        if total <= 0:
+            raise ValueError("Total mass is zero or negative.")
+        
+        n = np.searchsorted(cum, coverage * total) + 1
+        return order[:n]
+
+    return cover(contrib1), cover(contrib2)
 
 
-def plot_component_input_output_grids(C, group_features, save_dir, title=None,
-                                       threshold=0.05, max_components=12, gamma=0.5):
-    C = np.asarray(C)
-    n_comp, d_out, d_in = C.shape
-    n_groups = len(group_features)
-
-    grids = [
-        np.maximum(np.stack([C[c][:, fid].sum(axis=1) for c in range(n_comp)]), 0.0)
-        for fid in group_features
+def build_columns(read, write, n_groups, n_outputs, c1, c2):
+    return [
+        {
+            "title": "Input groups",
+            "ids": [f"group {i}" for i in range(n_groups)],
+            "imp": read.sum(0),
+            "order": list(range(n_groups)),
+        },
+        {
+            "title": "W2 subcomponents",
+            "ids": [str(i) for i in c1],
+            "imp": read.sum(1),
+            "order": list(range(len(c1))),    
+        },
+        {
+            "title": "W1 subcomponents",
+            "ids": [str(i) for i in c2],
+            "imp": write.sum(1),
+            "order": list(range(len(c2))),
+        },
+        {
+            "title": "Outputs",
+            "ids": [f"out {i}" for i in range(n_outputs)],
+            "imp": write.sum(0),
+            "order": list(range(n_outputs)),
+        },
     ]
-    stacked = np.stack(grids)                              # (n_groups, n_comp, d_out)
 
-       # 1) keep the strongest components by TOTAL magnitude (sorted, strongest first)
-    comp_strength = stacked.sum(axis=(0, 2))
-    keep_c = np.argsort(-comp_strength)[:max_components]
-    keep_c = keep_c[comp_strength[keep_c] > 0]
 
-    # 2) drop dead hidden neurons, but keep them in natural order (no sort)
-    hidden_peak = stacked[:, keep_c].max(axis=(0, 1))
-    keep_h = np.where(hidden_peak >= threshold)[0]
+def barycenter_sweep(columns, edges, sweeps=8):
+    """
+    Some sorting algorithm from stack exchange. Not too important,
+    as it only serves to disentangle the visualization.
+    """
+    sizes = [len(c["ids"]) for c in columns]
 
-    grids = [g[np.ix_(keep_c, keep_h)].T for g in grids]   # (n_kept_h, n_kept_c)
-    comp_labels = [f"C{c}" for c in keep_c]
-    n_kc, n_kh = len(keep_c), len(keep_h)
+    for c in columns:
+        c["order"] = list(range(len(c["ids"])))
 
-    vmax = max(max(g.max() for g in grids), 1e-12)
-    norm = mcolors.PowerNorm(gamma=gamma, vmin=0, vmax=vmax)  # 4) gamma<1 lifts faint cells
+    for _ in range(sweeps):
+        for col, nbr, mat in edges:
 
-    fig, axes = plt.subplots(
-        1, n_groups,
-        figsize=(max(2.0, 0.4 * n_kc) * n_groups + 1.5, 0.05 * n_kh + 2),
-        sharey=True,
-    )
-    if n_groups == 1:
-        axes = [axes]
+            nrank = np.empty(sizes[nbr])
+            nrank[columns[nbr]["order"]] = np.arange(sizes[nbr])
 
-    step = max(1, n_kh // 15)
-    for g, (ax, grid) in enumerate(zip(axes, grids)):
-        im = ax.imshow(grid, aspect="auto", cmap="Reds", norm=norm)
-        ax.set_title(f"input group {g}")
-        ax.set_xlabel("component")
-        ax.set_xticks(range(n_kc))
-        ax.set_xticklabels(comp_labels, rotation=90)
-    axes[0].set_ylabel("hidden neuron")
-    axes[0].set_yticks(range(0, n_kh, step))
-    axes[0].set_yticklabels([str(keep_h[i]) for i in range(0, n_kh, step)])
+            w = mat.sum(1)
 
-    fig.colorbar(im, ax=axes, shrink=0.85, label="contribution")
-    fig.suptitle(title or f"Component contribution (kept {n_kc}/{n_comp} comps, "
-                          f"{n_kh}/{d_out} neurons)")
-    save_path = title.replace(" ", "_").lower() + ".png"
-    save_figure(fig, save_dir / save_path)
+            bc = (mat @ nrank) / np.where(w > 0, w, 1)
+
+            cur = np.empty(sizes[col])
+            cur[columns[col]["order"]] = np.arange(sizes[col])
+
+            bc = np.where(w > 0, bc, cur)
+
+            columns[col]["order"] = list(np.argsort(bc, kind="stable"))
+
+    return columns
+
+def layout_column(imp, order, gap=0.03):
+
+    n = len(imp)
+
+    #Every "node" is the same size.
+    total_mass = 1 - gap * (n - 1)
+    each = total_mass / n
+    h = np.full(n, each)
+
+
+    y = 1.0
+    centers = np.empty(n)
+    for i in order:
+        centers[i] = y - (h[i] / 2)
+        y -= h[i] + gap
+
+    return centers, h
+
+
+def render_io_chain(columns, flows, save_path, title=None, edge_frac=0.05):
+    xs = [0, 1, 2, 3]
+    bw = 0.045
+
+    flow_colors = ["#378ADD", "#7F77DD", "#D85A30"]
+
+    fig, ax = plt.subplots(figsize=(13, 7))
+
+    def ribbon(x0, y0, x1, y1, lw, color, alpha):
+        xm = (x0 + x1) / 2
+        path = MplPath(
+            [(x0, y0), (xm, y0), (xm, y1), (x1, y1)],
+            [MplPath.MOVETO, MplPath.CURVE4,
+             MplPath.CURVE4, MplPath.CURVE4],
+        )
+        ax.add_patch(PathPatch(
+            path,
+            fill=False,
+            lw=lw,
+            edgecolor=color,
+            alpha=alpha,
+            capstyle="round",
+        ))
+
+    # flows
+    for i, M in enumerate(flows):
+        m = M.max()
+        if m <= 0:
+            continue
+
+        x0 = xs[i] + bw / 2
+        x1 = xs[i + 1] - bw / 2
+
+        for s, d in zip(*np.where(M >= edge_frac * m)):
+            r = M[s, d] / m
+            ribbon(
+                x0,
+                columns[i]["centers"][s],
+                x1,
+                columns[i + 1]["centers"][d],
+                0.5 + 7 * r,
+                flow_colors[i],
+                0.15 + 0.5 * r,
+            )
+
+    # nodes
+    for i, col in enumerate(columns):
+        for j, label in enumerate(col["ids"]):
+            yc = col["centers"][j]
+            h = col["heights"][j]
+
+            ax.add_patch(Rectangle(
+                (xs[i] - bw / 2, yc - h / 2),
+                bw, h,
+                facecolor="#B5D4F4" if i < 2 else "#F5C4B3",
+                edgecolor="#185FA5" if i < 2 else "#993C1D",
+                lw=0.8,
+                zorder=3,
+            ))
+
+            ax.text(xs[i], yc, label, ha="center", va="center", fontsize=8)
+
+        ax.text(xs[i], 1.06, col["title"], ha="center", fontsize=11)
+
+    ax.set_xlim(-0.35, 3.35)
+    ax.set_ylim(-0.1, 1.13)
+    ax.axis("off")
+
+    if title:
+        fig.suptitle(title, y=0.9)
+
+    save_figure(fig, save_path)
     plt.close(fig)
 
 
+def plot_io_routing_chain(
+    C1, C2, group_features, save_dir,
+    title=None, threshold=0.95,
+    edge_frac=0.1, sort_nodes=True, sweeps=20, min_mass=0.05,
+):
+    read, overlap, write = compute_io_flows(C1, C2, group_features)
+    #Read has dim (C,_n groups), overlap ahs dim (C1, C2), write has dim (C2, n_outputs)
 
+    #Select only the components that matter significantly
+    c1, c2 = pick_components(
+        read, write,
+        threshold, min_mass,
+    )
+
+    #pick components that satisfy minimum mass
+    read = read[c1, :]        
+    write = write[c2, :]   
+    
+    #Likewise for the overlap, only the components that carry mass.
+    overlap = overlap[np.ix_(c1, c2)]
+
+    columns = build_columns(
+        read, write,
+        len(group_features),
+        C2.shape[1],
+        c1, c2,
+    )
+
+
+    if sort_nodes:
+        edges = [
+        (1, 0, read),
+        (2, 1, overlap.T),
+        (2, 3, write),
+        (1, 2, overlap),
+    ]
+        columns = barycenter_sweep(columns, edges, sweeps)
+  
+    for col in columns:
+        col["centers"], col["heights"] = layout_column(col["imp"], col["order"])
+
+    render_io_chain(
+        columns,
+        [read.T, overlap, write],
+        save_dir / "io_routing_chain.png",
+        title,
+        edge_frac,
+    )
+
+
+    
 def main() -> None:
       
     run_dirs = [
-        r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2",
-        r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4",
-        r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5",
-        r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8",
-        r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\differnet_minimalities\0.1",
-        r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\differnet_minimalities\0.001",
-        r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\differnet_minimalities\0.0001",
-        r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\differnet_minimalities\0.00001",
-        r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\differnet_minimalities\0.000001",
-
+        #minimaities
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "(minimality 1e-1)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01", "(minimality 1e-2)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001", "(minimality 1e-3)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001", "(minimality 1e-4)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001", "(minimality 1e-5)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001", "(minimality 1e-6)"),
+        #Rank plots:
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1", "(Rank 1)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2", "(Rank 2)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3", "(Rank 3)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4", "(Rank 4)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "(Rank 5)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "(Rank 6)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "(Rank 7)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "(Rank 8)")
     ]
+    
+    model_dir = r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\smaller_test"
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-    for run_dir in run_dirs:
+    for run_dir, run_title in run_dirs:
         RUN_DIR = Path(
             run_dir)
         ranks = [2,2,2]
@@ -507,73 +632,33 @@ def main() -> None:
         B2 = state_dict["components.linear2.B"]
         W1 = einops.einsum(A1, B1, "d_in C K, C K d_out -> d_out d_in").detach().cpu().numpy()
         W2 = einops.einsum(A2, B2, "d_in C K, C K d_out -> d_out d_in").detach().cpu().numpy()
+        
+        #Components
         C1 = einops.einsum(A1, B1, "d_in C K, C K d_out -> C d_out d_in").detach().cpu().numpy()
         C2 = einops.einsum(A2, B2, "d_in C K, C K d_out -> C d_out d_in").detach().cpu().numpy()
 
         group_features, _, _ = get_group_features(ranks)
 
-        #Plots that show the magnitude of the contribution of each component group to the hidden neurons or outputs
-        
-        plot_contribution_of_components_to_outputs(W1, save_dir=RUN_DIR, group_size=6, title="W1 contribution of input features to hidden neurons")
-        plot_contribution_of_components_to_outputs(W2.T, save_dir=RUN_DIR, group_size=1, title="W2 contribution of hidden neurons to outputs")
+        plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group output matrix " + run_title)
+        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, threshold=0.95, edge_frac=0.1, min_mass=0.01)
+    
+    
+    model_dir = Path(model_dir)
+    state_dict = torch.load(
+        model_dir / "geometry.pth",
+        map_location=DEVICE,
+    )
+    print(state_dict.keys())
+    W1 = state_dict["linear1.weight"].detach().cpu().numpy()
+    W2 = state_dict["linear2.weight"].detach().cpu().numpy()
+    ranks = [2,2,2]
+    group_features, _, _ = get_group_features(ranks)
 
-        plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group → output response (forward pass)")
-
-        plot_input_hidden_output_translation(W1, W2, group_features, save_dir=RUN_DIR, title="Input → hidden → output translation")
-        #Combined plot, that shows how the input features are routed to the outputs.
-
-        plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group → output response (forward pass)")
-
-        plot_component_input_output_grids(C1, group_features, save_dir=RUN_DIR, title="w1_Component contribution to hidden neurons (group one-hot)")
-        plot_component_input_output_grids(C2, group_features, save_dir=RUN_DIR, title="w2_Component contribution to outputs (group one-hot)")
-
-
-
-    # #Combine the above generated plots into one plot:
-
-    # group_images = [[
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\w1_w2_input_hidden_output_translation.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\w1_w2_input_hidden_output_translation.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\w1_w2_input_hidden_output_translation.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\w1_w2_input_hidden_output_translation.png"],
-    #             [
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\group_output_matrix_simplex.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\group_output_matrix_simplex.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\group_output_matrix_simplex.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\group_output_matrix_simplex.png"
-    #             ],
-    #             [
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\causal_importances_upper_leaky_30000.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\causal_importances_upper_leaky_30000.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\causal_importances_upper_leaky_30000.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\causal_importances_upper_leaky_30000.png"
-    #             ],
-    #             [
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\w1_contribution_of_input_features_to_hidden_neurons.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\w1_contribution_of_input_features_to_hidden_neurons.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\w1_contribution_of_input_features_to_hidden_neurons.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\w1_contribution_of_input_features_to_hidden_neurons.png",
-    #             ],
-    #             [
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\w2_contribution_of_hidden_neurons_to_outputs.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\w2_contribution_of_hidden_neurons_to_outputs.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\w2_contribution_of_hidden_neurons_to_outputs.png",
-    #             r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\w2_contribution_of_hidden_neurons_to_outputs.png"
-    #             ],
-
-    # ]
-    # #Its scrappy but its good enough.
-    # orientations = ["vertical", "vertical", "horizontal", "vertical", "vertical"]
-    # names = ["input_hidden_output_translation", "group_output_matrix_simplex", "causal_importances", "w1_contribution_of_input_features_to_hidden_neurons", "w2_contribution_of_hidden_neurons_to_outputs"]
-
-    # for group_images, orientation, name in zip(group_images, orientations, names):
-    #     combine_images(
-    #         group_images,
-    #         save_path= name,
-    #         orientation=orientation,
-    #         size=6,
-    #         dpi=300
-    #     )
-
+    plot_input_hidden_output_translation(W1, W2, group_features, save_dir=model_dir, title="Layered translation from input groups to outputs")
+    # plot_io_routing_chain(
+    #     A1, B1, group_features, model_dir,
+    #     title="Input → hidden → output routing chain (components, smaller test)",
+    #     components=False,
+    # )
 if __name__ == "__main__":
     main()  

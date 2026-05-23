@@ -1,15 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from math import ceil
 from pathlib import Path
 
 
 def _pad(im, target_h=None, target_w=None):
     """Pad image with white to reach (target_h, target_w); skips if already big enough."""
     h, w = im.shape[:2]
-    th = target_h or h
-    tw = target_w or w
-    if th <= h and tw <= w:
+    th = max(target_h or h, h)
+    tw = max(target_w or w, w)
+    if th == h and tw == w:
         return im
     pad_top = (th - h) // 2
     pad_left = (tw - w) // 2
@@ -23,95 +24,97 @@ def _pad(im, target_h=None, target_w=None):
 
 
 def combine_images(image_paths, save_path, titles=None,
-                    orientation="horizontal", size=6,
-                    preserve_relative_size=False, dpi=150):
+                   ncols=None, nrows=None, size=6,
+                   preserve_relative_size=False, dpi=150):
     """
+    Arrange images in a grid.
+
+    ncols / nrows:
+        Specify the grid shape. Give just one and the other is computed from
+        the number of images; give both for an explicit layout; give neither
+        and all images go in a single row.
+            ncols=2 with 4 images -> 2x2 grid
+            ncols=n               -> single row   (old "horizontal")
+            nrows=n               -> single column (old "vertical")
+        Images fill the grid row by row (left to right, top to bottom).
+
     preserve_relative_size:
-        False -> all panels scaled to the same primary dim (height for
-                 horizontal, width for vertical). Small plots get blown up.
-        True  -> images keep their natural pixel ratios; smaller ones are
-                 padded with whitespace so the strip stays aligned.
+        False -> every cell is the same size; each image is stretched to fill
+                 its cell. No distortion when all images share an aspect ratio.
+        True  -> images keep their natural pixel ratios; all are padded with
+                 whitespace to a common size so nothing is rescaled.
     """
-    assert orientation in ("horizontal", "vertical")
-    n = len(image_paths)
     images = [mpimg.imread(str(p)) for p in image_paths]
+    n = len(images)
 
+    # ---- work out the grid shape -------------------------------------------
+    if ncols is None and nrows is None:
+        ncols, nrows = n, 1
+    elif ncols is None:
+        ncols = ceil(n / nrows)
+    elif nrows is None:
+        nrows = ceil(n / ncols)
+
+    # ---- normalise sizes / pick a uniform cell aspect ratio ----------------
     if preserve_relative_size:
-        if orientation == "horizontal":
-            max_h = max(im.shape[0] for im in images)
-            images = [_pad(im, target_h=max_h) for im in images]
-        else:
-            max_w = max(im.shape[1] for im in images)
-            images = [_pad(im, target_w=max_w) for im in images]
-
-    aspects = [im.shape[1] / im.shape[0] for im in images]
-
-    if orientation == "horizontal":
-        widths = [a * size for a in aspects]
-        fig, axes = plt.subplots(
-            1, n, figsize=(sum(widths), size),
-            gridspec_kw={"wspace": 0, "hspace": 0, "width_ratios": widths},
-        )
+        max_h = max(im.shape[0] for im in images)
+        max_w = max(im.shape[1] for im in images)
+        images = [_pad(im, target_h=max_h, target_w=max_w) for im in images]
+        cell_aspect = max_w / max_h
     else:
-        heights = [size / a for a in aspects]
-        fig, axes = plt.subplots(
-            n, 1, figsize=(size, sum(heights)),
-            gridspec_kw={"wspace": 0, "hspace": 0, "height_ratios": heights},
-        )
+        cell_aspect = float(np.mean([im.shape[1] / im.shape[0] for im in images]))
 
-    if n == 1:
-        axes = [axes]
+    # ---- build the figure ---------------------------------------------------
+    cell_w = size * cell_aspect
+    cell_h = size
+    fig, axes = plt.subplots(
+        nrows, ncols,
+        figsize=(ncols * cell_w, nrows * cell_h),
+        gridspec_kw={"wspace": 0, "hspace": 0},
+        squeeze=False,
+    )
+    axes = axes.ravel()
 
-    for ax, im in zip(axes, images):
-        ax.imshow(im, aspect="auto")
-        ax.axis("off")
+    for i, ax in enumerate(axes):
+        if i < n:
+            ax.imshow(images[i], aspect="auto")
+            if titles is not None and i < len(titles):
+                ax.set_title(titles[i])
+        ax.axis("off")  # also hides the empty trailing cells
 
     plt.savefig(save_path, dpi=dpi, bbox_inches="tight", pad_inches=0)
     plt.close(fig)
     return save_path
 
 
-# image_paths = [
-#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\SPD_rank_1_softmax\causal_importances_upper_leaky_30000.png", #rank 1
-#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\causal_importances_upper_leaky_30000.png",
-#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\causal_importances_upper_leaky_30000.png",
-#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\causal_importances_upper_leaky_30000.png",
-#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\causal_importances_upper_leaky_30000.png",
-# ]
+# Softmax minimality sweep images -> 2x2 grid:
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001\causal_importances_upper_leaky_30000.png"
+]
 
-# combine_images(
-#     image_paths,
-#     save_path="causal_importances_ranks_combined.png",
-#     orientation="horizontal",
-#     size=6,
-#     dpi=150
-# )
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\causal_importances_minimality_sweep_combined.png",
+    ncols=len(image_paths),
+    size=6,
+    dpi=350,
+)
 
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001\io_routing_chain.png",
+]
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\io_routing_chain_minimality_sweep_combined.png",
+    ncols=2,          # 2x2
+    size=6,
+    dpi=350,
+)
 
-# image_paths = [
-#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\w1_w2_input_hidden_output_translation.png",
-#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\w1_w2_input_hidden_output_translation.png",
-#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\w1_w2_input_hidden_output_translation.png",
-#                ]
-
-# combine_images(
-#     image_paths,
-#     save_path="input_hidden_output_translation_ranks_combined.png",
-#     orientation="vertical",
-#     size=6,
-#     dpi=150
-# )
-
-
-# image_paths = [r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\group_output_matrix_simplex.png",
-#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\group_output_matrix_simplex.png",
-#                 r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\group_output_matrix_simplex.png"
-#                 ]
-
-# combine_images(
-#     image_paths,
-#     save_path="group_output_matrix_simplex_ranks_combined.png",
-#     orientation="horizontal",
-#     size=6,
-#     dpi=150
-# )
+print("Combined image saved.")
