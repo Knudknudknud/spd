@@ -392,7 +392,7 @@ def build_columns(read, write, n_groups, n_outputs, c1, c2):
     return [
         {
             "title": "Input groups",
-            "ids": [f"group {i}" for i in range(n_groups)],
+            "ids": [i for i in range(n_groups)],
             "imp": read.sum(0),
             "order": list(range(n_groups)),
         },
@@ -409,8 +409,8 @@ def build_columns(read, write, n_groups, n_outputs, c1, c2):
             "order": list(range(len(c2))),
         },
         {
-            "title": "Outputs",
-            "ids": [f"out {i}" for i in range(n_outputs)],
+            "title": "Output groups",
+            "ids": [i for i in range(n_outputs)],
             "imp": write.sum(0),
             "order": list(range(n_outputs)),
         },
