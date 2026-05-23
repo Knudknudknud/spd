@@ -1260,39 +1260,6 @@
       \verb https://arxiv.org/abs/1905.05702
       \endverb
     \endentry
-    \entry{effectiverank}{inproceedings}{}{}
-      \name{author}{2}{}{%
-        {{hash=e963ebbeb84e66462245bfe8e4b6639a}{%
-           family={Roy},
-           familyi={R\bibinitperiod},
-           given={Olivier},
-           giveni={O\bibinitperiod}}}%
-        {{hash=75e722dac26b8548b09550c9c47606ab}{%
-           family={Vetterli},
-           familyi={V\bibinitperiod},
-           given={Martin},
-           giveni={M\bibinitperiod}}}%
-      }
-      \strng{namehash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{fullhash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{fullhashraw}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{bibnamehash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{authorbibnamehash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{authornamehash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{authorfullhash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{authorfullhashraw}{e78fcf735a64042e77a1183b36ad5ee7}
-      \field{labelalpha}{RV07}
-      \field{sortinit}{R}
-      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{booktitle}{2007 15th European Signal Processing Conference}
-      \field{title}{The effective rank: A measure of effective dimensionality}
-      \field{year}{2007}
-      \field{pages}{606\bibrangedash 610}
-      \range{pages}{5}
-      \keyw{Entropy;Signal processing;Covariance matrices;Europe;Random processes;Matrix decomposition;Eigenvalues and eigenfunctions}
-    \endentry
     \entry{seshadri2026crosslayer}{inproceedings}{}{}
       \name{author}{6}{}{%
         {{hash=1427840226d72c75a721ffdae5cc38ed}{%
@@ -1673,6 +1640,7 @@
       \endverb
     \endentry
   \enddatalist
+  \missing{bushnaq2026interpreting}
 \endrefsection
 \endinput
 

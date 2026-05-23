@@ -502,6 +502,36 @@
       \verb https://arxiv.org/abs/2408.10920
       \endverb
     \endentry
+    \entry{cunningham2023takingfeatures}{misc}{}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{1}{}{%
+        {{hash=81adc00b4f07e3a2483bd1326a644b10}{%
+           family={Cunningham},
+           familyi={C\bibinitperiod},
+           given={Hoagy},
+           giveni={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{fullhash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{fullhashraw}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{bibnamehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authorbibnamehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authornamehash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authorfullhash}{a9bfc7f10989cfcbc759919686cfb78e}
+      \strng{authorfullhashraw}{a9bfc7f10989cfcbc759919686cfb78e}
+      \field{extraname}{1}
+      \field{labelalpha}{Cun+23}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extraalpha}{1}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://www.alignmentforum.org/posts/z6QQJbtpkEAX3Aojj/interim-research-report-taking-features-out-of-superposition}}
+      \field{note}{Alignment Forum post}
+      \field{title}{Interim research report: Taking features out of superposition with sparse autoencoders}
+      \field{year}{2023}
+    \endentry
     \entry{sparseautoencodershighlyinterpretable}{misc}{}{}
       \name{author}{5}{}{%
         {{hash=81adc00b4f07e3a2483bd1326a644b10}{%
@@ -538,9 +568,11 @@
       \strng{authornamehash}{a9bfc7f10989cfcbc759919686cfb78e}
       \strng{authorfullhash}{71542c9b3d8bb54096acc4edb13b192c}
       \strng{authorfullhashraw}{71542c9b3d8bb54096acc4edb13b192c}
+      \field{extraname}{2}
       \field{labelalpha}{Cun+23}
       \field{sortinit}{C}
       \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extraalpha}{2}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.LG}
@@ -1228,39 +1260,6 @@
       \verb https://arxiv.org/abs/1905.05702
       \endverb
     \endentry
-    \entry{effectiverank}{inproceedings}{}{}
-      \name{author}{2}{}{%
-        {{hash=e963ebbeb84e66462245bfe8e4b6639a}{%
-           family={Roy},
-           familyi={R\bibinitperiod},
-           given={Olivier},
-           giveni={O\bibinitperiod}}}%
-        {{hash=75e722dac26b8548b09550c9c47606ab}{%
-           family={Vetterli},
-           familyi={V\bibinitperiod},
-           given={Martin},
-           giveni={M\bibinitperiod}}}%
-      }
-      \strng{namehash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{fullhash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{fullhashraw}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{bibnamehash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{authorbibnamehash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{authornamehash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{authorfullhash}{e78fcf735a64042e77a1183b36ad5ee7}
-      \strng{authorfullhashraw}{e78fcf735a64042e77a1183b36ad5ee7}
-      \field{labelalpha}{RV07}
-      \field{sortinit}{R}
-      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{booktitle}{2007 15th European Signal Processing Conference}
-      \field{title}{The effective rank: A measure of effective dimensionality}
-      \field{year}{2007}
-      \field{pages}{606\bibrangedash 610}
-      \range{pages}{5}
-      \keyw{Entropy;Signal processing;Covariance matrices;Europe;Random processes;Matrix decomposition;Eigenvalues and eigenfunctions}
-    \endentry
     \entry{seshadri2026crosslayer}{inproceedings}{}{}
       \name{author}{6}{}{%
         {{hash=1427840226d72c75a721ffdae5cc38ed}{%
@@ -1641,6 +1640,7 @@
       \endverb
     \endentry
   \enddatalist
+  \missing{bushnaq2026interpreting}
 \endrefsection
 \endinput
 

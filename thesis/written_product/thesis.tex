@@ -18,12 +18,66 @@
 \begin{document}
 \title{Multidimensional Parameter Decomposition for Mechanistic Interpretability}
 \author{Knud Rasmus Sønderbek}
-\maketitle
+
+\begin{titlepage}
+    \centering
+ 
+    % --- Institution (optional) ---
+    % {\scshape University of Copenhagen \\ Department of Computer Science\par}
+ 
+    \vspace*{\fill}
+ 
+    % --- Title (English) ---
+    {\LARGE\bfseries
+    \setlength{\baselineskip}{1.25\baselineskip}
+    Multidimensional Parameter Decomposition\\
+    for Mechanistic Interpretability\par}
+ 
+    \vspace{1.4em}
+    {\rule{0.4\linewidth}{0.4pt}}\par   % hairline divider
+    \vspace{1.4em}
+ 
+    {\large\itshape
+    Multidimensional Parameter Decomposition\\
+    for Mechanistic Interpretability\par}
+ 
+    \vspace*{\fill}
+ 
+    {\itshape Master's thesis in Data Science\par}
+    \vspace{0.4em}
+    {\footnotesize Course: SPDS800\par}
+    \vspace{2.2em}
+ 
+    % --- People ---
+    {\normalsize
+    Knud Rasmus Sønderbek\\[0.35em]
+    {\footnotesize Student ID: 4131951}\par}
+     {\footnotesize\scshape
+    Department of Mathematics and Computer Science\\[0.15em]
+    University of Southern Denmark\par}
+ 
+    \vspace{1.6em}
+    {\footnotesize\itshape
+    Supervised by Lukas Paul Achatius Galke Poech\par}
+    % Multiple: Supervised by First Supervisor and Second Supervisor
+ 
+    \vspace*{\fill}
+ 
+    % --- Submission date ---
+    {\footnotesize \today\par}   % or a fixed date, e.g. 1 June 2026
+ 
+    \vspace*{1cm}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\thispagestyle{empty}
+\newpage
 \begin{abstract}
 Some super cool abstract of all my findings \footnote{Very important to add quantization somewhere. https://arxiv.org/pdf/2303.13506, new SPD paper in related work and discussion - prticularly they also say something about their minimality loss, and lastly extend the transformer thing in the paper to be more clear of the architecture. Particulraly no positional encoding?}
+Add your github and folder for wandb.
 \end{abstract}
-
-\tableofcontents
+\pagenumbering{arabic}
 
 
 \section{Introduction}
@@ -604,7 +658,7 @@ mechanism for this residual leakage, allowing the combined subcomponents
 to maintain accurate reconstruction despite imperfect feature isolation.
 
 \subsection{ Toy Model of Compressed Computation }
-
+\label{sec:tcc-experiment}
 The Toy Model of Compressed Computation,
 a model that was already studied by SPD \autocite{stochasticparameterdecomposition}, APD \autocite{AttributionBasedParameterDecomposition} and more recently by \autocite{bhagat2025compressed}, is a
 toy model trained to compute the elementwise function $y_i = x_i + \mathrm{ReLU}(x_i)$ through a residual MLP with a lower-dimensional hidden layer.
@@ -818,182 +872,126 @@ to solutions in which a small set of dominant subcomponents carry
 most of the semantic structure, while a long tail of weakly active
 components absorbs residual reconstruction error.
 
+\subsection{Toy Model of Geometry}
 
-\subsubsection{Noes for geometry}
-To quantify this, the effective rank of each pair's submatrix, $W_{:,2i-1:2i} \in \mathbb{R}^{d_{\text{hidden}} \times 2}$ is computed using the entropy-based definition of \autocite{effectiverank}.
-\begin{equation}
-    r_{\text{eff}}(W_g) = \exp\!\left(-\sum_{k=1}^{Q} p_k \log p_k\right),
-    \qquad p_k = \frac{\sigma_k^2}{\sum_{j=1}^{Q} \sigma_j^2}
-\end{equation}
-where $\sigma_k$ are the singular values of $W_g$ and $Q = |g|$.
-The quantity lies in $[1, |g|]$ and equals $1$ when the group is
-exactly rank-one. To gauge the required value of $k$ for the rank-$k$ extension, the maximum effective rank across pairs is examined:
-
-\begin{equation}
-    k = \max_{i} ,\ r_{\text{eff}}(W_{:,2i-1:2i}),
-\end{equation}
-In this case the max is essentially 1 across all pairs, suggesting that $k=1$ is sufficient to capture these features without loss of information.
-(Table~\ref{tbl:mean-effective-rank}).
-\begin{table}[h]
-\centering
-\begin{tabular}{lcc}
-\hline
-Mean   & Std Dev & Range \\
-\hline
-$1.0003$ & $0.01$  & $[1.0, 1.05]$ \\
-\hline
-\end{tabular}
-\caption{Effective rank of paired-feature encoder blocks. Values
-near $1$ indicate collapse to a single direction.}
-\label{tbl:mean-effective-rank}
-\end{table}
-
-
-Related to the table of experiments, the whole point is that there 
-is no ground truth decomposition consisting only of the sides
-like the cube example !
-
-
-\textbf{Remarks for this section}
-Intra cluster cosine has a -1. Two features are perfectly alligned to a factor of -1,
-can this cause issues with decomposition? Same component could capture both features, if they read from the same input.
-However they shouldnt as its distinctly different feature indices.
-
-
-
-\subsection{Toy model of geometry}
-
-In the paired TMS regime, even though input features were
-nominally two-dimensional, the model collapsed them onto
-a single direction, so a rank-1 decomposition per feature
-still suffices. To test the rank-$k$ extension of
-Section~\ref{sec:rank-k-attention}, a setting is needed where
-features cannot collapse to a single direction without losing
-essential structure. This experiment generalizes the cube
-example from the introduction, where the same underlying computation
-admits multiple valid ground-truth decompositions
-depending on what each subcomponent is allowed to represent.
-
-In this experiment, we train a model to compute the volume of an $n$-dimensional simplex from its $n+1$ vertices in $\mathbb{R}^n$.
-The model should learn to compute the volume as follows:
-\begin{equation}
-    \text{Vol}(v_1, \ldots, v_{n+1}) = \frac{1}{n!} \left| \det\!\left( \begin{bmatrix} v_2 - v_1 & v_3 - v_1 & \cdots & v_{n+1} - v_1 \end{bmatrix} \right) \right|.
-\end{equation}
-The computation necessarily involves combining all vertices together,
-and would functionally only make sense, if the model captures the joint structure of the vertices rather than treating them as independent features.
-
-Perhaps something about affine independence?.
-
-To mirror the paired-feature setup of Section~\ref{sec:tms-tied-experiment}, the model receives $K$ simplices as input, where each simplex is either
-sampled with probability $p$ or all of its coordinates set to zero otherwise.
-
-\begin{equation}
-    f(x) = W_1 \text{ReLU}(W_2 x), \quad W_2 \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_1 \in \mathbb{R}^{K \times d_{\text{hidden}}}.
-\end{equation}
-here $n(n+1)$ represents the total number of coordinate points a simplex has in $\mathbb{R}^n$, and $K$ is the number of simplices.
-Unlike TMS, $d_{\text{hidden}}$ is chosen large enough that the model does not need to compress features through superposition.
-This should ensure that the model can learn to assign a subset of its neurons to each simplex, giving a clearer ground truth decomposition.
-Concretely, for this experiment, the simplices are triangles in $\mathbb{R}^2$.
-Secondly, we set $K=3$ and $d_{\text{hidden}} = 150$,
-making the input space $\mathbb{R}^{18}$.
-
-Intuitively it seems reasonable, that a decomposition could recover a coordinate, a vertex, a side or the whole simplex.
-Which decomposition should be recovered depends on 1) the dimensionality that each subcomponent is allowed to represent,
-and secondly how strongly the imporance function penalises spreading importance across multiple subcomponents.
-Particularly, for softmax sampling with entire simplices at a time,
-the entropy minimality maximizes the probability of a simplex belonging to a single subcomponent,
-so we would expect, that given the right dimensionality and sufficient pressure,
-that the decomposition would recover the whole simplex as a single component, rather than splitting it across multiple components.
-
-To isolate the effect of these two factors, will only vary one of them at a time, while keeping the other fixed.
-Particularly, the rank will be fixated at $k=1$, which will recover the original SPD method,
-and examine how the minimality coefficient $\beta_3$ influences the decomposition. 
-Then, the minimality coefficient will be fixated at a value that produced a clear decomposition, at $k=1$ and examine how increasing the rank allows for different decompositions to be recovered.
-
-
-
-
-
-\subsection{Toy model of geometry}
-
-In the paired TMS regime, even though input features were nominally two-dimensional, the model collapsed them onto a single direction, so a rank-1 decomposition per feature still suffices. To test the rank-$k$ extension of Section~\ref{sec:rank-k-attention}, a setting is needed where features cannot collapse to a single direction without losing essential structure. This experiment generalizes the cube example from the introduction, where the same underlying computation admits multiple valid ground-truth decompositions depending on what each subcomponent is allowed to represent.
+In the paired TMS regime, even though input features were nominally two-dimensional, the model collapsed them onto a single direction, so a rank-1 decomposition per feature was sufficient. To test the rank-$k$ extension of Section~\ref{sec:rank-k-attention}, a setting is needed where features cannot collapse to a single direction.
+This experiment generalizes the cube example from the introduction,
+where the same underlying computation admits multiple valid
+ground-truth decompositions depending on what each subcomponent
+is allowed to represent.
 
 The model is trained to compute the volume of an $n$-dimensional simplex from its $n+1$ vertices in $\mathbb{R}^n$:
 \begin{equation}
     \text{Vol}(v_1, \ldots, v_{n+1}) = \frac{1}{n!} \left| \det\!\left( \begin{bmatrix} v_2 - v_1 & v_3 - v_1 & \cdots & v_{n+1} - v_1 \end{bmatrix} \right) \right|.
 \end{equation}
-By construction, the $n+1$ vertices of a non-degenerate simplex are affinely independent: no vertex lies in the affine hull of the others. The volume is therefore a genuine function of all vertices jointly, and no subset can be dropped without changing it. This makes the simplex an irreducible feature in the sense of Section~\ref{sec:irreducibility}, with internal dimensionality genuinely greater than one.
+
 
 To mirror the paired-feature setup of Section~\ref{sec:tms-tied-experiment}, the model receives $K$ simplices as input, each sampled with probability $p$ and otherwise set to zero across all of its coordinates:
 \begin{equation}
     f(x) = W_1 \text{ReLU}(W_2 x), \quad W_2 \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_1 \in \mathbb{R}^{K \times d_{\text{hidden}}},
 \end{equation}
-where $n(n+1)$ is the total number of coordinates of a simplex in $\mathbb{R}^n$ and $K$ is the number of simplices. Unlike TMS, $d_{\text{hidden}}$ is chosen large enough that the model does not need to compress features through superposition, which should allow it to assign a separate subset of neurons to each simplex and produce a clearer ground-truth decomposition. Concretely, the simplices are triangles in $\mathbb{R}^2$, with $K = 3$ and $d_{\text{hidden}} = 150$, giving an input space of $\mathbb{R}^{18}$.
+where $n(n+1)$ is the total number of coordinates of a simplex in $\mathbb{R}^n$ and $K$ is the number of simplices.
+Concretely, for this experiment the simplices are triangles in $\mathbb{R}^2$, with $K = 3$ and $d_{\text{hidden}} = 150$.
 
-A decomposition could in principle recover a single coordinate, a vertex, an edge, or an entire simplex. Which of these is recovered depends on two factors: the dimensionality each subcomponent is allowed to represent, and how strongly the importance function penalises spreading importance across multiple subcomponents. For the softmax variant in particular, where entire simplices are sampled together, the entropy minimality maximises the probability of a simplex belonging to a single subcomponent. Given sufficient rank and sufficient minimality pressure, the decomposition is then expected to recover a whole simplex as a single component rather than splitting it across several.
+Unlike TMS, $d_{\text{hidden}}$ is chosen to be much greater than the input dimension($Kn(n+1)$), so that the model does not need to compress features through superposition.
+The intention is that the model assigns each simplex to a
+separate subset of neurons, allowing the routing of information
+from input to output to be studied in isolation as the minimality
+loss is applied at different strengths and as the rank
+is increased.
 
-To isolate the effect of these two factors, only one is varied at a time. First, the rank is fixed at $k = 1$, recovering the original SPD formulation, and the minimality coefficient $\beta_3$ is varied to examine its influence on the decomposition. Second, $\beta_3$ is fixed at a value that produced a clear decomposition at $k = 1$, and the rank is increased to examine how higher $k$ allows different decompositions to be recovered.
+By construction, the $n+1$ vertices of a non-degenerate simplex
+are affinely independent: no vertex lies in the affine hull of
+the others. The volume is therefore a function of all vertices jointly,
+and no subset can be dropped. Provided the model learns the
+correct computation, and not some proxy that only approximates
+the volume, the volume of a single simplex is an irreducible
+feature in the sense of Section~\ref{sec:irreducibility}: it cannot
+be decomposed further without losing the computation. The volumes
+of different simplices, in contrast, are separable, as they 
+cover disjoint sets of vertices and can be computed independently.
 
 
-\textbf{Target model structure.}
-Before examining what the decomposition methods recover, it is worth confirming the structure of the target model itself, since a clean ground-truth decomposition exists only if the model processes each simplex through a separable set of neurons.
+The ground-truth decomposition should therefore group
+each simplex into a single unit and separate across simplices.
+A decomposition method need not recover this, however: depending
+on its constraints it may instead split a simplex into finer fragments,
+recovering a single coordinate, a vertex,
+or an edge rather than the whole simplex. Which of these
+is recovered should depend on two factors: the dimensionality
+each subcomponent is allowed to represent, and how strongly
+the minimality loss penalises spreading importance across
+multiple subcomponents. For the softmax variant in
+particular, the entropy minimality loss maximises the probability
+of a simplex belonging to a single subcomponent. Given sufficient
+rank and sufficient minimality pressure, the decomposition is then
+expected to recover a whole simplex as a single component rather
+ than splitting it across several.
 
-The input is partitioned into $K$ groups, where group $g$ contains the $n(n+1)$ coordinates of simplex $g$, indexed by the set $\mathcal{C}_g$. The preactivation of hidden neuron $i$ decomposes additively over these groups,
+
+
+\subsubsection{Target model structure}
+
+While it should be possible for the model
+to assign a disjoint set of neurons to each simplex,
+and route their information through disjoint hidden neurons to the output, this is not guaranteed to be the structure that the model learns.
+To examine this, a similar approach to that of  Section \ref{sec:tcc-experiment} is adopted.
+
+Concretely, the input features are partitioned into $K$ disjoint groups, where group $g$ contains the $n(n+1)$ coordinates of simplex $g$ denoted by $\mathcal{C}_g$, with the groups jointly covering all input columns. Let $W_2^{(g)}$ denote $W_2$ restricted to the columns in $\mathcal{C}_g$ and zero elsewhere, so that $W_2 = \sum_{g=1}^{K} W_2^{(g)}$.
+The preactivation of hidden neuron $i$ then decomposes additively over the groups:
 \begin{equation}
-    \sum_{c} W_{2[i,c]} = \sum_{g=1}^{K} \rho_{i,g}, \qquad \rho_{i,g} := \sum_{c \in \mathcal{C}_g} W_{2[i,c]},
+    \sum_{c} W_{2[i,c]} = \sum_{g=1}^{K} \rho_{i,g}, \qquad \rho_{i,g} := \sum_{c} W^{(g)}_{2[i,c]},
 \end{equation}
-where $\rho_{i,g}$ is the influence of simplex $g$ on neuron $i$. These per-simplex influences are plotted across all neurons and groups in the top panel of Figure~\ref{fig:simplex_target_structure}.
+here $\rho_{i,g}$ is the influence of simplex $g$ on neuron $i$.
 
-On the output side, the contribution of neuron $i$ to the volume output of simplex $k$ is read directly from $W_1 \in \mathbb{R}^{K \times d_{\text{hidden}}}$ as $W_{1[k,i]}$ (bottom panel of Figure~\ref{fig:simplex_target_structure}).
 
-Lastly, to quantify which input-to-output paths are functionally relevant, only each neuron's dominant input and dominant output are considered. For neuron $i$, let
+On the output side, the strength with which hidden neuron
+$i$ contributes to the volume computation of simplex $k$
+is given directly by the weight $W_{1[k,i]}$.
+
+To measure the routing strength of the path from simplex $g$ to output $k$ through neuron $i$, the product $\rho_{i,g} \cdot W_{1[k,i]}$ is computed (Adopted from Section \ref{sec:tcc-experiment}).
+A large value indicates a strong path, while a small value is
+less influential.
+Let $s_{i}$ denote the strongest of such paths for neuron $i$ across all simplices and outputs.
 \begin{equation}
-    g^*(i) = \arg\max_{g} \rho_{i,g}, \qquad k^*(i) = \arg\max_{k} W_{1[k,i]}
+    s_{i} = \max_{g,k} \rho_{i,g} W_{1[k,i]}. \footnote{Make sure i compute max}
 \end{equation}
-be the simplex that most strongly drives the neuron and the output to which it most strongly contributes
-computing the inner product of these two values gives a measure of,
-how relevant the strongest input-output path through that neuron is.
-These are displayed in the top panel of Figure~\ref{fig:simplex_target_structure}.
-
-
-
-
-. Accumulating the product of these maximal values over all neurons gives the group-to-output matrix
-\begin{equation}
-    M_{g,k} = \sum_{\substack{i\,:\,g^*(i)=g \\ k^*(i)=k}} \rho_{i,g}\, W_{1[k,i]},
-\end{equation}
-where each neuron contributes only to the cell defined by
-its dominant input and output. A large $M_{g,k}$ indicates that
-many high-magnitude neurons read primarily from simplex $g$
-and write primarily to output $k$. The resulting $K \times K$ matrix
-is shown in Figure~\ref{fig:simplex_group_output}, whose diagonal
-structure confirms that each simplex routes to its own output.
-
-Sorting the neurons by their dominant input group and dominant output reveals a clear block structure in both panels: each input group activates a disjoint set of neurons, and each of those neurons contributes to a single output. Sampling complete simplices and measuring the resulting output collapses this into a $K \times K$ group-to-output response (Figure~\ref{fig:simplex_group_output}), which is diagonal: simplex $g$ drives neurons that contribute only to output $g$.
-
-This confirms that the $K$ simplices are processed by $K$ non-overlapping subnetworks. Because subcomponents combine additively to reconstruct the model, and each simplex occupies a disjoint subnetwork, there exists a decomposition in which each subcomponent captures the entire contribution of exactly one simplex, provided the rank is sufficiently large. Recovering this decomposition would make the post-hoc clustering trivial, with one subcomponent mapping to one simplex.
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=5cm]{geom_input_output.jpg}
-    \caption{Top: response $\rho_{i,g}$ of each hidden neuron to each input group, when group $g$ is activated in isolation. Bottom: contribution $W_{1[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are sorted by dominant input group then dominant output, with only the $28$ active neurons of $d_{\text{hidden}} = 150$ shown. Both panels show that each simplex occupies a disjoint set of neurons.}
+    \caption{Top: values of $s_{i}$. Middle: response $\rho_{i,g}$ from each input group to hidden neuron $i$. Bottom: contribution $W_{1[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are ordered by $\rho$, then $s_i$, and lastly by output strength. Neurons with $s_{i} > 0.05$ shown.} \footnote{wrong value}
     \label{fig:simplex_target_structure}
-\end{figure}
+\end{figure} \footnote{Consider not taking absolute values here or verify that the code doesnt. Also the plot caps at zero, there must be a max somewhere.}
+
+The model learns a predominantly modular structure, in which each hidden neuron is strongly influenced by only one simplex and contributes strongly to that same simplex's output (Figure~\ref{fig:simplex_target_structure}).
+A summarised view of this routing is shown in Figure~\ref{fig:simplex_group_output}, where the per group values are aggregated across all hidden neurons, and passed through a ReLU. The response of output $k$ to simplex $g$ is
+\begin{equation}
+    r_{g,k} = \sum_{i}^{d_{\text{hidden}}} \mathrm{ReLU}\!\left(\rho_{i,g}\right) W_{1[k,i]}.
+\end{equation}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=5cm]{geom_input_output_final.jpg}
-    \caption{Group-to-output response obtained by sampling complete simplices and measuring the volume output. The diagonal structure confirms that simplex $g$ contributes only to output $g$, with no cross-simplex interaction.}
+    \includegraphics[width=\linewidth, height=6cm]{geom_input_output_final.jpg}
+    \caption{Group to output response $r_{g,k}$, obtained by sampling each simplex in isolation and measuring the resulting volume output. The diagonal structure shows that each simplex predominantly influences its own output, with negligible influence on the others.}
     \label{fig:simplex_group_output}
 \end{figure}
+The magnitude is concentrated on the diagonal, showing
+that each simplex strongly influences its own output,
+with negligible cross-activation. It should therefore be 
+possible to recover a decomposition, where the flow
+from each simplex is routed through a disjoint set of hidden neurons to its corresponding output,
+with minimal leakage across subcomponents.
 
+To isolate the effect of the subcomponent rank from that of the minimality coefficient, the two factors are varied one at a time, following a one-factor-at-a-time approach. First, the rank is fixed at $k=1$, recovering the original SPD formulation, and the minimality coefficient $\beta_3$ is varied to examine its influence on the decomposition. Second, $\beta_3$ is fixed at a value that produced a clear decomposition at $k=1$, and the rank is increased to examine how higher $k$ allows different decompositions to be recovered. While a full sweep over both factors was carried out, the one-factor-at-a-time presentation is sufficient here: once the minimality coefficient reached its effective range, the resulting decompositions were qualitatively the best across all ranks.
 
-\subsection{Comparison of imporance values}
-The importance values for 
 
 \subsubsection{Comparison of importance values across different minimality coefficients}
 
-Mention how losses change too!
+With the target model's modular structure established, the first sweep fixes the rank at $k=1$ and varies the minimality coefficient $\beta_3$, comparing how the original SPD gating and the softmax variant allocate importance as the pressure toward concentration increases. At $k=1$, neither method can represent a full triangle within a single subcomponent, since a triangle occupies more than one dimension; the question is therefore not whether a simplex is recovered whole, but how the two methods distribute a simplex across the rank-1 subcomponents available to them, and how that distribution responds to $\beta_3$.
+
+A low minimality coefficient places little pressure on the importance assignment, allowing a simplex to be spread across many subcomponents. As $\beta_3$ increases, the assignment is pushed toward fewer active subcomponents per simplex. The two methods are expected to differ in how this concentration proceeds: [CONFIRM with results — e.g. SPD concentrates only within a narrow band of $\beta_3$ and otherwise either over-splits or collapses, whereas the softmax variant concentrates more smoothly across the range].
+
+
 
 
 \subsubsection{Comparison of importance values across different ranks for fixed minimality.}
@@ -1010,11 +1008,11 @@ mention if it affects losses.
     \includegraphics[width=\linewidth, height=8cm]{geom_input_output_dif_ranks.jpg}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth, height=3.5cm]{geom_input_output_final_dif_ranks.jpg}
-\end{figure}
 
+We make a new plot, where
+for each group we just take the largest responding ones,
+that way for each group the same neuron can be 
+in all plots.
 
 
 
@@ -1067,8 +1065,7 @@ i.e in a lower dimnsional subspace.
 Thesis needs to discuss how many of the scenarios from the irreducibility section are actually tested
 -Tms serves as dependent features that cannot be split,
 -CC serves as an independnet feature - idk if we can do sometihng with wout in this sense?
-- Quantization, needs to somehow engage with the two approximation methods, that irreducibility presents.
-    -Here we can then say if we have a mixture or if not
+
 -Most likely conclusion becomes that we only discuss cases, where the ground truth is dependence
 not if it manages to split non irreducible features.
 
@@ -1078,6 +1075,308 @@ to replicate model behaviour or should it try to find
 a more disentangled representaiton like SAE's do?
 
 
+Section that discusses new SPD variant and how it addresses some of the issues with minimality.
+
+
+\section{Discussion}
+
+% ============================================================
+\subsection{Summary of empirical findings}
+% Keep this short and specific. State what each experiment actually showed,
+% not generic claims about "frameworks" or "inductive biases".
+\begin{itemize}
+    \item \textbf{TMS, independent features:} SPD attains higher MMCS and ML2R; the softmax variant recovers the correct number of active subcomponents but with magnitude shrinkage. Both reach near one-hot importance.
+    \item \textbf{TMS, paired features:} both reconstruct faithfully, but the softmax variant assigns one subcomponent per pair while SPD spreads each pair across several subcomponents. SPD still leads on the directional metrics.
+    \item \textbf{Compressed computation:} near one-hot importance does not correspond to a monosemantic decomposition; the $100$-subcomponent, $50$-dimensional geometry forces shared output directions. Consistent with the $50$-dimensional subspace interpretation \autocite{bhagat2025compressed}.
+    \item \textbf{Geometry (Experiment 3):} % PLACEHOLDER — see dedicated subsection below
+    \item \textbf{Cross-cutting observation:} sparsity in the importance assignment does not imply sparsity in the underlying representation; magnitude leaks across subcomponents independently of the importance values.
+\end{itemize}
+
+
+\subsubsection{Summary of empirical findings}
+
+Across the experimental settings,
+both SPD and spd with softmax gating produced faithful decompositions,
+that were faithful to the target model's computations.
+The main difference between the two was 
+not directly reflected in the reconstruction quality,
+but was left hidden in the structure of the decompositions they produced.
+
+On the Toy Model of Superposition with independent features, the original SPD method attained a similar mean max cosine similarity, but more accurate mean $L_2$ ratio,
+recovering both the direction and the magnitude of each feature accurately.
+The softmax variant recovered the correct number of active subcomponents,
+pruned the remainder to near-zero,
+but concentrated less of each feature's magnitude
+within its best-aligned subcomponent, as there was some leakage across the active subcomponents,
+producing a lower mean $L_2$ ratio with higher variance. This came
+despite the fact that softmax and SPD achieved the same ground-truth importance assignment.
+
+When the input features were sampled in pairs, introducing statistical dependence, both methods reconstructed the target faithfully, but their importance assignments diverged.
+Softmax assigned each feature pair to a single subcomponent,
+recovering the grouped structure that the dependence induces,
+while SPD showed that multiple input features were grouped within the same subcomponent.
+Despite this cleaner assignment, the softmax variant stil underperformed on the directional alignment
+and magnitude metrics.
+
+In the Toy Model of Compressed Computation,
+where a near one-hot importance assignment was observed, the initial interpretation was that the model had learned a monosemantic decomposition, with each subcomponent representing a single feature.
+However, this interpretation seemed to contradict the results of \autocite{bhagat2025compressed}, which showed that the model's computation operates within a shared $50$-dimensional subspace rather than implementing $100$ separate computations.
+Additionally on close analysis, each subcomponent was associated with multiple features,
+which contradicts the monosemantic interpretation of the one-hot importance assignment.
+
+On the Toy Model of Geometry, where each feature is a simplex whose volume depends jointly on all of its vertices and so cannot be reduced to a single direction, the recovered decomposition depended on both the subcomponent rank and the strength of the minimality pressure. % CONFIRM with results: at rank one, the simplex was split across multiple subcomponents; as the rank increased, a single subcomponent could capture an entire simplex, shifting the decomposition toward the structural level. The original method recovered a clean decomposition only within a narrow minimality range, whereas the softmax variant [state behaviour across the same range].
+
+Taken together, these findings point to a single recurring observation: sparsity in the importance assignment does not imply sparsity in the underlying representation.
+Even when importance becomes near one-hot,
+the magnitude of a feature may remain distributed
+across multiple subcomponents, since the faithfulness
+loss is indifferent to how the reconstruction mass is allocated.
+This distinction between the sparsity of the assignment
+and the sparsity of the representation organises much
+of the discussion that follows.
+
+% ============================================================
+\subsection{Sparsity of assignment is not sparsity of representation}
+% Core methodological caution. Two halves of ONE insight:
+%   (A) monosemanticity side, from CC; (B) magnitude side, from norms + minimality.
+% State the shared mechanism once, here. Faithfulness-vs-disentanglement and
+% VPD subsections should REFERENCE this, not re-derive it.
+\begin{itemize}
+    \item Claim: a sparse / one-hot causal importance assignment does not imply a
+          sparse (monosemantic, norm-concentrated) underlying representation.
+          Importance lives on the assignment side; the representation is a separate object.
+
+    % ---- Half A: monosemanticity side (anchor on CC) ----
+    \item Prior work reads one-hot importance as evidence of a monosemantic decomposition;
+          the CC results show this inference is invalid (one-hot importance, yet shared structure).
+    \item Two senses, computed on different objects:
+        \begin{itemize}
+            \item importance is read off $V^\top a$ (the read side),
+            \item the contribution to a feature comes from $U V^\top$ (the representation),
+            \item these can and do disagree -- cite Fig.~\ref{fig:cc_contribution}
+                  (concentrated importance, but subcomponents contribute to multiple features).
+        \end{itemize}
+    \item Modus tollens (restate briefly): IF softmax genuinely encoded 100 features in
+          superposition, its active $U_c,V_c$ would be near-orthogonal. They are not
+          (Fig.~\ref{fig:CC_cosines}), and $W_{\text{out}}$ must project into the
+          $50$-dim MLP space; consistent with the shared $50$-dim subspace of
+          \autocite{bhagat2025compressed}. So concentrated importance $\neq$ superposition encoding.
+    \item The non-orthogonality is therefore structural ($C > d_{\text{MLP}}$), not a sign
+          of superposition.
+
+    % ---- Half B: magnitude side (fold-in: norms + minimality) ----
+    \item Same decoupling, measured in norms instead of monosemanticity:
+          tightening the minimality coefficient sharpens the ASSIGNMENT but not the
+          representational MAGNITUDE.
+        \begin{itemize}
+            \item softmax leaves a residual low-norm tail / no hard zeros, SPD hard-prunes
+                  -- Fig.~\ref{fig:CC_norms}; the magnitude cost shows up as low ML2R
+                  in Tab.~\ref{tab:tms_results}.
+            \item mechanism: the additive faithfulness MSE is indifferent to HOW reconstruction
+                  mass is split across subcomponents, so a penalty on $g$ (Sec.~\ref{spd_minimality})
+                  controls which components are nominally active, not the magnitude they carry.
+        \end{itemize}
+    \item Controls ruling out the gating distribution as the cause:
+        \begin{itemize}
+            \item importance is already near-bimodal at $0/1$ (Fig.~\ref{fig:CC_causal_importance_hist}),
+                  so soft gating is not what blocks hard zeros.
+            \item sparsemax (capable of exact zeros) yields qualitatively identical norm
+                  distributions -- leak is not from the gating nonlinearity.
+        \end{itemize}
+    \item Controlled demonstration (geometry, Sec.~\ref{...}): sweeping $\beta_3$ sharpens the
+          assignment (concentrates onto fewer subcomponents) while magnitude does not fully follow.
+          % cross-ref the minimality-sweep figure once written
+
+% ---- Synthesis + practice ----
+    \item Synthesis (state once): assignment-level pressure (minimality, sparser gating)
+          cannot by itself control representation-level structure -- neither monosemanticity (A)
+          nor magnitude (B).
+    \item Implication for practice: importance values must not be used on their own as a
+          measure of representational sparsity, monosemanticity, or norm concentration.
+          A representational check is required -- contribution analysis, $U/V$ cosines,
+          norm distribution, effective rank.
+    \item Caveat applying to our own Experiment 3: the rank sweep shows importance concentrating
+          onto $\sim K$ subcomponents, but by this argument that is not yet proof the subcomponents
+          OWN whole simplices -- needs representational confirmation (U/V structure,
+          effective rank $\approx$ simplex dimensionality).
+
+    % AUTHOR NOTES, not rendered text -- keep these concepts in their own subsections:
+    % - faithfulness-vs-disentanglement subsection should pick THIS up as the tradeoff knob.
+    % - VPD subsection should reference BACK to this (residual norms = what adversarial
+    %   ablation removes; leak may grow with C). Do NOT introduce VPD here.
+\end{itemize}
+
+\subsubsection{Sparsity of assignment is not sparsity of representation}
+
+
+A repeating observation across the experiments is that
+a sparse causal importance assignment does not imply
+a sparse underlying representation.
+Particularly importance is a property of the assignment,
+where the importance is calculated on the input projection of each subcomponent,
+while the full representation is a seperate object, that
+is determined by the full contribution of each subcomponent $UV$.
+The two need not coincide, and in these experiments
+hav disaligned.
+
+The clearest example of this comes from the Toy Model of Compressed
+Computation. Here, Softmax assigns one-hot importance,
+which taken in conjunction with the stochastic reconstruction loss,
+which uses this importance assignment as a lower bound,
+would make it natural, given that the model achieves near-zero
+reconstruction error, to read this as evidence of a monosemantic
+decomposition, where all other subcomponents can be ablated
+without affecting the model's behaviour.
+
+However examining the representation contradicts this assumption,
+every subcomponent has one-hot importance,
+yet every subcomponent contributes to multiple features (Figure~\ref{fig:cc_contribution}).
+Particularly this both implies that the subcomponent should
+have importance to multiple features, and not contain
+all of the mass for a single feature.
+
+Ofcourse, this could be read as evidence of superposition,
+where feature leakage arises from near-orthogonal subcomponents,
+but this is contradicted by the results of \autocite{bhagat2025compressed},
+which show that the trained $W_{\text{out}}$ operates within a shared $50$-dimensional subspace rather than implementing $100$ separate computations.
+
+
+This disalignment in the Softmax variant
+is also observed in the magnitudes,
+where sharpening the minimality coefficient concentrates
+importance onto fewer subcomponents,
+but does not concentrate the entire representational magnitude
+to the same degree, leaving a residual low-norm tail rather than pruning to hard zeros as SPD does (Figure~\ref{fig:CC_norms})
+and is influencial in the lower mean $L_2$ ratio in the Toy Model of Superposition (Table~\ref{tab:tms_results}).
+Initially it was thought, that the softmax gating, which cannot produce exact zeros, was responsible for this residual mass, but the near-bimodal importance distribution (Figure~\ref{fig:CC_causal_importance_hist}) and the qualitatively identical norm distribution obtained with sparsemax, which can produce exact zeros, rule out this explanation.
+
+
+These disalignments are also easily overseen, where
+the decompositions show clear importance assignments, that
+look convincing with respect to the expected decomposition,
+while also achieving good reconstruction and faithfulness metrics.
+
+Faithfulness computes the difference between the summed subcomponent
+reconstruction and the target weight matrix, so it is indifferent
+to how reconstruction mass is allocated across subcomponents.
+
+Similarly reconstruction computes the output of the model given
+all the subcomponents, which again allows multiple equally
+faithful and equally reconstructive decompositions with different mass allocations.
+
+
+
+ A penalty on the
+importance values $g$ (Section~\ref{spd_minimality}) therefore
+controls which subcomponents are nominally active, not the
+magnitude they carry. [This part requires the knowledge from
+the geometry experiment, where we will see how
+SPD does when none of its components are active.
+]
+
+Taken together,
+the minimality loss in neither its original form nor the softmax variant,
+can be used on its to own to control or even measure the
+sparsity of the underlying representation,
+and must currently be supplemented with a separate representational check.
+
+
+[This is a good bridge to the VSPD paper,
+where both can be ablated together something?]????
+
+% ============================================================
+\subsection{Relation to adversarial parameter decomposition}
+% The VPD tie-in (already drafted at paragraph level; condensed bullets here).
+\begin{itemize}
+    \item VPD \autocite{bushnaq2026interpreting} identifies the same assignment-representation gap from the ablation side: the minimality loss can be satisfied by splitting a mechanism into narrow subcomponents under stochastic masking.
+    \item VPD's fix is adversarial ablation, which activates supposedly unimportant subcomponents in combination and penalises any residual representation they carry; plus a superlinear frequency penalty.
+    \item The relational importance function attacks the same gap from the assignment side (competition for ownership) rather than the ablation side.
+    \item The two are complementary: adversarial sampling could be combined with relational importance.
+    \item The observed magnitude leakage (small non-zero norms on unimportant subcomponents) is exactly the structure adversarial ablation is designed to remove, pointing to a concrete next step.
+\end{itemize}
+
+
+% ============================================================
+\subsection{Rank extension and the structure of the recovered weights}
+% EXPERIMENT 3 PLACEHOLDER — the geometric / simplex results.
+% Fill in once the rank sweep and minimality sweep are analysed.
+\begin{itemize}
+    \item % How the importance assignment changes as the rank k increases:
+          % does a single subcomponent absorb an entire simplex, or does importance
+          % stay spread across coordinate/vertex-level subcomponents?
+    \item % How the weight structure (U, V matrices) changes with k:
+          % effective rank of recovered subcomponents vs the imposed upper bound k;
+          % whether the SVD of a subcomponent reveals fewer than k active directions.
+    \item % The interaction between rank and minimality:
+          % at low k or low minimality -> finer (coordinate/vertex) decomposition;
+          % at high k with sufficient minimality -> structural (whole-simplex) decomposition.
+    \item % Comparison SPD vs softmax across ranks:
+          % the narrow minimality window in which SPD recovers clean structure,
+          % versus the softmax variant's behaviour across the same range.
+    \item % Tie back to the cube example from the introduction:
+          % which of feature-level / intermediate / structural-level each method lands on,
+          % and whether rank is necessary or sufficient to reach the structural level.
+    \item % State explicitly what rank extension buys: capacity to represent an
+          % irreducible feature without splitting, and how this shows up in the importance.
+\end{itemize}
+
+This should also mention that rank k does not
+work with the minimality loss that SPD uses,
+as we see that the components just split the same feature across multiple subcomponents,
+again a consequence of that fiathfulness is indifferent to how the reconstruction mass is allocated across subcomponents.
+
+And if not mentioned in the section above, it should mention 
+how the faithfulness even when everything is zero,
+still has some decomposition? This did however
+not occur, when spd-baseline was run, perhaps this comes
+as a consequence of that many features are responsible
+for one computation, so it can be spread across
+even more features? Use the causal importance frequency plots
+
+
+
+% ============================================================
+\subsection{The non-uniqueness of the minimal decomposition}
+% Your strongest, most original point. Build it carefully.
+\begin{itemize}
+    \item Rank-1 with one component per feature is not, in general, the minimal description: in the paired regime, an aligned pair can be captured by one rank-1 subcomponent or split across two, both reconstructing identically.
+    \item The rank constraint therefore does not determine a unique decomposition; it admits a coarser grouping and a finer splitting of the same aligned directions.
+    \item Minimality in the number of components is a property of how the importance function groups or splits, not of the rank constraint alone.
+    \item This is the ambiguity the relational importance function is designed to resolve: pressuring jointly-manipulated directions toward a shared subcomponent.
+    \item Connect to the underdetermination of the objective: reconstruction plus $\ell_p$ minimality plus rank-1 does not pin down a canonical factorisation.
+\end{itemize}
+
+\subsection{The non-uniqueness of the minimal decomposition}
+
+A rank-1 decomposition with one component per feature is often taken to be the minimal description of a computation, but the paired regime shows that it is not. When a feature pair is aligned onto a single direction, it can be captured by one rank-1 subcomponent or split across two, and both reconstruct the target identically. The rank constraint therefore does not pick out a unique decomposition: it admits both a coarser grouping and a finer splitting of the same aligned directions, with no difference in faithfulness to separate them. Minimality in the number of components is thus not determined by the rank constraint alone, but by how the importance function chooses to group or split. This is the ambiguity the relational importance function is designed to resolve, pressuring directions that are manipulated jointly toward a shared subcomponent rather than leaving the grouping to chance. More broadly, it shows that reconstruction, $\ell_p$ minimality, and a rank-1 constraint together do not pin down a canonical factorisation; the decomposition that emerges is selected as much by the inductive bias of the importance function as by any intrinsic property of the model.
+
+
+% ============================================================
+\subsection{What the experiments test within the irreducibility framework}
+% Honest scoping. This is where you concede coverage.
+\begin{itemize}
+    \item TMS paired tests dependent features that should be grouped, not split: the relational variant is evaluated on whether it groups correctly.
+    \item Compressed computation tests an effectively independent feature in a constrained subspace.
+    \item The mixture condition of the irreducibility definition is not directly evaluated; flag as future work. % adjust if the mixture experiment was actually run
+    \item The thesis therefore primarily tests whether dependent or irreducible features are correctly grouped, rather than whether reducible features are correctly split.
+\end{itemize}
+
+% ============================================================
+\subsection{Limitations and future work}
+\begin{itemize}
+    \item The softmax variant does not produce hard zeros; sparsemax and entmax do not resolve the residual magnitude, which may grow with the number of subcomponents.
+    \item The relational importance function scales quadratically in the number of subcomponents, unlike SPD's linear independent importance functions.
+    \item SPD recovers clean structure on the geometric model only within a narrow minimality range, raising a robustness question.
+    \item Future directions: adversarial ablation combined with relational importance; attention approximations to reduce the quadratic cost; direct evaluation of the mixture condition.
+    \item This paper does not address mixtures, and therefore does not conclude on every aspect of irreducibility.
+\end{itemize}
+
+% ============================================================
+\subsection{Conclusion}
+% One short paragraph, not bullets. State the take-home:
+% the relational variant trades magnitude fidelity for cleaner importance assignment,
+% the assignment-representation gap is general, and rank extension is necessary but
+% the importance function determines which decomposition within that capacity is found.
 \section{Acknowledgements}
 
 \section{Other things to consider?}
@@ -1227,6 +1526,9 @@ Remember V is the
 
  In general add how each experiment relates to the multi dimensional feature hypothesis decomposition.
  
+Remember to add the VPD to related work,
+remember to add the citation that irreducibility definition is wrong.
+
 
 
  
@@ -1256,6 +1558,9 @@ the orthogonality structure the hypothesis posits.
 
 Remember to add an experiment that shows if softmax enforce the orthogonality constraint from engels.
 
+
+Remember to add the correct mean max cosine similarity and l2 values
+to the tms section.
 
 
 \section{Lukas questions}

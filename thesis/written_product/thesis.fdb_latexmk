@@ -1,12 +1,12 @@
 # Fdb version 4
-["biber thesis"] 1778957529.26983 "thesis.bcf" "thesis.bbl" "thesis" 1779257288.15466 0
-  "references.bib" 1778957490 12845 b324099b46139afb2edb45643dfa569d ""
-  "thesis.bcf" 1779257287 113686 aa4878eb4548469e985566f0b59793e8 "pdflatex"
+["biber thesis"] 1779541689.44594 "thesis.bcf" "thesis.bbl" "thesis" 1779548864.67159 0
+  "references.bib" 1779305516 13218 71488b51024b87dff030a2684da1be82 ""
+  "thesis.bcf" 1779548864 114000 e1954f66df19d0b9f4085b6f51f75ade "pdflatex"
   (generated)
   "thesis.bbl"
   "thesis.blg"
   (rewritten before read)
-["pdflatex"] 1779257284.73196 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1779257288.1561 0
+["pdflatex"] 1779548861.42339 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1779548864.67258 0
   "Images/CC_norms_softmax.jpg" 1778744962 54995 bcfda71b538b6e5dec1e026e506bc627 ""
   "Images/CC_norms_spd.jpg" 1778744956 50138 353815ddcedc856f0c3a1eb019e59efe ""
   "Images/CC_softmax_cosines.jpg" 1778745717 116641 1aec31c0df67e69e017c440ef7c883d8 ""
@@ -16,17 +16,16 @@
   "Images/cc_softmax_causal_importance_hist2.jpg" 1778747429 17835 0377c6ed72431322021ebb9697cf558f ""
   "Images/component_contribution_soft_max.jpg" 1778744816 85380 b602e3bca14ff36e347e4e4dbe03a1ec ""
   "Images/geom_dif_ranks.jpg" 1779085841 64660 872b026ab3f58f769d785fdc85029451 ""
-  "Images/geom_input_output.jpg" 1779080543 74389 b880eab5d119fdae09975b498f31d80a ""
+  "Images/geom_input_output.jpg" 1779541091 88856 60c0426c6e84b989d16dca74ef55ac76 ""
   "Images/geom_input_output_dif_ranks.jpg" 1779085864 59428 18b57d64b7c97a5d2640c964f16a68fc ""
-  "Images/geom_input_output_final.jpg" 1779080552 23309 bf7569c3a7224d396d1b8ff185382d45 ""
-  "Images/geom_input_output_final_dif_ranks.jpg" 1779085882 74145 58308caf9612cf91d5b6260876ae3e52 ""
+  "Images/geom_input_output_final.jpg" 1779542794 19646 0ff5f053de7956e616d81946e1b1fd85 ""
   "Images/softmax_40_10_paired.jpg" 1778479614 78470 48b8c0cde4e7a61ec8007de7cfdcc42d ""
   "Images/softmax_CC.jpg" 1778744825 82601 3221f6ccd552c50309fd35bf7adb177c ""
   "Images/spd_40_10_paired.jpg" 1778479598 76176 cd213b72bc8c0bbbcb73511cc4dde23e ""
   "Images/tms_5_2_plot.png" 1778408312 220208 8eb8bfffcd8d81e33154ada66bde3578 ""
   "Images/tms_5_2_plot_causal_importances.jpg" 1778432865 71074 45046c561a9f28803408da941dbe2b93 ""
   "arxiv.sty" 1774611555 7902 f2cb9d6386c38cb1ddd8d4504a6292a3 ""
-  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1779257280 76395 bd58e48d30171ae66305625b6963641f ""
+  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1779548859 95651 5b9a4d9b2fe67be7f6d3e446b3d044d6 ""
   "c:/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc" 1722946599 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "c:/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1722947038 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "c:/texlive/2024/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1722957685 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -137,11 +136,11 @@
   "c:/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1722958775 5437080 ed7bddc74a2a640cd859bad2f86a3c86 ""
   "c:/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1722959163 6879081 fdeace8d7504e29902b33a8915f1b7e1 ""
   "c:/texlive/2024/texmf.cnf" 1722958746 713 e69b156964470283e0530f5060668171 ""
-  "thesis.aux" 1779257287 19599 dd6f50419e512535ab3894ba28a86122 "pdflatex"
-  "thesis.bbl" 1778957532 67350 02b9a8b8f55057d8abc9c01c73bff401 "biber thesis"
-  "thesis.run.xml" 1779257287 2325 e2b7b0621d055d962ffd71f3077e0c03 "pdflatex"
-  "thesis.tex" 1779257280 76395 bd58e48d30171ae66305625b6963641f ""
-  "thesis.toc" 1779257287 2909 81c0a417d28a101710bf3974d67248e8 "pdflatex"
+  "thesis.aux" 1779548864 20950 21e557ec6f3f5931aee081978392ca5b "pdflatex"
+  "thesis.bbl" 1779541701 65831 b71906f7b04c4be1fb3f0fd50c583177 "biber thesis"
+  "thesis.run.xml" 1779548864 2325 e2b7b0621d055d962ffd71f3077e0c03 "pdflatex"
+  "thesis.tex" 1779548859 95651 5b9a4d9b2fe67be7f6d3e446b3d044d6 ""
+  "thesis.toc" 1779548864 3874 9b015b12be062fc5445dad9a63fba4c5 "pdflatex"
   (generated)
   "thesis.aux"
   "thesis.bcf"
