@@ -989,8 +989,42 @@ To isolate the effect of the subcomponent rank from that of the minimality coeff
 
 With the target model's modular structure established, the first sweep fixes the rank at $k=1$ and varies the minimality coefficient $\beta_3$, comparing how the original SPD gating and the softmax variant allocate importance as the pressure toward concentration increases. At $k=1$, neither method can represent a full triangle within a single subcomponent, since a triangle occupies more than one dimension; the question is therefore not whether a simplex is recovered whole, but how the two methods distribute a simplex across the rank-1 subcomponents available to them, and how that distribution responds to $\beta_3$.
 
-A low minimality coefficient places little pressure on the importance assignment, allowing a simplex to be spread across many subcomponents. As $\beta_3$ increases, the assignment is pushed toward fewer active subcomponents per simplex. The two methods are expected to differ in how this concentration proceeds: [CONFIRM with results — e.g. SPD concentrates only within a narrow band of $\beta_3$ and otherwise either over-splits or collapses, whereas the softmax variant concentrates more smoothly across the range].
+A low minimality coefficient places little pressure on the importance assignment, allowing a simplex to be spread across many subcomponents. As $\beta_3$ increases, the assignment is pushed toward fewer active subcomponents per simplex. The two methods are expected to differ in how this concentration proceeds:
 
+$g \in \{1, \ldots, K\}$ a simplex group, $i$ a hidden neuron and $k$ an output. The response of subcomponent $c$
+the total influence of input feature of group $g$ on subcomponent $c$ is given by:
+
+\[
+    \alpha_{c,g} = \sum_{i=1}^{d_{\text{hid}}} \sum_{j \in \mathcal{C}_g} \left(\hat{W}^{(c)}_{\text{in}}\right)_{[i,j]}, \alpha_{c,g} \in \mathbb{R}.
+\]
+Likewise we would like to visualize how much a subcomponent is contributing to the output of the next layer,
+i.e how much each subcomponent contributes to the input of the subcomponent of the next level,
+here we compute the total influence as
+
+
+Let $\mathcal{C}_{l}$ denote the set of subcomponents for layer l, where $c \in \mathcal{C}_{l} = UV^T$,
+where $C_{1} \in \mathbb{R}^{|C|,d_{hid},d_{in}}$ and $C_{2} \in \mathbb{R}^{|C|,d_{out},d_{hid}}$.
+then the influence of a subcomponent $C_{l+1}$ on $C_{l}$ is denoted by:
+
+\begin{equation}
+    \psi_{c,k} = \sum_{j=1}^{d_{hid}} C_{l+1[c,j,k]} C_{l[c,k,j]} \in \mathbb{R}. 
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=10cm]{causal_importances_minimality_sweep_combined.png}
+\end{figure}
+
+To compute the importance from one subcomponent to another we compute it similarly to that of rho,
+sadly it is not possible to collapse it into a layer wihtout losing structural information like above,
+so instad we compute:
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=12cm]{io_routing_chain_minimality_sweep_combined.png}
+    \caption{Left to right: edges: the group importance values given by $\rho_{i,g}$, $w_{2} \times  w_{1}$: values given by}
+\end{figure}
 
 
 

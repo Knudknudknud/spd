@@ -353,8 +353,8 @@ def compute_io_flows(C1, C2, group_features):
 
     write = C2.sum(axis=-1)  # (C2, n_outputs)
 
-    in_h = np.sum(np.abs(C1), axis=-1)   # (C, d_hid)
-    out_h = np.sum(np.abs(C2), axis=-2)  # (C, d_hid)
+    in_h = np.sum(C1, axis=-1)   # (C, d_hid)
+    out_h = np.sum(C2, axis=-2)  # (C, d_hid)
     overlap = in_h @ out_h.T            # (C, C)
     
     return read, overlap, write
