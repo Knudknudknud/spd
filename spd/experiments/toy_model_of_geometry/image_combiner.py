@@ -87,34 +87,149 @@ def combine_images(image_paths, save_path, titles=None,
     return save_path
 
 
-# Softmax minimality sweep images -> 2x2 grid:
+#Complete minimality sweep image from [0.1 - 1e-6]
+
 image_paths = [
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01\causal_importances_upper_leaky_30000.png",
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001\causal_importances_upper_leaky_30000.png",
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001\causal_importances_upper_leaky_30000.png",
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001\causal_importances_upper_leaky_30000.png"
 ]
 
 combine_images(
     image_paths,
-    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\causal_importances_minimality_sweep_combined.png",
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_minimality_sweep_full_1e1_to_1e-6.png",
     ncols=len(image_paths),
     size=6,
     dpi=350,
 )
 
+#Condensed sweep from 1e-3 to 1e-6 (the most interesting part)
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001\causal_importances_upper_leaky_30000.png"
+]
+
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_minimality_sweep_condensed_1e-3_to_1e-6.png",
+    ncols=len(image_paths),
+    size=6,
+    dpi=350,
+)
+
+
+#Io paths for minimality sweep
+
+#Full
 image_paths = [
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01\io_routing_chain.png",
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001\io_routing_chain.png",
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001\io_routing_chain.png",
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001\io_routing_chain.png",
 ]
 combine_images(
     image_paths,
-    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\io_routing_chain_minimality_sweep_combined.png",
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_minimality_io_sweep_full_1e1_to_1e-6.png",
     ncols=2,          # 2x2
     size=6,
     dpi=350,
 )
 
+
+#Io paths for condensed minimality sweep (1e-3 to 1e-6)
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001\io_routing_chain.png",
+]
+combine_images(
+    image_paths,dpi=350,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_minimality_io_sweep_condensed_1e-3_to_1e-6.png",
+    ncols=2,          # 2x2
+    size=6,
+)
+
+
+
+#full rank sweep at best minimality
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\causal_importances_upper_leaky_30000.png"
+]
+
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_causal_importances_ranking_sweep_minimality_1e-e4_rank_1_to_8.png",
+    ncols=len(image_paths),
+    size=6,
+    dpi=350,
+)
+
+
+#Condensed rank sweep at minimality 1e-5, rank 1 to 5 (the most interesting part)
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3\causal_importances_upper_leaky_30000.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\causal_importances_upper_leaky_30000.png",
+]
+
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_causal_importances_ranking_sweep_minimality_1e-e4_rank_1_to_5.png",
+    ncols=len(image_paths),
+    size=6,
+    dpi=350,
+)
+
+
+#Io sweep across ranks 1 to 8 at minimality 1e-5
+
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\io_routing_chain.png",
+]
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_causal_importances_ranking_sweep_minimality_1e-e4_io_routing_chain_rank_1_to_8.png",
+    ncols=2,          # 2x2
+    size=6,
+    dpi=350,
+)
+
+#Io rank 1,2,3,5, with minimality 1e-5
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\io_routing_chain.png",
+]
+
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_causal_importances_ranking_sweep_minimality_1e-e4_io_routing_chain_rank_1_to_5.png",
+    ncols=2,          # 2x2
+    size=6,
+    dpi=350,
+)
 print("Combined image saved.")
