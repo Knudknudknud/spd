@@ -353,8 +353,8 @@ def compute_io_flows(C1, C2, group_features):
 
     write = C2.sum(axis=-1)  # (C2, n_outputs)
 
-    in_h = np.sum(np.abs(C1), axis=-1)   # (C, d_hid)
-    out_h = np.sum(np.abs(C2), axis=-2)  # (C, d_hid)
+    in_h = np.sum(C1, axis=-1)   # (C, d_hid)
+    out_h = np.sum(C2, axis=-2)  # (C, d_hid)
     overlap = in_h @ out_h.T            # (C, C)
     
     return read, overlap, write
@@ -367,8 +367,12 @@ def pick_components(read, write, coverage=0.95, min_mass=0):
     C2 by total write (into outputs).
     read: (C1, n_groups)   write: (C2, n_outputs)
     """
-    contrib1 = read.sum(axis=1)      # (C1,) total read per input subcomponent
-    contrib2 = write.sum(axis=1)     # (C2,) total write per output subcomponent
+    #contrib1 = read.sum(axis=1)      # (C1,) total read per input subcomponent
+    #contrib2 = write.sum(axis=1)     # (C2,) total write per output subcomponent
+    
+    #Resorted to this version as the components would cancel each other out otherwise.
+    contrib1 = np.maximum(read, 0).sum(axis=1)      # (C1,) total positive read per input subcomponent
+    contrib2 = np.maximum(write, 0).sum(axis=1)     # (C2,) total positive write per output subcomponent
 
     def cover(v):
         live = np.where(v >= min_mass)[0]
@@ -491,15 +495,22 @@ def render_io_chain(columns, flows, save_path, title=None, edge_frac=0.05):
 
     # flows
     for i, M in enumerate(flows):
-        m = M.max()
-        if m <= 0:
-            continue
-
+        max_flow = np.abs(M).max()
+        if max_flow <= 0:
+            raise ValueError("Flow matrix has non-positive maximum value, cannot scale ribbons.")
+        #horizontal starting, end points bw= beam width
         x0 = xs[i] + bw / 2
         x1 = xs[i + 1] - bw / 2
 
-        for s, d in zip(*np.where(M >= edge_frac * m)):
-            r = M[s, d] / m
+        threshold = edge_frac * max_flow
+        active_sources, active_targets = np.where(np.abs(M) >= threshold)
+
+        for s, d in zip(active_sources, active_targets):
+
+            flow_value = M[s, d]
+            r = flow_value / max_flow #this normalizes to 0 <= 1 <= 1
+            r= np.abs(r)
+
             ribbon(
                 x0,
                 columns[i]["centers"][s],
@@ -507,8 +518,36 @@ def render_io_chain(columns, flows, save_path, title=None, edge_frac=0.05):
                 columns[i + 1]["centers"][d],
                 0.5 + 7 * r,
                 flow_colors[i],
-                0.15 + 0.5 * r,
+                0.15 + 0.5 * np.abs(r),
             )
+
+        # flows
+    # for i, M in enumerate(flows):
+    #     max_flow = M.max()
+        
+    #     #horizontal starting, end points bw= beam width
+    #     x0 = xs[i] + bw / 2
+    #     x1 = xs[i + 1] - bw / 2
+
+        
+    #     #threshold = edge_frac * max_flow
+    #     #active_sources, active_targets = np.where(M > threshold)
+    #     active_sources, active_targets = np.indices(M.shape).reshape(2, -1)
+    #     for s, d in zip(active_sources, active_targets):
+
+    #         flow_value = M[s, d]
+    #         r = flow_value / max_flow #this normalizes to 0 <= 1 <= 1
+
+
+    #         ribbon(
+    #             x0,
+    #             columns[i]["centers"][s],
+    #             x1,
+    #             columns[i + 1]["centers"][d],
+    #             np.abs(0.5 + 7 * r),
+    #             flow_colors[i],
+    #             np.minimum(1.0,0.3 +0.5 * np.abs(r))
+    #         )
 
     # nodes
     for i, col in enumerate(columns):
@@ -542,8 +581,8 @@ def render_io_chain(columns, flows, save_path, title=None, edge_frac=0.05):
 
 def plot_io_routing_chain(
     C1, C2, group_features, save_dir,
-    title=None, threshold=0.95,
-    edge_frac=0.1, sort_nodes=True, sweeps=20, min_mass=0.05,
+    title=None, coverage=0.5,
+    edge_frac=0.01, sort_nodes=True, sweeps=20, min_mass=0.05,
 ):
     read, overlap, write = compute_io_flows(C1, C2, group_features)
     #Read has dim (C,_n groups), overlap ahs dim (C1, C2), write has dim (C2, n_outputs)
@@ -551,7 +590,7 @@ def plot_io_routing_chain(
     #Select only the components that matter significantly
     c1, c2 = pick_components(
         read, write,
-        threshold, min_mass,
+        coverage=coverage, min_mass=min_mass,
     )
 
     #pick components that satisfy minimum mass
@@ -640,7 +679,7 @@ def main() -> None:
         group_features, _, _ = get_group_features(ranks)
 
         plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group output matrix " + run_title)
-        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, threshold=0.95, edge_frac=0.1, min_mass=0.01)
+        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.9, edge_frac=0.05, min_mass=0.05)
     
     
     model_dir = Path(model_dir)
