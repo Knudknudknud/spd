@@ -154,58 +154,66 @@
 \newlabel{fig:cc_contribution}{{6}{11}{}{}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Left: Softmax. Right: SPD. Pairwise cosine similarity between the $U_c$ and $V_c$ vectors of the causally important subcomponents for both layers. Subcomponents are ordered by decreasing norm.}}{12}{}\protected@file@percent }
 \newlabel{fig:CC_cosines}{{7}{12}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Subcomponent Norm Distributions}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Subcomponent Norm Distributions}{12}{}\protected@file@percent }
 \abx@aux@cite{0}{peters2019sparsesequencetosequencemodels}
 \abx@aux@segm{0}{0}{peters2019sparsesequencetosequencemodels}
 \@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Left: Softmax. Right: SPD. Norms of the subcomponents, ordered by decreasing norm. Matrix norm is the fribenius norm of the subcomponent matrix $U_c V_c^T$. Subcomponents are ordered by decreasing norm.}}{13}{}\protected@file@percent }
 \newlabel{fig:CC_norms}{{8}{13}{}{}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Distributions of causal importance values for the softmax decomposition on both layers.}}{13}{}\protected@file@percent }
 \newlabel{fig:CC_causal_importance_hist}{{9}{13}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Toy Model of Geometry}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.1}Target model structure}{14}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Top: values of $s_{i}$. Middle: response $\rho _{i,g}$ from each input group to hidden neuron $i$. Bottom: contribution $W_{1[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are ordered by $\rho $, then $s_i$, and lastly by output strength. Neurons with $s_{i} > 0.05$ shown.}}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Toy Model of Geometry}{14}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Target model structure}{14}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Top: values of $s_{i}$. Middle: response $\rho _{l,[i,g]}$ from each input group to hidden neuron $i$. Bottom: contribution $\pi _{l+1,[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are ordered by $\rho _{l,[i,g]}$, then $s_i$, and lastly by output strength. Neurons with $s_{i} > 0.05$ shown.}}{15}{}\protected@file@percent }
 \newlabel{fig:simplex_target_structure}{{10}{15}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Group to output response $r_{g,k}$, obtained by sampling each simplex in isolation and measuring the resulting volume output. The diagonal structure shows that each simplex predominantly influences its own output, with negligible influence on the others.}}{16}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Group to output response $ r_{g,k} = \DOTSB \sum@ \slimits@ _{i}^{d_{\text  {hidden}}} \pi _{l+1,[k,i]}\mathrm  {ReLU}\!\left (\rho _{l,[i,g]}\right )$ obtained by sampling each simplex in isolation and measuring the resulting volume output. The magnitude is concentrated on the diagonal, showing that each simplex strongly influences its own output, with negligible cross-activation.}}{16}{}\protected@file@percent }
 \newlabel{fig:simplex_group_output}{{11}{16}{}{}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.2}Comparison of importance values across different minimality coefficients}{16}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Subcomponent structure}{16}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.3}Comparison of importance values across different minimality coefficients}{17}{}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Left to right: edges: the group importance values given by $\rho _{i,g}$, $w_{2} \times w_{1}$: values given by}}{18}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.3}Comparison of importance values across different ranks for fixed minimality.}{18}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Computing}{19}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{19}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.4}Comparison of importance values across different ranks for fixed minimality.}{19}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Computing}{19}{}\protected@file@percent }
 \abx@aux@cite{0}{bhagat2025compressed}
 \abx@aux@segm{0}{0}{bhagat2025compressed}
 \abx@aux@cite{0}{bhagat2025compressed}
 \abx@aux@segm{0}{0}{bhagat2025compressed}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{20}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{20}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Summary of empirical findings}{20}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.1}Summary of empirical findings}{20}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Sparsity of assignment is not sparsity of representation}{20}{}\protected@file@percent }
 \abx@aux@cite{0}{bhagat2025compressed}
 \abx@aux@segm{0}{0}{bhagat2025compressed}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Sparsity of assignment is not sparsity of representation}{21}{}\protected@file@percent }
 \abx@aux@cite{0}{bhagat2025compressed}
 \abx@aux@segm{0}{0}{bhagat2025compressed}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}Sparsity of assignment is not sparsity of representation}{21}{}\protected@file@percent }
 \abx@aux@cite{0}{bushnaq2026interpreting}
 \abx@aux@segm{0}{0}{bushnaq2026interpreting}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}Sparsity of assignment is not sparsity of representation}{22}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Relation to adversarial parameter decomposition}{22}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Rank extension and the structure of the recovered weights}{22}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}The non-uniqueness of the minimal decomposition}{22}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Rank extension and the structure of the recovered weights}{23}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}The non-uniqueness of the minimal decomposition}{23}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.6}The non-uniqueness of the minimal decomposition}{23}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.7}What the experiments test within the irreducibility framework}{23}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.8}Limitations and future work}{23}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.9}Conclusion}{23}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Acknowledgements}{23}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}Other things to consider?}{23}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}That some features are multidimensional}{23}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.8}Limitations and future work}{24}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.9}Conclusion}{24}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Acknowledgements}{24}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Other things to consider?}{24}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}That some features are multidimensional}{24}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {9}References}{24}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {10}Appendix}{25}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {11}Notes}{25}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {11.0.1}Hard maybes}{25}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {11.0.2} Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}{25}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {12}To add:}{26}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {12.0.1}SVD reformulation, capacity maybe per feature ablation TBD}{26}{}\protected@file@percent }
-\newlabel{sec:svd_reformulation}{{12.0.1}{26}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {13}Lukas questions}{27}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Toy Model of Superposition}{25}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.1.1}Model training}{25}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Toy Model of Compressed Computation}{25}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.2.1}Model training}{25}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.3}Toy Model of Geometry}{25}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.3.1}SPD: Sweep over minimality coefficients}{26}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.3.2}SPD: Sweep over ranks for fixed minimality}{28}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.3.3}Softmax: Sweep over minimality coefficients}{29}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.3.4}Softmax: Sweep over ranks for fixed minimality}{29}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11}Notes}{29}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {12}To add:}{30}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {12.0.1}SVD reformulation, capacity maybe per feature ablation TBD}{30}{}\protected@file@percent }
+\newlabel{sec:svd_reformulation}{{12.0.1}{30}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {13}Lukas questions}{30}{}\protected@file@percent }
 \abx@aux@read@bbl@mdfivesum{C4A5532B4B3FFA5BE1644256A6BA81F1}
 \abx@aux@defaultrefcontext{0}{stochasticparameterdecomposition}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{bhagat2025compressed}{anyt/global//global/global/global}
@@ -234,4 +242,4 @@
 \abx@aux@defaultrefcontext{0}{smith2024strong}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{vaswani2023attentionneed}{anyt/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{wright2024featureSuppressionSAEs}{anyt/global//global/global/global}
-\gdef \@abspage@last{30}
+\gdef \@abspage@last{34}
