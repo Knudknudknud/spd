@@ -819,7 +819,7 @@ presents a more entangled picture: the first $80$ subcomponents have small pairw
 The $U$ vectors on the otherhand, find the same two-cluster pattern as in $W_{\text{in}}$, with the first $80$ subcomponents having small positive cosine similarities with each other and large negative similarities with the remaining $20$,
 while the final $20$ practically collapse onto the same direction.
 
-\subsection{Subcomponent Norm Distributions}
+\subsubsection{Subcomponent Norm Distributions}
 
 As briefly mentioned in TMS, but also observed in the CC model,
 softmax produces feature shrinkage, even when it produces the right feature directions.
@@ -875,12 +875,7 @@ components absorbs residual reconstruction error.
 \subsection{Toy Model of Geometry}
 
 In the paired TMS regime, even though input features were nominally two-dimensional, the model collapsed them onto a single direction, so a rank-1 decomposition per feature was sufficient. To test the rank-$k$ extension of Section~\ref{sec:rank-k-attention}, a setting is needed where features cannot collapse to a single direction.
-This experiment generalizes the cube example from the introduction,
-where the same underlying computation admits multiple valid
-ground-truth decompositions depending on what each subcomponent
-is allowed to represent.
-
-The model is trained to compute the volume of an $n$-dimensional simplex from its $n+1$ vertices in $\mathbb{R}^n$:
+This experiment generalizes the cube example from the introduction, where a model is trained to compute the volume of an $n$-dimensional simplex from its $n+1$ vertices in $\mathbb{R}^n$:
 \begin{equation}
     \text{Vol}(v_1, \ldots, v_{n+1}) = \frac{1}{n!} \left| \det\!\left( \begin{bmatrix} v_2 - v_1 & v_3 - v_1 & \cdots & v_{n+1} - v_1 \end{bmatrix} \right) \right|.
 \end{equation}
@@ -888,172 +883,234 @@ The model is trained to compute the volume of an $n$-dimensional simplex from it
 
 To mirror the paired-feature setup of Section~\ref{sec:tms-tied-experiment}, the model receives $K$ simplices as input, each sampled with probability $p$ and otherwise set to zero across all of its coordinates:
 \begin{equation}
-    f(x) = W_1 \text{ReLU}(W_2 x), \quad W_2 \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_1 \in \mathbb{R}^{K \times d_{\text{hidden}}},
+    f(x) = W_2 \text{ReLU}(W_1 x), \quad W_1 \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_2 \in \mathbb{R}^{K \times d_{\text{hidden}}},
 \end{equation}
-where $n(n+1)$ is the total number of coordinates of a simplex in $\mathbb{R}^n$ and $K$ is the number of simplices.
+here $n(n+1)$ is the total number of coordinates of a simplex in $\mathbb{R}^n$ and $K$ is the number of simplices.
 Concretely, for this experiment the simplices are triangles in $\mathbb{R}^2$, with $K = 3$ and $d_{\text{hidden}} = 150$.
 
-Unlike TMS, $d_{\text{hidden}}$ is chosen to be much greater than the input dimension($Kn(n+1)$), so that the model does not need to compress features through superposition.
-The intention is that the model assigns each simplex to a
+Unlike TMS, $d_{\text{hidden}}$ is chosen to be much greater than the input dimension (here $d_{in}= 18$), so that the model does not need to compress features through superposition.
+The intention being that the model assigns each simplex to a
 separate subset of neurons, allowing the routing of information
-from input to output to be studied in isolation as the minimality
+from input to output to be studied in isolation, as the minimality
 loss is applied at different strengths and as the rank
 is increased.
 
-By construction, the $n+1$ vertices of a non-degenerate simplex
-are affinely independent: no vertex lies in the affine hull of
-the others. The volume is therefore a function of all vertices jointly,
-and no subset can be dropped. Provided the model learns the
-correct computation, and not some proxy that only approximates
-the volume, the volume of a single simplex is an irreducible
-feature in the sense of Section~\ref{sec:irreducibility}: it cannot
-be decomposed further without losing the computation. The volumes
-of different simplices, in contrast, are separable, as they 
-cover disjoint sets of vertices and can be computed independently.
+The volume of a simplex is an irreducible feature in the
+sense of Section~\ref{sec:irreducibility}, provided the model learns
+the volume itself rather than a proxy that only approximates it.
+The volume is computed from the $n+1$ vertices of the simplex, which
+are affinely independent by construction: no vertex lies in the affine hull
+of the others, so the volume depends on all of them jointly.
 
+Any computation faithful to the volume must therefore represent the
+vertices together, and no partition of them into separate parts can
+determine the volume independently. The volume is thus neither separable,
+since its representation cannot factor into independent components,
+nor a mixture of a lower-dimensional feature, since the vertices
+of an active simplex are always jointly present, with no partial feature
+that activates on its own while the rest remains inactive. 
+The volumes of different simplices, by contrast, are separable from one another,
+since each depends on a disjoint set of vertices and can be computed independently.
 
-The ground-truth decomposition should therefore group
-each simplex into a single unit and separate across simplices.
-A decomposition method need not recover this, however: depending
-on its constraints it may instead split a simplex into finer fragments,
-recovering a single coordinate, a vertex,
-or an edge rather than the whole simplex. Which of these
-is recovered should depend on two factors: the dimensionality
-each subcomponent is allowed to represent, and how strongly
-the minimality loss penalises spreading importance across
-multiple subcomponents. For the softmax variant in
-particular, the entropy minimality loss maximises the probability
-of a simplex belonging to a single subcomponent. Given sufficient
-rank and sufficient minimality pressure, the decomposition is then
-expected to recover a whole simplex as a single component rather
- than splitting it across several.
+The ground-truth decomposition for $W_{1}$ should therefore group each simplex
+into a single unit and keep distinct simplices in distinct units. 
+For $W_{2}$, meanwhile, the structure is less clear. The
+volume is computed by the same function for every simplex, so whether the
+model implements this through shared or separate neurons determines the
+ground-truth decomposition. In this case the model appears to learn a separate
+computation for each simplex, as shown in the next section.
 
-
+Whether the decomposition method can recover this structure should
+depend on two factors: the dimensionality each subcomponent is allowed
+to represent, and how strongly the minimality loss penalises spreading
+importance across multiple subcomponents.
+As these parameters are varied, the recovered decomposition is expected
+to change gradually:
+A subcomponent may capture progressively
+larger fractions of a single simplex, converging towards the ground-
+truth decomposition. Alternatively, the additional capacity may be
+used to represent parts of multiple simplices simultaneously,
+resulting in a decomposition that mixes otherwise independent computations.
 
 \subsubsection{Target model structure}
+To examine, how the model learns to compute the volume,
+a similar approach to that of Section \ref{sec:tcc-experiment} is adopted,
+where the routing strength from each simplex to each output is measured by
+decomposing the preactivations of the hidden neurons into contributions
+from each simplex, and then measuring how strongly those neurons contribute
+to the output.
 
-While it should be possible for the model
-to assign a disjoint set of neurons to each simplex,
-and route their information through disjoint hidden neurons to the output, this is not guaranteed to be the structure that the model learns.
-To examine this, a similar approach to that of  Section \ref{sec:tcc-experiment} is adopted.
+Concretely, three quantities are defined over hidden neurons.
+Firstly, how strongly each simplex influences a hidden neurons state,
+secondly how strongly each hidden neuron contributes to the volume output of each simplex,
+and lastly how strongly the path from layer l to layer l+1 routes information from simplex g to output k through neuron i.
 
-Concretely, the input features are partitioned into $K$ disjoint groups, where group $g$ contains the $n(n+1)$ coordinates of simplex $g$ denoted by $\mathcal{C}_g$, with the groups jointly covering all input columns. Let $W_2^{(g)}$ denote $W_2$ restricted to the columns in $\mathcal{C}_g$ and zero elsewhere, so that $W_2 = \sum_{g=1}^{K} W_2^{(g)}$.
-The preactivation of hidden neuron $i$ then decomposes additively over the groups:
+Firstly, let
+the input features be partitioned into $K$ disjoint groups,
+where group $g$ contains the $n(n+1)$ coordinates of simplex $g$ denoted
+by $\mathcal{C}_g$, with the groups jointly covering all input columns.
+
+Let $W_l^{(g)}$ denote $W_l$ restricted to the columns in $\mathcal{C}_g$
+and zero elsewhere, such  that $W_l = \sum_{g=1}^{K} W_l^{(g)}$ \footnote{Note we define both $W^g$ and $W^{c}$, technically they canco occur. Perhaps define a seperate notation? }.
+The preactivation of hidden neuron $i$ then decomposes additively
+over the groups:
 \begin{equation}
-    \sum_{c} W_{2[i,c]} = \sum_{g=1}^{K} \rho_{i,g}, \qquad \rho_{i,g} := \sum_{c} W^{(g)}_{2[i,c]},
+    \sum_{c} W_{l[i,c]} = \sum_{g=1}^{K} \rho_{l,[i,g]}, \qquad \rho_{l,[i,g]} := \sum_{c} W^{(g)}_{l[i,c]},
 \end{equation}
-here $\rho_{i,g}$ is the influence of simplex $g$ on neuron $i$.
-
+here $\rho_{l,[i,g]}$, measures the additive contribution of input group g to the preactivation of neuron i.”
 
 On the output side, the strength with which hidden neuron
 $i$ contributes to the volume computation of simplex $k$
-is given directly by the weight $W_{1[k,i]}$.
+is given directly by
+\begin{equation}
+    \pi_{l+1,[k,i]} := W_{l+1[k,i]}
+\end{equation}
 
-To measure the routing strength of the path from simplex $g$ to output $k$ through neuron $i$, the product $\rho_{i,g} \cdot W_{1[k,i]}$ is computed (Adopted from Section \ref{sec:tcc-experiment}).
-A large value indicates a strong path, while a small value is
-less influential.
+Finally, the strength of the path from simplex $g$ to output $k$ through neuron $i$ is given by the product of these two factors. 
+
 Let $s_{i}$ denote the strongest of such paths for neuron $i$ across all simplices and outputs.
 \begin{equation}
-    s_{i} = \max_{g,k} \rho_{i,g} W_{1[k,i]}. \footnote{Make sure i compute max}
+    s_{i} = \max_{g,k} \rho_{l,[i,g]} \pi_{l+1,[k,i]}. \footnote{Make sure i compute max} \footnote{Consider not taking absolute values here or verify that the code doesnt. Also the plot caps at zero, there must be a max somewhere.}
 \end{equation}
+A large value indicates a strong path, while a small value is
+less influential. \footnote{Double check value for figure with cutoff.}
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=5cm]{geom_input_output.jpg}
-    \caption{Top: values of $s_{i}$. Middle: response $\rho_{i,g}$ from each input group to hidden neuron $i$. Bottom: contribution $W_{1[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are ordered by $\rho$, then $s_i$, and lastly by output strength. Neurons with $s_{i} > 0.05$ shown.} \footnote{wrong value}
+    \caption{Top: values of $s_{i}$. Middle: response $\rho_{l,[i,g]}$ from each input group to hidden neuron $i$. Bottom: contribution $\pi_{l+1,[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are ordered by $\rho_{l,[i,g]}$, then $s_i$, and lastly by output strength. Neurons with $s_{i} > 0.05$ shown.}
     \label{fig:simplex_target_structure}
-\end{figure} \footnote{Consider not taking absolute values here or verify that the code doesnt. Also the plot caps at zero, there must be a max somewhere.}
+\end{figure}
+Figure~\ref{fig:simplex_target_structure} shows that
+the model learns a predominantly modular structure.
+The strongest path generally routes information from one
+simplex to that same simplex's output, and more broadly each
+hidden neuron appears dedicated to a single simplex,
+with negligible influence from other input groups in
+the first layer and negligible contribution to other outputs
+in the second. The model therefore dedicates a separate
+set of neurons to each simplex, which suggests a
+decomposition of $W_2$ that assigns one subcomponent
+ per simplex.
 
-The model learns a predominantly modular structure, in which each hidden neuron is strongly influenced by only one simplex and contributes strongly to that same simplex's output (Figure~\ref{fig:simplex_target_structure}).
-A summarised view of this routing is shown in Figure~\ref{fig:simplex_group_output}, where the per group values are aggregated across all hidden neurons, and passed through a ReLU. The response of output $k$ to simplex $g$ is
-\begin{equation}
-    r_{g,k} = \sum_{i}^{d_{\text{hidden}}} \mathrm{ReLU}\!\left(\rho_{i,g}\right) W_{1[k,i]}.
-\end{equation}
-
+A summarised view of the entire routing is given in
+Figure~\ref{fig:simplex_group_output}, aggregating the per-group values across all hidden neurons and passing them through a ReLU.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=6cm]{geom_input_output_final.jpg}
-    \caption{Group to output response $r_{g,k}$, obtained by sampling each simplex in isolation and measuring the resulting volume output. The diagonal structure shows that each simplex predominantly influences its own output, with negligible influence on the others.}
+    \caption{Group to output response $    r_{g,k} = \sum_{i}^{d_{\text{hidden}}} \pi_{l+1,[k,i]}\mathrm{ReLU}\!\left(\rho_{l,[i,g]}\right)$ obtained by sampling each simplex in isolation and measuring the resulting volume output. The magnitude is concentrated on the diagonal, showing
+that each simplex strongly influences its own output,
+with negligible cross-activation.}
     \label{fig:simplex_group_output}
 \end{figure}
-The magnitude is concentrated on the diagonal, showing
-that each simplex strongly influences its own output,
-with negligible cross-activation. It should therefore be 
-possible to recover a decomposition, where the flow
-from each simplex is routed through a disjoint set of hidden neurons to its corresponding output,
-with minimal leakage across subcomponents.
 
-To isolate the effect of the subcomponent rank from that of the minimality coefficient, the two factors are varied one at a time, following a one-factor-at-a-time approach. First, the rank is fixed at $k=1$, recovering the original SPD formulation, and the minimality coefficient $\beta_3$ is varied to examine its influence on the decomposition. Second, $\beta_3$ is fixed at a value that produced a clear decomposition at $k=1$, and the rank is increased to examine how higher $k$ allows different decompositions to be recovered. While a full sweep over both factors was carried out, the one-factor-at-a-time presentation is sufficient here: once the minimality coefficient reached its effective range, the resulting decompositions were qualitatively the best across all ranks.
+To isolate the effect of the subcomponent rank from that of the minimality coefficient,
+the two factors are varied one at a time. First, the rank is fixed at $k=1$, recovering the
+original SPD formulation, and the minimality coefficient $\beta_3$ is varied to examine its
+influence on the decomposition. Second, $\beta_3$ is fixed at a value that produced a clear
+decomposition at $k=1$, and the rank is increased to examine how higher $k$ allows different
+decompositions to be recovered. Although a grid search was performed over both factors jointly,
+the following sections present these two sweeps in isolation.
+
+\subsubsection{Subcomponent structure}
+Unlike the target model, where the hidden neurons
+are the object of interest, the subcomponent analysis
+steps one level back to measure how strongly individual subcomponents
+route into one another.
+This requires defining the same three quantities as before, but at the subcomponent level rather than the neuron level.
+
+In particular, let $W^{(c)}_{l}$ be a subcomponent of layer $l$, defined in the same manner as in Section $\ref{sec:rank-k-attention}$,
+such that $\sum_{c=1}^{C} W^{(c)}_{l} = W_l$.
+Then analogously to before, define the additive contribution of simplex $g$ on the hidden neurons of subcomponent $c$ in layer
+$W_{l}$ as
+\begin{equation}
+    \rho^{(c)}_{l,[i,g]}
+    := \sum_{j \in \mathcal{C}_g}\left(W^{(c)}_{l,[i,j]}\right) \quad \text{such that } \rho_{l,[i,g]} = \sum_{c=1}^{C} \rho^{(c)}_{l,[i,g]}
+\end{equation}
+Secondly, the additive contribution of hidden neuron $i$ to output $k$ through subcomponent $c$ is given by
+\begin{equation}
+    \pi^{(c)}_{l+1,[k,i]} := \left(W^{(c)}_{l+1[k,i]}\right) \quad \text{such that } \pi_{l+1,[k,i]} = \sum_{c=1}^{C} \pi^{(c)}_{l+1,[k,i]}
+\end{equation}
+
+Lastly, define the subcomponent routing matrix $\Psi \in \mathbb{R}^{|C|\times|C|}$
+as the matrix product between the total influence of all input features on the hidden neurons
+and the total contribution of the hidden neuron to all output features.
+
+\begin{equation}
+    \Psi_{c',c} := \sum_{i=1}^{d_{\text{hidden}}} \left( \sum_{k=1}^{d_{\text{out}}} W^{(c')}_{l+1,[k,i]} \right) \left( \sum_{j=1}^{d_{\text{in}}} W^{(c)}_{l,[i,j]} \right).
+\end{equation}
+Like before, a larger value indicates a stronger routing from subcomponent $c$ to subcomponent $c'$.
+These three quantities together describe the routing through the decomposition. The input contribution
+$\rho^{(c)}_{l,[i,g]}$ shows how each simplex group feeds into subcomponent $c$, the output contribution $\pi^{(c)}_{l+1,[k,i]}$ shows how subcomponent $c$ feeds into each output, and the routing matrix $\Psi_{c',c}$ composes the two, measuring how strongly a subcomponent that reads from the input ($c$) connects to one that writes to the output ($c'$) through shared hidden neurons.
 
 
-\subsubsection{Comparison of importance values across different minimality coefficients}
+
+\subsubsection{Comparison of importance values across different minimality coefficients} \footnote{Add a sd + mean thing across ranks? We would probably want to identify the one that gets the best losses on both methods on all ranks. Remember to say i sample one hot.}
 
 With the target model's modular structure established, the first sweep fixes the rank at $k=1$ and varies the minimality coefficient $\beta_3$, comparing how the original SPD gating and the softmax variant allocate importance as the pressure toward concentration increases. At $k=1$, neither method can represent a full triangle within a single subcomponent, since a triangle occupies more than one dimension; the question is therefore not whether a simplex is recovered whole, but how the two methods distribute a simplex across the rank-1 subcomponents available to them, and how that distribution responds to $\beta_3$.
 
-A low minimality coefficient places little pressure on the importance assignment, allowing a simplex to be spread across many subcomponents. As $\beta_3$ increases, the assignment is pushed toward fewer active subcomponents per simplex. The two methods are expected to differ in how this concentration proceeds:
-
-$g \in \{1, \ldots, K\}$ a simplex group, $i$ a hidden neuron and $k$ an output. The response of subcomponent $c$
-the total influence of input feature of group $g$ on subcomponent $c$ is given by:
-
-\[
-    \alpha_{c,g} = \sum_{i=1}^{d_{\text{hid}}} \sum_{j \in \mathcal{C}_g} \left(\hat{W}^{(c)}_{\text{in}}\right)_{[i,j]}, \alpha_{c,g} \in \mathbb{R}.
-\]
-Likewise we would like to visualize how much a subcomponent is contributing to the output of the next layer,
-i.e how much each subcomponent contributes to the input of the subcomponent of the next level,
-here we compute the total influence as
-
-
-Let $\mathcal{C}_{l}$ denote the set of subcomponents for layer l, where $c \in \mathcal{C}_{l} = UV^T$,
-where $C_{1} \in \mathbb{R}^{|C|,d_{hid},d_{in}}$ and $C_{2} \in \mathbb{R}^{|C|,d_{out},d_{hid}}$.
-then the influence of a subcomponent $C_{l+1}$ on $C_{l}$ is denoted by:
-
-\begin{equation}
-    \psi_{c,k} = \sum_{j=1}^{d_{hid}} C_{l+1[c,j,k]} C_{l[c,k,j]} \in \mathbb{R}. 
-\end{equation}
-
+%spd image
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=10cm]{causal_importances_minimality_sweep_combined.png}
+    \includegraphics[width=\linewidth, height=10cm]{SPD_minimality_sweep_condensed_1e-3_to_1e-6.png}
 \end{figure}
 
 To compute the importance from one subcomponent to another we compute it similarly to that of rho,
 sadly it is not possible to collapse it into a layer wihtout losing structural information like above,
 so instad we compute:
 
-
+%Spd image
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=12cm]{io_routing_chain_minimality_sweep_combined.png}
+    \includegraphics[width=\linewidth, height=12cm]{SPD_minimality_io_sweep_condensed_1e-3_to_1e-6.png}
     \caption{Left to right: edges: the group importance values given by $\rho_{i,g}$, $w_{2} \times  w_{1}$: values given by}
 \end{figure}
 
 
 
+
+%Images for softmax:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=3.5cm]{Softmax_minimality_sweep_condensed_1e-3_to_1e-6.png}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=3.5cm]{Softmax_minimality_io_sweep_condensed_1e-3_to_1e-6.png}
+    \caption{Note that pho, pi are direct layerwise contributions, and the purple arrows are $\Psi$ is defined via the attribution.
+    }
+\end{figure}
+
+
 \subsubsection{Comparison of importance values across different ranks for fixed minimality.}
 
-mention if it affects losses.
 
+%SPD:
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=8cm]{geom_dif_ranks.jpg}
+    \includegraphics[width=\linewidth, height=3.5cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_rank_1_to_5.png}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=8cm]{geom_input_output_dif_ranks.jpg}
+    \includegraphics[width=\linewidth, height=3.5cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_io_routing_chain_rank_1_to_5.png}
 \end{figure}
 
 
-We make a new plot, where
-for each group we just take the largest responding ones,
-that way for each group the same neuron can be 
-in all plots.
+
+%Softmax:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=3.5cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_rank_1_to_5}
+\end{figure}
 
 
-
-
-
-
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=3.5cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_io_routing_chain_rank_1_to_5.png}
+\end{figure}
 
 
 
@@ -1403,6 +1460,7 @@ A rank-1 decomposition with one component per feature is often taken to be the m
     \item SPD recovers clean structure on the geometric model only within a narrow minimality range, raising a robustness question.
     \item Future directions: adversarial ablation combined with relational importance; attention approximations to reduce the quadratic cost; direct evaluation of the mixture condition.
     \item This paper does not address mixtures, and therefore does not conclude on every aspect of irreducibility.
+    \item Toy models.
 \end{itemize}
 
 % ============================================================
@@ -1437,8 +1495,51 @@ if it is better explained by a rank 1 component than rank 2.
 
 
 \section{Appendix}
-Descriptive length thing?
-+ approximation of attention experiment
+\subsection{Toy Model of Superposition}
+\subsubsection{Model training}
+
+
+\subsection{Toy Model of Compressed Computation}
+\subsubsection{Model training}
+
+
+
+
+
+\subsection{Toy Model of Geometry}
+This section contains full size images over the entire sweep of minimality coefficients,
+that didnt fit in the main text
+\subsubsection{SPD: Sweep over minimality coefficients}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=10cm]{SPD_minimality_sweep_full_1e1_to_1e-6.png}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=15cm]{SPD_minimality_io_sweep_full_1e1_to_1e-6.png}
+\end{figure}
+
+
+\subsubsection{SPD: Sweep over ranks for fixed minimality}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=10cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_rank_1_to_8.png}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=15cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_io_routing_chain_rank_1_to_8.png}
+\end{figure}
+
+
+\subsubsection{Softmax: Sweep over minimality coefficients}
+\subsubsection{Softmax: Sweep over ranks for fixed minimality}
+
+
+
 
 
 
@@ -1467,56 +1568,6 @@ Section 1.1 Prologue: The problem of measure --- sets up why measure theory exis
 Section 1.2 Lebesgue measure --- gives you "measure zero," "Lebesgue measure on $\mathbb{R}^n$," and the fact that lines/planes/etc. have measure zero in higher-dimensional ambient spaces. This is the technical core for your question.
 Section 2.3 Probability spaces --- short section that frames everything in probability language, which is what you actually want.
 
-
-\subsubsection{Hard maybes}
-
-\subsubsection{ Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}
-Following the extension to rank-$k$ subcomponents, and the alternative formulation of the GNAN,
-the output $g^{l}_{c} \in [0, 1]^{k}$ is a per feature importance value, and thus the masking can be applied independently to each feature.
-The intuition behind this is that if a mechanism captures a 1 dimensional feature, it would only need of the $k$ dimensions to be active.
-\\
-Likewise if this actually ends up working, k can be considered an upper bound or a so called "capacity" of a mechanism,
-it also follows nicely with the descriptive length principle found in the appendix of APD.
-
-To determine the effective rank of each subcomponent, the stochastic masking becomes:
-\begin{equation}
-    [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
-\end{equation}
-for each j in $1,\dots,k$
-\\
-Notably this treats each feature independently, which may not be desirable,
-as such we could modify it ever so slightly:
-
-\begin{equation}
-        [m_{c}^l(x,r)]_{j} = [g_{c}^l(x)][g_{c}^l(x)]_{j} + (1-[g_{c}^l(x)][g_{c}^l(x)]_{j}) r_{c,j}^l, \qquad r_{c,j}^l \sim U(0, 1)
-\end{equation}
-The signal becomes an importance of two factors,
-if the component is important and both features are important, it remains active,
-if only one feature is important, the other will be pushed to zero
-
-The masked weight matrix becomes:
-\begin{equation}
-    W^{\prime l}(x, r) = \sum_{c=1}^{C} 
-    U_{c}^{l} \, \mathrm{diag}\!\left(
-    \mathbf{m}_{c}^{l}(x, r)\right) V_{c}^{l\top}
-\end{equation}
-Where the diagonal matrix is the per-feature mask for subcomponent $c$.
-
-The importance minimality loss penalises all $k$ dimensions of 
-all subcomponents toward zero:
-\begin{equation}
-    \mathcal{L}_{\text{import}} = \sum_{l=1}^{L} \sum_{c=1}^{C} 
-    \sum_{j=1}^{k} \left|[g_{c}^{l}(x)]_{j}\right|^{p}
-\end{equation}
-This follows the same logic by which SPD selects the number of 
-active subcomponents: the minimality loss drives unused components 
-toward zero, and only those that are genuinely required to 
-reconstruct the target model's output survive.
-
-This makes $k$ a soft upper bound rather than a sensitive 
-hyperparameter. In practice, $k$ can be set conservatively large 
-and the effective rank of each subcomponent is learned from the 
-data.
 
 
 \section{To add:}

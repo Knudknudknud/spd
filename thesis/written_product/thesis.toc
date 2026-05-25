@@ -15,33 +15,41 @@
 \contentsline {subsection}{\numberline {4.3} Toy Model of Compressed Computation }{9}{}%
 \contentsline {subsubsection}{\numberline {4.3.1}Sampling effect on loss}{10}{}%
 \contentsline {subsubsection}{\numberline {4.3.2}Causal importance}{10}{}%
-\contentsline {subsection}{\numberline {4.4}Subcomponent Norm Distributions}{12}{}%
-\contentsline {subsection}{\numberline {4.5}Toy Model of Geometry}{14}{}%
-\contentsline {subsubsection}{\numberline {4.5.1}Target model structure}{14}{}%
-\contentsline {subsubsection}{\numberline {4.5.2}Comparison of importance values across different minimality coefficients}{16}{}%
-\contentsline {subsubsection}{\numberline {4.5.3}Comparison of importance values across different ranks for fixed minimality.}{18}{}%
-\contentsline {subsection}{\numberline {4.6}Computing}{19}{}%
-\contentsline {section}{\numberline {5}Discussion}{19}{}%
+\contentsline {subsubsection}{\numberline {4.3.3}Subcomponent Norm Distributions}{12}{}%
+\contentsline {subsection}{\numberline {4.4}Toy Model of Geometry}{14}{}%
+\contentsline {subsubsection}{\numberline {4.4.1}Target model structure}{14}{}%
+\contentsline {subsubsection}{\numberline {4.4.2}Subcomponent structure}{16}{}%
+\contentsline {subsubsection}{\numberline {4.4.3}Comparison of importance values across different minimality coefficients}{17}{}%
+\contentsline {subsubsection}{\numberline {4.4.4}Comparison of importance values across different ranks for fixed minimality.}{19}{}%
+\contentsline {subsection}{\numberline {4.5}Computing}{19}{}%
+\contentsline {section}{\numberline {5}Discussion}{20}{}%
 \contentsline {section}{\numberline {6}Discussion}{20}{}%
 \contentsline {subsection}{\numberline {6.1}Summary of empirical findings}{20}{}%
 \contentsline {subsubsection}{\numberline {6.1.1}Summary of empirical findings}{20}{}%
-\contentsline {subsection}{\numberline {6.2}Sparsity of assignment is not sparsity of representation}{20}{}%
-\contentsline {subsubsection}{\numberline {6.2.1}Sparsity of assignment is not sparsity of representation}{21}{}%
+\contentsline {subsection}{\numberline {6.2}Sparsity of assignment is not sparsity of representation}{21}{}%
+\contentsline {subsubsection}{\numberline {6.2.1}Sparsity of assignment is not sparsity of representation}{22}{}%
 \contentsline {subsection}{\numberline {6.3}Relation to adversarial parameter decomposition}{22}{}%
-\contentsline {subsection}{\numberline {6.4}Rank extension and the structure of the recovered weights}{22}{}%
-\contentsline {subsection}{\numberline {6.5}The non-uniqueness of the minimal decomposition}{22}{}%
+\contentsline {subsection}{\numberline {6.4}Rank extension and the structure of the recovered weights}{23}{}%
+\contentsline {subsection}{\numberline {6.5}The non-uniqueness of the minimal decomposition}{23}{}%
 \contentsline {subsection}{\numberline {6.6}The non-uniqueness of the minimal decomposition}{23}{}%
 \contentsline {subsection}{\numberline {6.7}What the experiments test within the irreducibility framework}{23}{}%
-\contentsline {subsection}{\numberline {6.8}Limitations and future work}{23}{}%
-\contentsline {subsection}{\numberline {6.9}Conclusion}{23}{}%
-\contentsline {section}{\numberline {7}Acknowledgements}{23}{}%
-\contentsline {section}{\numberline {8}Other things to consider?}{23}{}%
-\contentsline {subsection}{\numberline {8.1}That some features are multidimensional}{23}{}%
+\contentsline {subsection}{\numberline {6.8}Limitations and future work}{24}{}%
+\contentsline {subsection}{\numberline {6.9}Conclusion}{24}{}%
+\contentsline {section}{\numberline {7}Acknowledgements}{24}{}%
+\contentsline {section}{\numberline {8}Other things to consider?}{24}{}%
+\contentsline {subsection}{\numberline {8.1}That some features are multidimensional}{24}{}%
 \contentsline {section}{\numberline {9}References}{24}{}%
 \contentsline {section}{\numberline {10}Appendix}{25}{}%
-\contentsline {section}{\numberline {11}Notes}{25}{}%
-\contentsline {subsubsection}{\numberline {11.0.1}Hard maybes}{25}{}%
-\contentsline {subsubsection}{\numberline {11.0.2} Per-dimension ablation and implicit rank selection (Hypothesis: ask lukas)}{25}{}%
-\contentsline {section}{\numberline {12}To add:}{26}{}%
-\contentsline {subsubsection}{\numberline {12.0.1}SVD reformulation, capacity maybe per feature ablation TBD}{26}{}%
-\contentsline {section}{\numberline {13}Lukas questions}{27}{}%
+\contentsline {subsection}{\numberline {10.1}Toy Model of Superposition}{25}{}%
+\contentsline {subsubsection}{\numberline {10.1.1}Model training}{25}{}%
+\contentsline {subsection}{\numberline {10.2}Toy Model of Compressed Computation}{25}{}%
+\contentsline {subsubsection}{\numberline {10.2.1}Model training}{25}{}%
+\contentsline {subsection}{\numberline {10.3}Toy Model of Geometry}{25}{}%
+\contentsline {subsubsection}{\numberline {10.3.1}SPD: Sweep over minimality coefficients}{26}{}%
+\contentsline {subsubsection}{\numberline {10.3.2}SPD: Sweep over ranks for fixed minimality}{28}{}%
+\contentsline {subsubsection}{\numberline {10.3.3}Softmax: Sweep over minimality coefficients}{29}{}%
+\contentsline {subsubsection}{\numberline {10.3.4}Softmax: Sweep over ranks for fixed minimality}{29}{}%
+\contentsline {section}{\numberline {11}Notes}{29}{}%
+\contentsline {section}{\numberline {12}To add:}{30}{}%
+\contentsline {subsubsection}{\numberline {12.0.1}SVD reformulation, capacity maybe per feature ablation TBD}{30}{}%
+\contentsline {section}{\numberline {13}Lukas questions}{30}{}%
