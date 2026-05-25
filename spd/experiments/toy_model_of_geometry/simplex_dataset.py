@@ -44,8 +44,6 @@ class SimplexDataset:
         """Sample `num` non-degenerate (k+1, k) simplices in [0,1]^k via rejection."""
         vertices = torch.rand(num, k + 1, k, device=self.device)
 
-        # 1-simplex in R^1: degenerate iff the two points coincide; with continuous
-        # sampling this has measure zero and the determinant check still works.
         for _ in range(self.max_resample_attempts):
             dets = self._edge_dets(vertices)
             bad = torch.abs(dets) < self.degeneracy_eps
