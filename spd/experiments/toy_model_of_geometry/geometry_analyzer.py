@@ -375,11 +375,8 @@ def pick_components(read, write, coverage=0.95, min_mass=0):
     contrib2 = np.maximum(write, 0).sum(axis=1)     # (C2,) total positive write per output subcomponent
 
     def cover(v):
-        live = np.where(v >= min_mass)[0]
-        if live.size == 0:
-            raise ValueError("No components meet the minimum mass requirement.")
-        
-        order = live[np.argsort(-v[live])]
+
+        order = np.argsort(-v)
         cum = np.cumsum(v[order])
         total = cum[-1]
 
@@ -679,7 +676,7 @@ def main() -> None:
         group_features, _, _ = get_group_features(ranks)
 
         plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group output matrix " + run_title)
-        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.9, edge_frac=0.05, min_mass=0.05)
+        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.95, edge_frac=0.005, min_mass=0)
     
     
     model_dir = Path(model_dir)
@@ -694,10 +691,6 @@ def main() -> None:
     group_features, _, _ = get_group_features(ranks)
 
     plot_input_hidden_output_translation(W1, W2, group_features, save_dir=model_dir, title="Layered translation from input groups to outputs")
-    # plot_io_routing_chain(
-    #     A1, B1, group_features, model_dir,
-    #     title="Input → hidden → output routing chain (components, smaller test)",
-    #     components=False,
-    # )
+
 if __name__ == "__main__":
     main()  
