@@ -371,11 +371,14 @@ def pick_components(read, write, coverage=0.95, min_mass=0):
     #contrib2 = write.sum(axis=1)     # (C2,) total write per output subcomponent
     
     #Resorted to this version as the components would cancel each other out otherwise.
-    contrib1 = np.maximum(read, 0).sum(axis=1)      # (C1,) total positive read per input subcomponent
-    contrib2 = np.maximum(write, 0).sum(axis=1)     # (C2,) total positive write per output subcomponent
+    contrib1 = np.abs(read).sum(axis=1)    # (C1,) input-side inflow
+    contrib2 = np.abs(write).sum(axis=1)   # (C2,) output-side outflow
 
     def cover(v):
-
+        live = np.where(v >= min_mass)[0]
+        if live.size == 0:
+            raise ValueError("No components meet the minimum mass requirement.")
+        
         order = np.argsort(-v)
         cum = np.cumsum(v[order])
         total = cum[-1]
@@ -648,7 +651,7 @@ def main() -> None:
         (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "(Rank 8)")
     ]
     
-    model_dir = r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\smaller_test"
+    model_dir = r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\smaller_test"
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
     for run_dir, run_title in run_dirs:
@@ -661,11 +664,18 @@ def main() -> None:
             map_location=DEVICE,
         )
 
+            
+            
+
         A1 = state_dict["components.linear1.A"]
         B1 = state_dict["components.linear1.B"]
 
         A2 = state_dict["components.linear2.A"]
         B2 = state_dict["components.linear2.B"]
+
+
+
+
         W1 = einops.einsum(A1, B1, "d_in C K, C K d_out -> d_out d_in").detach().cpu().numpy()
         W2 = einops.einsum(A2, B2, "d_in C K, C K d_out -> d_out d_in").detach().cpu().numpy()
         
@@ -673,10 +683,22 @@ def main() -> None:
         C1 = einops.einsum(A1, B1, "d_in C K, C K d_out -> C d_out d_in").detach().cpu().numpy()
         C2 = einops.einsum(A2, B2, "d_in C K, C K d_out -> C d_out d_in").detach().cpu().numpy()
 
+        if run_dir == r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001":
+            test = C1[:, :, 6:12]
+            print(test.shape)
+            result = test.sum(axis=2)
+            result = result.sum(axis=1)
+            print("result[36] =", result[36])
+            print("result.sum() =", result.sum())
+            ratio = result[36] / np.abs(result).sum()
+
+            print("ratio =", ratio)
+                        
+
         group_features, _, _ = get_group_features(ranks)
 
         plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group output matrix " + run_title)
-        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.95, edge_frac=0.005, min_mass=0)
+        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.90, edge_frac=0.005, min_mass=0,sort_nodes=True, sweeps=10)
     
     
     model_dir = Path(model_dir)
@@ -691,6 +713,10 @@ def main() -> None:
     group_features, _, _ = get_group_features(ranks)
 
     plot_input_hidden_output_translation(W1, W2, group_features, save_dir=model_dir, title="Layered translation from input groups to outputs")
-
+    # plot_io_routing_chain(
+    #     A1, B1, group_features, model_dir,
+    #     title="Input → hidden → output routing chain (components, smaller test)",
+    #     components=False,
+    # )
 if __name__ == "__main__":
     main()  
