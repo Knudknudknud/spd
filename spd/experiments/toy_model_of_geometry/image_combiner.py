@@ -235,7 +235,38 @@ combine_images(
 print("Combined image saved.")
 
 
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\Subcomponent norms.png",
+]
 
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_causal_importances_ranking_sweep_minimality_1e-e4_subcomponent_norms_rank_4.png",
+    ncols=1,          # 2x2
+    size=6,
+    dpi=350,
+)
+
+#Io sweep across ranks 1 to 8 at minimality 1e-5
+
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1\Subcomponent norms.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2\Subcomponent norms.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3\Subcomponent norms.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4\Subcomponent norms.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\Subcomponent norms.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6\Subcomponent norms.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7\Subcomponent norms.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8\Subcomponent norms.png",
+]
+
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_causal_importances_ranking_sweep_minimality_1e-e4_subcomponent_norms_rank_1_to_8.png",
+    ncols=2,          # 2x2
+    size=6,
+    dpi=350,
+)
 
 # #full rank sweep at best minimality
 # image_paths = [

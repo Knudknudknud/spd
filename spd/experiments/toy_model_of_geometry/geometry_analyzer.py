@@ -628,7 +628,62 @@ def plot_io_routing_chain(
         edge_frac,
     )
 
+def plot_subcomponent_norms(state_dict,save_dir, title=None):
+    component_names = sorted({
+        k.split(".")[1]
+        for k in state_dict.keys()
+        if k.startswith("components.") and k.endswith(".A")
+    })
 
+    fig, axes = plt.subplots(
+        1,
+        len(component_names),
+        figsize=(6 * len(component_names), 4),
+        squeeze=False,
+    )
+
+    with torch.no_grad():
+        for i, name in enumerate(component_names):
+
+            A = state_dict[f"components.{name}.A"]
+            B = state_dict[f"components.{name}.B"]
+
+            # AB per subcomponent
+            W = einops.einsum(
+                A, B,
+                "d_in C K, C K d_out -> C d_in d_out"
+            )
+
+            ab_norms = W.norm(dim=(1, 2)).cpu().numpy()
+
+            # A: d_in C K
+            a_norms = A.norm(dim=(0, 2)).cpu().numpy()
+
+            # B: C K d_out
+            b_norms = B.norm(dim=(1, 2)).cpu().numpy()
+
+            # sort by AB importance
+            order = np.argsort(ab_norms)[::-1]
+
+            ab_norms = ab_norms[order]
+            a_norms = a_norms[order]
+            b_norms = b_norms[order]
+
+            x = np.arange(len(ab_norms))
+
+            ax = axes[0, i]
+
+            ax.bar(x, ab_norms, label=r"$\|UV\|$", alpha=0.6)
+
+            title = str(title)
+            ax.set_title(name)
+            ax.set_xlabel("Subcomponent (sorted by ||UV||)")
+            ax.set_ylabel("Norm")
+            ax.legend()
+
+    plt.tight_layout()
+
+    save_figure(fig, save_dir / title)
     
 def main() -> None:
       
@@ -701,24 +756,14 @@ def main() -> None:
         C1 = einops.einsum(A1, B1, "d_in C K, C K d_out -> C d_out d_in").detach().cpu().numpy()
         C2 = einops.einsum(A2, B2, "d_in C K, C K d_out -> C d_out d_in").detach().cpu().numpy()
 
-        if run_dir == r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001":
-            test = C1[:, :, 6:12]
-            print(test.shape)
-            result = test.sum(axis=2)
-            result = result.sum(axis=1)
-            print("result[36] =", result[36])
-            print("result.sum() =", result.sum())
-            ratio = result[36] / np.abs(result).sum()
-
-            print("ratio =", ratio)
-                        
 
         group_features, _, _ = get_group_features(ranks)
 
         plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group output matrix " + run_title)
         plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.90, edge_frac=0.01, min_mass=0,sort_nodes=True, sweeps=10)
-    
-    
+        plot_subcomponent_norms(state_dict,save_dir=RUN_DIR, title="Subcomponent norms")
+
+
     model_dir = Path(model_dir)
     state_dict = torch.load(
         model_dir / "geometry.pth",
