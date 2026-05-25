@@ -648,7 +648,25 @@ def main() -> None:
         (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "(Rank 5)"),
         (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "(Rank 6)"),
         (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "(Rank 7)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "(Rank 8)")
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "(Rank 8)"),
+        #rank sweep at 1e-3:
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_1", "(Rank 1)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_2", "(Rank 2)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_3", "(Rank 3)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_4", "(Rank 4)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_5", "(Rank 5)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_6", "(Rank 6)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_7", "(Rank 7)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_8", "(Rank 8)"),
+        # #k_sweep at 1e-6
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_1", "(Rank 1)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_2", "(Rank 2)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_3", "(Rank 3)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_4", "(Rank 4)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_5", "(Rank 5)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_6", "(Rank 6)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_7", "(Rank 7)"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_8", "(Rank 8)")
     ]
     
     model_dir = r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\smaller_test"
@@ -698,7 +716,7 @@ def main() -> None:
         group_features, _, _ = get_group_features(ranks)
 
         plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group output matrix " + run_title)
-        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.90, edge_frac=0.005, min_mass=0,sort_nodes=True, sweeps=10)
+        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.90, edge_frac=0.01, min_mass=0,sort_nodes=True, sweeps=10)
     
     
     model_dir = Path(model_dir)
