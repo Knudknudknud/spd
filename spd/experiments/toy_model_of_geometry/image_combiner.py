@@ -101,7 +101,7 @@ image_paths = [
 combine_images(
     image_paths,
     save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_minimality_sweep_full_1e1_to_1e-6.png",
-    ncols=len(image_paths),
+    ncols=len(image_paths) // 2,
     size=6,
     dpi=350,
 )
@@ -232,4 +232,93 @@ combine_images(
     size=6,
     dpi=350,
 )
+print("Combined image saved.")
+
+
+
+
+# #full rank sweep at best minimality
+# image_paths = [
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_1\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_2\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_3\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_4\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_5\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_6\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_7\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_8\causal_importances_upper_leaky_30000.png"
+# ]
+
+# combine_images(
+#     image_paths,
+#     save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_sweep_rank_min_1e-3.png",
+#     ncols=len(image_paths),
+#     size=6,
+#     dpi=350,
+# )
+
+
+
+# image_paths = [
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_1\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_2\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_3\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_4\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_5\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_6\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_7\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_8\io_routing_chain.png",
+# ]
+# combine_images(
+#     image_paths,
+#     save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\io_routing_chain_sweep_rank_min_1e-3.png",
+#     ncols=2,          # 2x2
+#     size=6,
+#     dpi=350,
+#)
+
+
+
+
+# image_paths = [
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_1\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_2\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_3\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_4\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_5\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_6\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_7\causal_importances_upper_leaky_30000.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_8\causal_importances_upper_leaky_30000.png"
+# ]
+
+# combine_images(
+#     image_paths,
+#     save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_sweep_rank_min_1e-6.png",
+#     ncols=len(image_paths),
+#     size=6,
+#     dpi=350,
+# )
+
+
+
+# image_paths = [
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_1\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_2\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_3\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_4\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_5\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_6\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_7\io_routing_chain.png",
+#     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_8\io_routing_chain.png",
+# ]
+# combine_images(
+#     image_paths,
+#     save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\io_routing_chain_sweep_rank_min_1e-6.png",
+#     ncols=2,          # 2x2
+#     size=6,
+#     dpi=350,
+# )
+
+
+
 print("Combined image saved.")
