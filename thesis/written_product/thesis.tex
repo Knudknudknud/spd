@@ -1064,6 +1064,12 @@ If the minimality coefficinet is too low, the model fails to concentrate importa
     \label{fig:spd_minimality_sweep_condensed}
 \end{figure}
 
+Examining the routing of this structure through the network, at larger importance values, $1e-3$,
+spd does still suggest some clear routing structure,
+where at least on the output side, the routing is directed through a clearer set of subcomponents,
+with the input side being more mixed. As the minimality coefficient is increased,
+the routing structure becomes more clear, with a more disentangled representation. $rho_{l,[i,g]}$
+routes the 
 
 
 %Spd image
@@ -1080,15 +1086,17 @@ If the minimality coefficinet is too low, the model fails to concentrate importa
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=3.5cm]{Softmax_minimality_sweep_condensed_1e-3_to_1e-6.png}
+    \includegraphics[width=\linewidth, height=12cm]{Softmax_minimality_sweep_condensed_1e-3_to_1e-6.png}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=3.5cm]{Softmax_minimality_io_sweep_condensed_1e-3_to_1e-6.png}
+    \includegraphics[width=\linewidth, height=12cm]{Softmax_minimality_io_sweep_condensed_1e-3_to_1e-6.png}
     \caption{Note that pho, pi are direct layerwise contributions, and the purple arrows are $\Psi$ is defined via the attribution.
     }
-\end{figure}
+\end{figure} 
+Note these images are not the correct ones yet for spd.
+You need to decide on if u use 1e-3 or 1e-5
 
 
 \subsubsection{Comparison of importance values across different ranks for fixed minimality.}
