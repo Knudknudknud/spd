@@ -1055,22 +1055,22 @@ In particular, softmax is conditioned to assigned to maximize the probability
 of the input feature belonging to a single subcomponent, while
 SPD with sigmoid gating can freely distribute importance across multiple subcomponents.
 
-For SPD, a sweep over $\beta_3 \in [10^{-1}, 10^{-6}]$ is performed
-(Figure, with only the range $10^{-3}$ to $10^{-6}$ shown in
-figure \ref{fig:spd_minimality_sweep_condensed}); results
-for the remaining values are provided in
-Appendix \ref{appendix:SPD_minimality_sweep}.
-For large minimality coefficients, SPD does not find
-any structure, where only one subcomponent has non-negligible importance,
-and this subcomponent only carries importance for a singular coordinate of one simplex.
+For the result section only minimality values between $10^{-3}$ and $10^{-6}$ are shown, with values $1e-1$ to $1e-7$ shown in the Appendix \ref{appendix:SPD_minimality_sweep}.
 
-When the coefficient lies between $10^{-4}$ and $10^{-5}$, the model recovers the expected clustering structure.
-Each simplex becomes concentrated on a small set of subcomponents,
-that are only causally important for that simplex. Similarly, in the second layer routing is mediated
-through one subcomponent per simplex, corresponding to the expected decomposition of $W_{2}$ hypothesized in the beginning.
-
-For small minimality coefficients, particularly around $10^{-6}$ and below, the representation becomes increasingly diffuse. Importance is spread across many subcomponents, and no clear clustering structure emerges.
-
+When SPD is trained with large minimality coefficients,
+the decomposition finds no meaningful structure: only one
+subcomponent carries non-negligible importance, and it is
+causally important for just a single coordinate of one simplex.
+When the coefficient lies between $10^{-4}$ and $10^{-5}$,
+a clustering structure emerges.
+Each simplex concentrates onto a small group of
+subcomponents, and in the second layer the
+routing passes through a single subcomponent per simplex.
+The grouping is thus aligned with the hypothesized ground-truth decomposition,
+although the subcomponents within each group are not cleanly separated, with
+coordinate level importance spread across multiple subcomponents.
+For coefficients around $10^{-6}$ and below, this clustered structure dissolves,
+with subcomponents becoming important for multiple different simplices.
 
 \begin{figure}[H]
     \centering
@@ -1079,32 +1079,53 @@ For small minimality coefficients, particularly around $10^{-6}$ and below, the 
     \label{fig:spd_minimality_sweep_condensed}
 \end{figure}
 
+The routing structure is consistent with these observations. At $\beta_3 = 10^{-3}$ the subcomponents
+are poorly differentiated, with a few carrying a disproportionate share of the total norm,
+though this is not reflected in the importance values.
+At $10^{-6}$ the subcomponents remain entangled, but the norm is distributed
+more evenly across them.
+At $10^{-5}$ the structure is much clearer, with a small number of subcomponents
+routing the majority of the signal. Secondly, the 95\% threshold for visualization is reached with
+far fewer subcomponents, and each simplex has a disentangled path through a single second-layer subcomponent that is relevant for only one simplex.
 
-
-The routing structure is generally consistent with these observations, at $\beta_{3}=1e-3$,
-the subcomponents are not well differentiated, with few subcomponents carrying a proportionally larger
-amount of the total norm, albeit these are not reflected by the importance values.
-At $1e-6$, the subcomponents are equally entangled, but the norm is more evenly distributed
-across them. At $1e-5$, the model identifies a much clearer structure, reflecting that of the 
-importance plot, with a small number of subcomponents routing the majority of the signal between htem, and these
-in turn routing through one subcomponent, that is only relevant for one simplex.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{SPD_minimality_io_sweep_condensed_1e-3_to_1e-6.png}
     \caption{Left to right: edges: the group importance values given by $\rho_{i,g}$, $w_{2} \times  w_{1}$: values given by. Edges are normalized within each layer, for each computation in isolation. The edge width do therefore not reflect importance between plots.
-    Multiple large edges, thus suggest similar magnitudes, while one large edge and many small edges suggest a more concentrated structure.}
+    Multiple large edges, thus suggest similar magnitudes, while one large edge and many small edges suggest a more concentrated structure. Each middle column has subcomponents such that they determine 95\% of the total magnitude. The columns are not sorted by magnitude.}
 \end{figure}
 
-
-For softmax, t
-
-%Images for softmax:
+For Softmax, the same sweep yields vastly different results. 
+At $10^{-3}$ the model finds a near-diagonal representation,
+with one subcomponent causally important for a single coordinate of a simplex.
+Lower values move the decomposition towards the expected clustering,
+albeit never cleanly achieving it.
+Individual subcomponents become important for multiple coordinates
+of the same simplex,
+with some subcomponents becoming important for multiple simplices
+particularly at $1e-5$, between simplex 2 and 3. \footnote{REMEMBER TO CHANGE PLOT GROUPING TO START AT 1 AND NOT 0}
+The pattern starts breaking down at 
+$10^{-6}$, where the minimality loss
+no longer sufficiently penalises spreading importance across subcomponents.
+In the second layer, the model recovers the alternative decomposition
+hypothesised earlier, in which a single subcomponent is causally
+important for all three simplices.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{Softmax_minimality_sweep_condensed_1e-3_to_1e-6.png}
 \end{figure}
+
+The routing analysis tells a different story, than the importance values.
+Despite the concentrated importance values, the magnitude remains
+spread sparsely across many subcomponents, with a large number of subcomponents
+being required to reach the 95\% threshold, in both the input and output layers.
+Softmax variant therefore distributes the routing diffusely even where its importance assignment appears concentrated,
+replicating the results found in Section~\ref{sec:tcc-experiment}. 
+For values below $10^{-4}$, the second-layer routing splits into one causally important subcomponents per simplex,
+albeit more entangled than in SPD.
+
 
 \begin{figure}[H]
     \centering
@@ -1112,8 +1133,6 @@ For softmax, t
     \caption{Note that pho, pi are direct layerwise contributions, and the purple arrows are $\Psi$ is defined via the attribution.
     }
 \end{figure} 
-Note these images are not the correct ones yet for spd.
-You need to decide on if u use 1e-3 or 1e-5
 
 
 \subsubsection{Comparison of importance values across different ranks for fixed minimality.}
@@ -1158,31 +1177,28 @@ but not in the importnance plot, where it is concentrated on one subcomponent.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=3.5cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_rank_1_to_5}
+    \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_rank_1_to_5}
 \end{figure}
 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=3.5cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_io_routing_chain_rank_1_to_5.png}
+    \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_io_routing_chain_rank_1_to_5.png}
 \end{figure}
 
 
+\subsubsection{Comparison of importance values across ranks at fixed minimality}
 
+From the previous section, a minimality coefficient of $10^{-5}$ is selected for SPD, since it minimises the minimality objective while producing the most interpretable clustering, closely aligned with the expected simplex decomposition. Even so, this structure remains distributed across multiple subcomponents: although they jointly reconstruct each simplex, the decomposition would not be directly identifiable without ground-truth labels.
 
+Increasing the rank raises each subcomponent's representational capacity (Section~\ref{sec:rank-k-attention}), so a single higher-rank subcomponent could in principle absorb an entire simplex. Capacity alone, however, does not enforce this: SPD's independent sigmoid gating imposes no pressure for a feature to be carried by one subcomponent rather than spread across several, so additional rank can be used without consolidating a simplex into a single unit. This section examines what SPD does with the added capacity, with respect to (i) causal importance scores and (ii) routing structure.
 
+On the input side, increasing the rank does not produce the coarser, whole-simplex grouping that the added capacity would permit. The importance assignment instead concentrates onto a smaller subset of subcomponents: at higher ranks each input feature is carried by fewer active subcomponents, and at $k=8$ roughly five subcomponents account for the majority of input-level contributions. The added capacity is therefore absorbed without grouping each simplex into a single subcomponent.
 
-\subsection{Computing}
-Ideally after constructing these rank k components,
-then it should be feasible 
-to fully reconstruct the output of the model, by summing these causally important subcomponents together, without any loss of information.
-In this case the rank k component should fully capture it.
+On the output side, the simplices remain largely separable across ranks. At lower ranks, importance is spread across several subcomponents per simplex; intermediate ranks show partial consolidation. At $k=4$ in particular, a single subcomponent carries the majority of the importance for simplices 2 and 3. Otherwise the simplex-level separation is stable across ranks, with no consistent trend toward merging or fragmentation.
 
-We try this only for Layer 1 and layer 2 first,
+The routing structure makes the absence of enforced disentanglement clearer. Increasing the rank leads to a more entangled connectivity pattern rather than a more concentrated one: subcomponents increasingly receive contributions from multiple simplices, appearing as a growing number of cross-simplex routing pathways. The added capacity is spent on spreading the computation across subcomponents, not on isolating each simplex, which is consistent with an importance function that does not penalise such spreading. The routing nonetheless remains broadly consistent with the output-side causal structure, both reflecting that the dominant pathway from input to output splits into three subcomponents, one per simplex. At $k=4$ both views agree that simplices 2 and 3 are handled jointly by a single subcomponent, while at $k=2$ they diverge: simplex 1 is split across two subcomponents in the routing view but concentrated on one in the importance view.
 
-see if they replicate the layer output.
-
-We do the input, output plot, where we only probe the causally important subcomponents.
 
 
 \section{Discussion}
@@ -1225,6 +1241,8 @@ Section that discusses new SPD variant and how it addresses some of the issues w
 
 
 \section{Discussion}
+
+At some point (discussion, not here) you should name that it's the same phenomenon each time — assignment concentrates, representation doesn't follow. Three independent instances of one mechanism is a stronger result than three separate observations, but only if you connect them. You've set that up well; just make sure the discussion cashes it in.
 
 % ============================================================
 \subsection{Summary of empirical findings}
