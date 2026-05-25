@@ -940,8 +940,8 @@ decomposing the preactivations of the hidden neurons into contributions
 from each simplex, and then measuring how strongly those neurons contribute
 to the output.
 
-Concretely, three partitions of the computation are defined,
-firstly, how strongly each simplex influences a hidden neurons state,
+Concretely, three quantities are defined over hidden neurons.
+Firstly, how strongly each simplex influences a hidden neurons state,
 secondly how strongly each hidden neuron contributes to the volume output of each simplex,
 and lastly how strongly the path from layer l to layer l+1 routes information from simplex g to output k through neuron i.
 
@@ -951,13 +951,13 @@ where group $g$ contains the $n(n+1)$ coordinates of simplex $g$ denoted
 by $\mathcal{C}_g$, with the groups jointly covering all input columns.
 
 Let $W_l^{(g)}$ denote $W_l$ restricted to the columns in $\mathcal{C}_g$
-and zero elsewhere, such that that $W_l = \sum_{g=1}^{K} W_l^{(g)}$.
+and zero elsewhere, such  that $W_l = \sum_{g=1}^{K} W_l^{(g)}$ \footnote{Note we define both $W^g$ and $W^{c}$, technically they canco occur. Perhaps define a seperate notation? }.
 The preactivation of hidden neuron $i$ then decomposes additively
 over the groups:
 \begin{equation}
     \sum_{c} W_{l[i,c]} = \sum_{g=1}^{K} \rho_{l,[i,g]}, \qquad \rho_{l,[i,g]} := \sum_{c} W^{(g)}_{l[i,c]},
 \end{equation}
-here $\rho_{l,[i,g]}$, then measures how strongly group $g$ influences the hidden neuron $i$.
+here $\rho_{l,[i,g]}$, measures the additive contribution of input group g to the preactivation of neuron i.”
 
 On the output side, the strength with which hidden neuron
 $i$ contributes to the volume computation of simplex $k$
@@ -1003,16 +1003,6 @@ with negligible cross-activation.}
     \label{fig:simplex_group_output}
 \end{figure}
 
-To isolate the effect of the subcomponent rank from
-that of the minimality coefficient, the two factors
-are varied one at a time.
-First, the rank is fixed at $k=1$, recovering the original
-SPD formulation, and the minimality coefficient $\beta_3$ is
-varied to examine its influence on the decomposition.
-Second, $\beta_3$ is fixed at a value that produced a clear
-decomposition at $k=1$, and the rank is increased to examine
-how higher $k$ allows different decompositions to be recovered.
-
 To isolate the effect of the subcomponent rank from that of the minimality coefficient,
 the two factors are varied one at a time. First, the rank is fixed at $k=1$, recovering the
 original SPD formulation, and the minimality coefficient $\beta_3$ is varied to examine its
@@ -1022,54 +1012,39 @@ decompositions to be recovered. Although a grid search was performed over both f
 the following sections present these two sweeps in isolation.
 
 \subsubsection{Subcomponent structure}
-Unlike the target model, where the hidden neurons are the object of interest,
-for subcomponents we want to take this one step further back and measure how strongly individual
-subcomponents are activated by eachother, aggregating into a neuron basis loses this ifnromation.
-We define our equations similarly to before.
+Unlike the target model, where the hidden neurons
+are the object of interest, the subcomponent analysis
+steps one level back to measure how strongly individual subcomponents
+route into one another.
+This requires defining the same three quantities as before, but at the subcomponent level rather than the neuron level.
 
 In particular, let $W^{(c)}_{l}$ be a subcomponent of layer $l$, defined in the same manner as in Section $\ref{sec:rank-k-attention}$,
 such that $\sum_{c=1}^{C} W^{(c)}_{l} = W_l$.
-Then analogously to before, define the influence of simplex $g$ on the hidden neurons of subcomponent $c$ in layer
+Then analogously to before, define the additive contribution of simplex $g$ on the hidden neurons of subcomponent $c$ in layer
 $W_{l}$ as
 \begin{equation}
     \rho^{(c)}_{l,[i,g]}
     := \sum_{j \in \mathcal{C}_g}\left(W^{(c)}_{l,[i,j]}\right) \quad \text{such that } \rho_{l,[i,g]} = \sum_{c=1}^{C} \rho^{(c)}_{l,[i,g]}
 \end{equation}
-Secondly, the contribituion of hidden neuron $i$ to output $k$ through subcomponent $c$ is given by
+Secondly, the additive contribution of hidden neuron $i$ to output $k$ through subcomponent $c$ is given by
 \begin{equation}
     \pi^{(c)}_{l+1,[k,i]} := \left(W^{(c)}_{l+1[k,i]}\right) \quad \text{such that } \pi_{l+1,[k,i]} = \sum_{c=1}^{C} \pi^{(c)}_{l+1,[k,i]}
 \end{equation}
 
-Like before, we would like to measure how strongly a given subcomponent routes information from one layer to the next,
-however taking the same product $s_{i} = \max_{g,k} \rho_{i,g} \pi_{k,i} $ 
-aggregates the subcomponent information, that we are interested in.
-Instead, we define the subcomponent routing matrix $\Psi \in \mathbb{R}^{|C|\times|C|}$
-as the matrix product between total influence of all input features on the hidden neurons
+Lastly, define the subcomponent routing matrix $\Psi \in \mathbb{R}^{|C|\times|C|}$
+as the matrix product between the total influence of all input features on the hidden neurons
 and the total contribution of the hidden neuron to all output features.
 
 \begin{equation}
-    \Psi_{c',c}
-    := \sum_{i=1}^{d_{hidden}}  \left( \sum_{k=1}^{d_{out}} \pi_{l+1[k,i]}^{(c')} \right) \cdot \left( \sum_{j=1}^{d_{in}} W_{l[i,j]}^{(c)} \right).  
+    \Psi_{c',c} := \sum_{i=1}^{d_{\text{hidden}}} \left( \sum_{k=1}^{d_{\text{out}}} W^{(c')}_{l+1,[k,i]} \right) \left( \sum_{j=1}^{d_{\text{in}}} W^{(c)}_{l,[i,j]} \right).
 \end{equation}
-As before, a larger value indicates that subcomponent $c \in W_{l}$ routes strongly to$c' \in W_{l+1}$.
-
-We will use these three measures to show the routing structure of the subcomponent decomposition.
-In particular $\rho_{l,[i,g]}$, $\Psi$ and $\pi_{l+1,[k,i]}$ are very connected.
-The former shows how routing leads into component c from the three simplex groups,
-while the latter shows how a subcomponent routes its information out of subcomponent $c'$
-
-Capturs how strongly subcomponent $c$ routes information from all input features to all output features.
-Notably, when i write the plot, the input to sub1 should read as how signal is routed into the subcomponent,
-
-sub1 to sub2 should read how strongly these signals contribute to each other across all inputs to all outputs
-and sub2 to output should read how these are "wired" to the output.
-
-
-captures how strongly information entering through subcomponent \(c\) is routed through hidden neurons that are subsequently utilized by subcomponent \(c'\).
+Like before, a larger value indicates a stronger routing from subcomponent $c$ to subcomponent $c'$.
+These three quantities together describe the routing through the decomposition. The input contribution
+$\rho^{(c)}_{l,[i,g]}$ shows how each simplex group feeds into subcomponent $c$, the output contribution $\pi^{(c)}_{l+1,[k,i]}$ shows how subcomponent $c$ feeds into each output, and the routing matrix $\Psi_{c',c}$ composes the two, measuring how strongly a subcomponent that reads from the input ($c$) connects to one that writes to the output ($c'$) through shared hidden neurons.
 
 
 
-\subsubsection{Comparison of importance values across different minimality coefficients}
+\subsubsection{Comparison of importance values across different minimality coefficients} \footnote{Add a sd + mean thing across ranks? We would probably want to identify the one that gets the best losses on both methods on all ranks. Remember to say i sample one hot.}
 
 With the target model's modular structure established, the first sweep fixes the rank at $k=1$ and varies the minimality coefficient $\beta_3$, comparing how the original SPD gating and the softmax variant allocate importance as the pressure toward concentration increases. At $k=1$, neither method can represent a full triangle within a single subcomponent, since a triangle occupies more than one dimension; the question is therefore not whether a simplex is recovered whole, but how the two methods distribute a simplex across the rank-1 subcomponents available to them, and how that distribution responds to $\beta_3$.
 
@@ -1103,6 +1078,8 @@ so instad we compute:
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=3.5cm]{Softmax_minimality_io_sweep_condensed_1e-3_to_1e-6.png}
+    \caption{Note that pho, pi are direct layerwise contributions, and the purple arrows are $\Psi$ is defined via the attribution.
+    }
 \end{figure}
 
 
