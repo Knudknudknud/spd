@@ -1044,19 +1044,27 @@ $\rho^{(c)}_{l,[i,g]}$ shows how each simplex group feeds into subcomponent $c$,
 
 
 
-\subsubsection{Comparison of importance values across different minimality coefficients} \footnote{Add a sd + mean thing across ranks? We would probably want to identify the one that gets the best losses on both methods on all ranks. Remember to say i sample one hot.}
+\subsubsection{Comparison of importance values across different minimality coefficients}
+With the rank fixed at $k=1$, the minimality coefficient $\beta_3$ is swept to compare how the original SPD gating and the softmax variant allocate importance as the pressure toward concentration increases. Since a single rank-1 subcomponent cannot represent a full triangle, the question here is not whether a simplex is recovered whole, but how each method distributes it across the available subcomponents, and how that distribution sharpens as $\beta_3$ grows.
 
-With the target model's modular structure established, the first sweep fixes the rank at $k=1$ and varies the minimality coefficient $\beta_3$, comparing how the original SPD gating and the softmax variant allocate importance as the pressure toward concentration increases. At $k=1$, neither method can represent a full triangle within a single subcomponent, since a triangle occupies more than one dimension; the question is therefore not whether a simplex is recovered whole, but how the two methods distribute a simplex across the rank-1 subcomponents available to them, and how that distribution responds to $\beta_3$.
+
+Firstly examining SPD, a sweep from $1e-1$ to $1e-6$ is performed (Figure \ref{fig:spd_minimality_sweep_condensed}),
+how ever only displaying the results from $1e-3$ to $1e-6$. For the remaining values see appendix \ref{appendix:SPD_minimality_sweep}.
+at too large minimality coefficients, SPD considers exactly one subcomponent to be causally important for one feature, with the remaining
+features having no causally important subcomponent for that feature. In the interbal of $1e4-1e5$ the model starts to identify the 
+expected clustering structure that was hypothesized, where each simplex is concentrated on a set of subcomponents,
+and similarly for the output layer, the routing is directed through one simplex per subcomponent.
+If the minimality coefficinet is too low, the model fails to concentrate importance on a small set of subcomponents, and instead spreads it across many, with no clear clustering structure.
 
 %spd image
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=10cm]{SPD_minimality_sweep_condensed_1e-3_to_1e-6.png}
+    \includegraphics[width=\linewidth, height=12cm]{SPD_minimality_sweep_condensed_1e-3_to_1e-6.png}
+    \caption{Left to right: SPD sampled with one hot sampling, rank fixed at $k=1$, 50 subcomponents, 3 simplices for a total of 18 input features, with $\beta_3$ swept from $10^{-3}$ to $10^{-6}$.}
+    \label{fig:spd_minimality_sweep_condensed}
 \end{figure}
 
-To compute the importance from one subcomponent to another we compute it similarly to that of rho,
-sadly it is not possible to collapse it into a layer wihtout losing structural information like above,
-so instad we compute:
+
 
 %Spd image
 \begin{figure}[H]
@@ -1513,6 +1521,7 @@ that didnt fit in the main text
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=10cm]{SPD_minimality_sweep_full_1e1_to_1e-6.png}
+    \label{appendix:SPD_minimality_sweep}
 \end{figure}
 
 
