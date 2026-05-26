@@ -396,7 +396,7 @@ def build_columns(read, write, n_groups, n_outputs, c1, c2):
     return [
         {
             "title": "Input groups",
-            "ids": [i for i in range(n_groups)],
+            "ids": [i+1 for i in range(n_groups)],
             "imp": read.sum(0),
             "order": list(range(n_groups)),
         },
@@ -414,7 +414,7 @@ def build_columns(read, write, n_groups, n_outputs, c1, c2):
         },
         {
             "title": "Output groups",
-            "ids": [i for i in range(n_outputs)],
+            "ids": [i+1 for i in range(n_outputs)],
             "imp": write.sum(0),
             "order": list(range(n_outputs)),
         },
@@ -760,7 +760,7 @@ def main() -> None:
         group_features, _, _ = get_group_features(ranks)
 
         plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group output matrix " + run_title)
-        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.90, edge_frac=0.01, min_mass=0,sort_nodes=True, sweeps=10)
+        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.80, edge_frac=0.01, min_mass=0,sort_nodes=True, sweeps=10)
         plot_subcomponent_norms(state_dict,save_dir=RUN_DIR, title="Subcomponent norms")
 
 

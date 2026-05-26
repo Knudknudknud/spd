@@ -228,7 +228,7 @@ image_paths = [
 combine_images(
     image_paths,
     save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Softmax_causal_importances_ranking_sweep_minimality_1e-e4_io_routing_chain_rank_1_to_5.png",
-    ncols=2,          # 2x2
+    ncols=2,     
     size=6,
     dpi=350,
 )
