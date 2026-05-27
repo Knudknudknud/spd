@@ -75,7 +75,7 @@
 \newpage
 \begin{abstract}
 Some super cool abstract of all my findings \footnote{Very important to add quantization somewhere. https://arxiv.org/pdf/2303.13506, new SPD paper in related work and discussion - prticularly they also say something about their minimality loss, and lastly extend the transformer thing in the paper to be more clear of the architecture. Particulraly no positional encoding?}
-Add your github and folder for wandb.
+Add your github and folder for wandb. \footnote{todo}
 \end{abstract}
 \pagenumbering{arabic}
 
@@ -84,7 +84,8 @@ Add your github and folder for wandb.
 
 Mechanistic interpretability seeks to reverse-engineer neural
 networks into a set of human-interpretable mechanisms.
-Different branches of the field pursue this goal with different focal points: Either through directions in activation space, computational subgraphs, or components of the network's parameters.
+Here, different
+branches of the field pursue this goal with different focal points, either by disentangling directions in activation space, discovering computational subgraphs, or directly decomposing components of the network's parameters.
 
 However, both the atomic structure for decomposition
  and the decomposition itself remain open problems.
@@ -109,9 +110,7 @@ computation, exposing the grouping directly but collapsing per side-length infor
 
 Recently, 
 a formal definition of irreducibility was introduced to disambiguate cases such
-as the cube example. \footnote{I got this deifnition wrong, we decompose f not the V's, we thus musn't show delta orthogonolaity,
-and the argument with that the V's can be linear combinations isnt as important anymore. However we still have the same argument, that
-they can be low dimensional instead of rank 1. Secondly we need to state clearly that f is a function $f: d_{input} \to  \mathbb{R}^{d_{fi}}$}
+as the cube example.
 \autocite{engels2025languagemodelfeaturesonedimensionally}
 Features are irreducible, and thus constitute units of decomposition,
 if their joint distribution cannot be decomposed into independent
@@ -125,12 +124,14 @@ function.
 
 This work extends SPD by examining its behaviour on dependent features,
 in settings where the multi-dimensional feature hypothesis posits
-a feature-level or a structural-level unit \footnote{I mean feature-level, structure level is wrong under this view but it sounds good} \autocite{engels2025languagemodelfeaturesonedimensionally}. 
-Additionally a reformulation of the importance function is proposed,
-to encourage that features that are manipulated jointly are grouped together, by computing importance relationally across components.
+that features should be grouped in higher dimensional subcomponents. \autocite{engels2025languagemodelfeaturesonedimensionally}. 
+Additionally an alternative formulation of the importance function is 
+examined, where the importance of a component is computed relationally across subcomponents, rather than independently, to encourage that features that are manipulated jointly are grouped together.
+Lastly, a new toy model "The toy Model of Geometry" is introduced,
+that computes the volume of a simplex from its vertices, to explore
+this multidimensional setting.
 
-
-My findings
+My findings \footnote{to do}
 % The findings in this work suggest that while SPD does perform better in terms of faithfulness, the method struggles in terms of interpretability,
 % where the importance values do not 
 % While this extension is theoretically well grounded, it only manages to partially recover the ground-truth decompositions,
@@ -143,7 +144,7 @@ My findings
 A widespread view in mechanistic interpretability is the linear representation hypothesis: high-level concepts are encoded as directions in a network's representation space \autocite{park2024linearrepresentationhypothesisgeometry}. Together with the superposition hypothesis \autocite{elhage2022toymodelssuperposition}, it forms a central tenet of interpretability: each feature corresponds to a single direction, and a hidden state is a sparse linear combination of feature directions.
 
 Recent work questions how strictly this view should be taken, distinguishing between a weak form of the hypothesis, that some features are linear, from a stronger form that all features are \autocite{mendel2024sae,smith2024strong}. 
-Empirically multiple counterexamples to the stronger form have been proposed, include recurrent networks encoding token position by magnitude rather than direction \autocite{csordás2024recurrentneuralnetworkslearn}, transformers representing cyclical concepts such as days of the week \autocite{engels2025languagemodelfeaturesonedimensionally} or modular arithmetic \autocite{nanda2023progressmeasuresgrokkingmechanistic} in irreducible low-dimensional subspaces.
+Empirically multiple counterexamples to the stronger form have been proposed, including recurrent networks that encode token position by magnitude \autocite{csordás2024recurrentneuralnetworkslearn}, transformers representing cyclical concepts such as days of the week \autocite{engels2025languagemodelfeaturesonedimensionally} or modular arithmetic \autocite{nanda2023progressmeasuresgrokkingmechanistic} in irreducible low-dimensional subspaces.
 \subsection{Activation-space decomposition}
 Decomposing a network's activations predominantly focuses on disentangling layer activations into interpretable features.
 Here, sparse autoencoders (SAE) are one of the most widely researched methods \autocite{sparseautoencodershighlyinterpretable, bricken2023monosemanticity},
@@ -181,10 +182,19 @@ subcomponents and learning a per-input importance
 function over them, at the cost of requiring post-hoc
 clustering to recover higher-rank mechanisms;
 both methods are detailed in
-Section~\ref{sec:spd_background}. Other parameter-space
-approaches include local loss landscape decomposition \autocite{chrisman2025identifyingsparselyactivecircuits}.
+Section~\ref{sec:spd_background}.
 
-
+In concurrent work, adVersarial Parameter Decomposition (VPD)
+\autocite{bushnaq2026interpreting_new_spd} extends this line of
+research by replacing SPD's stochastic masking procedure with an
+adversarial objective that searches for subcomponent ablations capable
+of invalidating the learned importance assignments. The method enforces
+that, for any input, every subset of subcomponents containing those
+identified as causally important must still reconstruct the network's
+output. VPD also scales parameter decomposition to a small transformer
+language model, including its attention layers. Other parameter-space
+approaches include local loss landscape decomposition
+\autocite{chrisman2025identifyingsparselyactivecircuits}.
 
 \section{Method}
 
@@ -197,7 +207,7 @@ to the original weights, minimal in the number required per input,
 and individually as simple as possible.
 
 To formalise this, consider a neural network $f(x, W)$ with weight matrices $W = \{W^1, \dots, W^L\}$.
-A set of parameter components $\{W^l_c\}_{c=1}^{C}$ are said to comprise the network's mechanisms if they satisfy the following properties:
+A set of parameter components5 are said to comprise the network's mechanisms if they satisfy the following properties:
 \renewcommand\labelitemi{\tiny$\bullet$}
 \begin{itemize}
     \setlength\itemsep{0em}
@@ -219,8 +229,8 @@ and its top-$k$ attribution is sensitive to hyperparameter choice.
 
 SPD \autocite{stochasticparameterdecomposition} addresses these limitations by enforcing a rank-one structure on each component, allowing more components to be learned at fixed memory cost, and replacing top-$k$ attribution with a learned causal importance function. Formally, each weight matrix $W^l$ is decomposed into a sum of $C$ rank-one subcomponents:
 \begin{equation}
-W^{l}_{i,j} \approx \sum_{c=1}^{C} U^{l}_{c,i} V^{l}_{c,j}, 
-\quad \text{where} \quad U^l \in \mathbb{R}^{C \times d_{\text{out}}}, \, V^l \in \mathbb{R}^{C \times d_{\text{in}}}
+W^{l}_{i,j} \approx \sum_{c=1}^{C} U^{l}_{i,c} V^{l}_{c,j}, 
+\quad \text{where} \quad U^l \in \mathbb{R}^{d_{\text{out}} \times C}, \, V^l \in \mathbb{R}^{C \times d_{\text{in}}}
 \end{equation}
 where C is a hyperparameter, for the number of components for each layer, $l$ indexes the layer and $i,j$ are the hidden indices.
 The subcomponent count, C, may be chosen to be larger than both $d_{in}$ and $d_{out}$, enabling the method to learn features in superposition \autocite{stochasticparameterdecomposition}.
@@ -244,8 +254,8 @@ and output a scalar importance for the corresponding subcomponent:
 \begin{equation}
 g^{l}_{c}(x) = \Gamma^l_c(x) = \sigma_{H}(\gamma^{l}_{c}(h^{l}_{c}(x))), \qquad h^{l}_{c}(x) = \vec{V}_{c}^{l\top} \vec{a}^l(x)
 \end{equation}
-where $\sigma_{H}$ is a hard sigmoid and $\vec{a}^l(x)$ is the
-activation at layer $l$. These importance values serve as the lower bound for how much a subcomponent can be masked. With $r^l_{c} \sim \mathcal{U}(0, 1)$ sampled per subcomponent, the masked weight matrix is given by:
+here $\sigma_{H}$ is a hard sigmoid and $\vec{a}^l(x)$ is the
+activation vector of layer $l$. These importance values serve as the lower bound for how much a subcomponent can be masked. With $r^l_{c} \sim \mathcal{U}(0, 1)$ sampled per subcomponent, the masked weight matrix is given by:
 \begin{equation}
 \begin{aligned}
     m_{c}^l(x, r) &= g^{l}_{c}(x) + \bigl(1 - g^{l}_{c}(x)\bigr)\, r^l_{c}, \\
@@ -297,50 +307,66 @@ The full SPD objective is a weighted sum of these terms:
 
 \subsection{Irreducibility and the natural unit of decomposition}
 \label{sec:irreducibility}
-To appropriately evaluate the performance of a multi-dimensional feature decomposition method,
-it's necessary to have a clear definition of what the ground-truth decomposition is. The original
-superposition hypothesis states that the hidden states can be represented as a linear combination of sparse one-dimensional features. \cite{elhage2022toymodelssuperposition,engels2025languagemodelfeaturesonedimensionally}
+To appropriately evaluate the performance of a multi-dimensional
+feature decomposition method,
+it's necessary to have a clear definition of what the ground-truth
+decomposition is. The original
+superposition hypothesis states that the hidden states
+can be represented as a linear combination of sparse
+one-dimensional features \cite{elhage2022toymodelssuperposition,engels2025languagemodelfeaturesonedimensionally}.
+
 
 \textbf{Definition:} The hidden state 
 $x_{i,l}$ can be written as:
 \begin{equation}
-    x_{i,l} = \sum_i v_i \, f_i(t)
+    x_{i,l} = \sum_j v_j \, f_j(t)
 \end{equation}
-where $v_{i} \in \mathbb{R}^d$ are pairwise $\delta$-orthogonal directions \footnote{should i say what delta is or is it clear that its small?} and $f_{i}(t) \in \mathbb{R}$ are sparse scalar activations, with $f_{i}(t)=0$ outside the domain of feature $i$.
+where $v_{j} \in \mathbb{R}^d$ are pairwise orthogonal vectors, up to a small margin and $f_{j}(t) \in \mathbb{R}$ are sparse one-dimensional features, with $f_{j}(t)=0$ outside the domain of feature $j$.
 
 Recent work has shown, that this may be insufficiently strict \autocite{smith2024strong,engels2025languagemodelfeaturesonedimensionally}, as it does not capture the structure of multi-dimensional features.
 In particular, transformer models are shown to
 organise cyclical concepts in low-dimensional subspaces
 that do not decompose into meaningful linear components, but are instead manipulated jointly \autocite{engels2025languagemodelfeaturesonedimensionally}.
 
-To accomodate these features, the same paper proposes a correction to the superposition hypothesis,
-alongside a formal definition of irreducibility that defines,
-when a feature is in its atomic form and when it can be decomposed into smaller
-units without loss of information.
+To accommodate these features, the paper proposes a correction to the
+superposition hypothesis alongside a formal definition of irreducibility,
+which characterises when a feature is in its atomic form and when
+it can be decomposed into smaller units without loss of information.
+This definition is adopted, but with a restated mixture case,
+that is aligned with the paper's own definition of activeness.
 
-\textbf{Definition:} A feature $f: \mathbb{R}^{i} \to \mathbb{R}^{d_f}$ is
-truly multi-dimensional, if it cannot be written as a sum of two independent features
-or as a the sum of two non-co-occurring features. More formally, a feature is
-reducible into features
-$a$ and $b$ if there exists an affine transformation
+
+\textbf{Definition (Reducibility).}
+A feature $f:\mathbb{R}^{i}\to\mathbb{R}^{d_f}$ is reducible into features
+$a:\mathbb{R}^{i}\to\mathbb{R}^{k}$ and $b:\mathbb{R}^{i}\to\mathbb{R}^{d_f-k}$,
+with $k,d_{f}-k > 0$, if there exists an affine transformation
 \begin{equation}
     f \mapsto Rf + c \equiv \binom{a}{b}
 \end{equation}
-for some orthonormal $d_{f} \times d_{f}$ matrix $R$, and additive constant c, such that
-the joint distribution $p(a, b)$ satisfies one of two conditions:
-\renewcommand\labelitemi{\tiny$\bullet$}
+for some orthonormal $d_f \times d_f$ matrix $R$ and additive constant $c$,
+such that the joint distribution $p(a,b)$, conditioned on inputs where $f$
+is active, satisfies one of:
 \begin{itemize}
     \setlength\itemsep{0em}
-    \item \textbf{$p$ is separable}: $p(a, b)= p(a) \, p(b)$
-    \item \textbf{$p$ is a mixture of two disjoint distributions}: 
-    $p(a, b) = w \, p(a) \, \delta(b) + (1 - w) \, p'(a,b | b \neq 0)$,
-
+    \item \textbf{Separable}: $p(a,b) = p(a)\,p(b)$;
+    \item \textbf{Mixture}: $p(a,b) = w\,p(a)\,\delta(b) + (1-w)\,p'(a,b \mid b \neq 0)$,
+    where the two terms have disjoint support, one
+    concentrated on $b = 0$ and the other on $b \neq 0$.
 \end{itemize}
-Here $a$ and $b$ are the first $k$ and remaining $d_f - k$ components of $Rf + c$,
-$p$ is conditioned on inputs where $f$ is active, $w \in (0, 1)$ and $\delta$ is the Dirac delta \footnote{can i get away with just writing $p(a|b=0)$}.
-In the mixture, the two distributions have disjoint support, with one distribution having no mass where $b$ is active, and the other having no mass where $b$ is zero.
+where $w \in (0,1)$, and $\delta$ is the Dirac delta distribution.
+A feature is irreducible if no such R and c make it separable or a mixture.
 
-Under this decomposition, the superposition hypothesis takes the form:
+The mixture condition of \autocite{engels2025languagemodelfeaturesonedimensionally}
+is restated in terms of disjoint support alone.
+In the original definition, a mixture is characterised
+as a decomposition in which a and b are never
+simultaneously active.
+This is inconsistent with the papers own definition of activeness,
+where a feature is active on the
+subset of inputs that it maps into $\mathbb{R}^{d_{f}}$,
+so whenever f is active both components a and b are active by construction.
+The formal expression is recovered only if “inactive” is taken to mean equal to zero,
+consistent with the $\delta(b)$ term.
 
 
 \textbf{Definition:} Every hidden state $x_{i,l}(t)$ can be written as a sum of feature contributions
@@ -351,24 +377,19 @@ where each $f_i(t) \in \mathbb{R}^{d_{f_i}}$ is an irreducible
 feature with internal dimensionality $d_{f_i} \geq 1$, each
 $V_i \in \mathbb{R}^{d \times d_{f_i}}$ and $\| V_i^\top V_j \| < \delta$ for $i \neq j$.
 
-
-Secondly, and more importantly for SPD, if the multidimensional
-superposition hypothesis holds, some features f may require multiple
-rank-one subcomponents. It is not trivial that an irreducible function
-f (e.g. as shown in Section \ref{fig:tms-paired-comparison}) arises from sampling
-two dependent and non-overlapping features that can still be compressed 
-into a single rank-one component if the model learns to group them along a shared direction.
-
-However, when the model learns genuinely multi-dimensional features,
-these cannot in general be represented by a rank-one subcomponent.
-Instead, they occupy structured higher-dimensional subspaces,
-implying either the need for higher-rank representations or post hoc
-clustering of the underlying rank-one components.
+If the multi-dimensional superposition hypothesis
+holds, then some features are incapturable
+by a single subcomponent as defined in SPD.
+Therefore either the rank constraint must be relaxed,
+or the decomposition must be clustered post-hoc,
+to group together the rank-one subcomponents that together
+form the multi-dimensional feature. In SPD, the latter
+was chosen, while this work explores the former.
 
 \subsection{Rank-$k$ subcomponents and relational importance}
 \label{sec:rank-k-attention}
 In the original SPD paper, the subcomponents are constructed as rank-one matrices, through an outer product of two vectors.
-This formulation is however incompatible with the multi-dimensional superposition hypothesis. (Section \ref{sec:irreducibility})
+This formulation is however incompatible with the multi-dimensional superposition hypothesis.
 A decomposition into lower-dimensional subcomponents, necessarily forces features to be split across multiple subcomponents, or to be approximated through a single subcomponent at the cost of reconstruction.
 
 To represent multi-dimensional features, the pairs of vectors are replaced with pairs of matrices.
@@ -379,7 +400,7 @@ W^{l}_{i,j} \approx \sum_{c=1}^{C} \sum_{r=1}^{k} U^{l}_{c,i,r} V^{l}_{c,j,r},
 Each subcomponent $U^l_c {V^l_c}^{\top} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
 has rank at most $k$, recovering the original SPD definition when $k=1$.
 As in the multi-dimensional superposition hypothesis, $k$ is an upper bound on
-each subcomponent's representational capacity; the effective rank may be lower,
+each subcomponent's representational capacity; the effective rank may be lower.
 
 In SPD, each subcomponent’s importance is computed independently through an MLP followed by a sigmoid nonlinearity,
 allowing multiple subcomponents to be active for a given input and thus distribute a
@@ -391,10 +412,15 @@ To address this, the causal importance function is redefined to maximize the con
 \begin{equation}
     g^l_{c}(x) = p\!\left(W^l_c \mid \{h^l_{c'}(x)\}^{C}_{c'=1}\right), \quad h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
 \end{equation}
-where $\vec{a}^l(x)$ is the activation of layer $l$ and C is the set of subcompoennts in layer $l$.
-The distribution is computed with a classic transformer block operating over subcomponents, with a softmax over their activations.
-\autocite{vaswani2023attentionneed}
+here $\vec{a}^l(x)$ is the activation vector of layer $l$ and C is the set of subcompoennts in layer $l$.
 
+The conditional importance is computed using a standard transformer block following the architecture of \autocite{vaswani2023attentionneed}. For each layer l,
+the read activations \(h_c^l(x) \in \mathbb{R}^k\) of the \(C\) subcomponents are treated as a sequence of tokens,
+with no positional encoding.
+These activations are first projected into the transformer residual stream through a learned linear projection. The resulting representations are then processed by a standard transformer block consisting of a single attention head,
+a feed-forward network, residual connections, and layer normalisation.
+
+Finally, each subcomponent representation is projected down to a single scalar score, and a softmax over all C subcomponents is computed.
 This produces a normalized assignment over subcomponents, $\sum_{c=1}^{C}g^l_c(x) = 1$,
 causing the original minimality loss to become degenerate, as each layer contributes a constant value independent of the model state.
 Instead, it's replaced
@@ -405,41 +431,32 @@ with entropy, to pressure the assignment to concentrate on as few subcomponents 
 
 An unfortunate limitation of this formulation is its computational cost. Computing
 relational importance via a transformer over subcomponents scales
-quadratically with the number of subcomponents compared to the linear cost of the original independent importance functions.  \footnote{Play with attention approximations}
+quadratically with the number of subcomponents compared to the linear cost of the original independent importance functions. 
 
 \section{Results}
 \subsection{Overview of experiments}
-To evaluate how the proposed changes affect SPD’s performance,
+To evaluate how the proposed changes affect SPD's performance,
 and how these relate to the multi-dimensional superposition hypothesis,
-the result section is structured around three experiments \footnote{maybe 4}, each with the purpose of isolating a specific structural property.
+the result section is structured around four experiments.
 For an overview see table \ref{tbl:Experiment_overview}.
 
-The first experiment reuses the Toy model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition}
-once sampled with independent features and once with paired features,
-where these features are sampled in pairs, creating the simplest case of
-statistical dependence. In particular, the model learns to group the paired features along a single direction, allowing
-rank 1 subcomponets to capture full features, without having to split them across multiple subcomponents. 
+The first two experiments reuse the Toy model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition}
+once sampled with independent inputs and once with paired.
+The paired setting introduces statistical dependence between features,
+where the toy model assigns both features to a single direction, allowing a 
+single rank 1 subcomponent to capture both inputs, without having to split them across multiple subcomponents. 
 
+The third experiment reuses another known experiment from SPD, the Toy Model of
+Compressed Computation, where a model must compute more functions than there are
+available directions in a lower-dimensional space, by computing $y_{i} = x_{i} + \text{ReLU}(x_{i})$ through
+a lower dimensional bottleneck.\autocite{bhagat2025compressed}. 
 
-The second experiment also reuses a known experiment from SPD, the Toy model of compressed computation,
-where a model must learn to compute more functions, than the number of available directions in a lower dimensional space.
-Particularly, this experiment is interesting to explore how softmax and attention affect the decomposition.
-Softmax in particular, is best when the ground truth decomposition is meant to pick a singular subcomponent for each feature,
-due to its properties[some source], the toy model of compressed computation, does not allow for a one-hot assignment,
-as no disentanglement is possible, and to stay faithful to the original model, should learn to distribute mass across multiple subcomponents.
-
-
-The third experiment generalizes the paired setting to a
+The fourth experiment generalizes the paired setting to a
 k-dimensional case by computing the volume of a simplex
 from its vertices. The ground truth decomposition is still
 shown to be dependent, but the features can now not be contained in a single rank-one subcomponent, as the geometry of the feature is more complex.
 This experiment serves to test how well softmax and sigmoid gating can group feature parts together, when their expressiveness is increased.
 
-% Finally, the fourth experiment trains a model to learn a logical
-% expression composed of two disjoint distributions,
-% one of which is lower-dimensional. This experiment tests
-% the final condition of the irreducibility
-%  definition (Section \ref{sec:irreducibility}).
 \begin{table*}[h!]
 \centering
 
@@ -660,7 +677,12 @@ to maintain accurate reconstruction despite imperfect feature isolation.
 
 \subsection{ Toy Model of Compressed Computation }
 \label{sec:tcc-experiment}
-The Toy Model of Compressed Computation,
+The Toy Model of Compressed Computation, \footnote{Sometihng about it is not entirely clear what the ground truth decomposition here would be through, the multidimensional feature hypothesis,
+as it appears that the model does not learn to compute functions in superposition, but instead attribute it to the noise of the embedding matrices,
+also mention that hte naive solution is ot learn half of the features, but the other half left to guessing. Therefore it is not immediately celar, how the second layer
+should be decomposed as we dont know the function it learns, however we can examine how the subcomponents appear to learn and how this is attributeable to their losses.
+No we need to see the whole map across both layers as the function f, as the importance values learn the cross layer thing? we dont shink between layers,
+i.e the full xi + relu(i)}
 a model that was already studied by SPD \autocite{stochasticparameterdecomposition}, APD \autocite{AttributionBasedParameterDecomposition} and more recently by \autocite{bhagat2025compressed}, is a
 toy model trained to compute the elementwise function $y_i = x_i + \mathrm{ReLU}(x_i)$ through a residual MLP with a lower-dimensional hidden layer.
 
@@ -1339,6 +1361,21 @@ multiple different features to be jointly attributed to
 the same subcomponent and instead, chooses
 to represent fewer subcomponents all together.
 
+
+
+
+
+
+% ============================================================
+\subsection{What the experiments test within the irreducibility framework}
+% Honest scoping. This is where you concede coverage.
+\begin{itemize}
+    \item TMS paired tests dependent features that should be grouped, not split: the relational variant is evaluated on whether it groups correctly.
+    \item Compressed computation tests an effectively independent feature in a constrained subspace.
+    \item The mixture condition of the irreducibility definition is not directly evaluated; flag as future work. % adjust if the mixture experiment was actually run
+    \item The thesis therefore primarily tests whether dependent or irreducible features are correctly grouped, rather than whether reducible features are correctly split.
+\end{itemize}
+
 In SPD, the rank-1 constraint is intended to be sufficient for the simplicity requirement of a mechanism.
 However, this is not the case in general, since even the smallest structural
 unit can admit multiple decompositions of different sizes.
@@ -1353,19 +1390,6 @@ each active on a disjoint subset of the inputs, can sum to a single
 rank-1 matrix, which is then attributed to be causally important for all of the mechanisms.
 VPD or SPD would therefore not further encourage the decomposition of this matrix into its constituent mechanisms, as the minimality requirement is already satisfied.
 \autocite{bushnaq2026interpreting_new_spd}
-
-
-
-
-% ============================================================
-\subsection{What the experiments test within the irreducibility framework}
-% Honest scoping. This is where you concede coverage.
-\begin{itemize}
-    \item TMS paired tests dependent features that should be grouped, not split: the relational variant is evaluated on whether it groups correctly.
-    \item Compressed computation tests an effectively independent feature in a constrained subspace.
-    \item The mixture condition of the irreducibility definition is not directly evaluated; flag as future work. % adjust if the mixture experiment was actually run
-    \item The thesis therefore primarily tests whether dependent or irreducible features are correctly grouped, rather than whether reducible features are correctly split.
-\end{itemize}
 
 
 Here also add part to how rank k extension does not work with
@@ -1396,6 +1420,9 @@ cross layer features directly.
 
 fourth this work is concentrated to toy models with known ground truth decompositions.
 
+
++ Here add that relational importance is only defined on a layer basis,
+as it quickly became too costly.
 
 
 
@@ -1545,6 +1572,10 @@ remember to add the citation that irreducibility definition is wrong.
 
 
 Oral exam add just Attention to current SPD, cover the loophole.
+
+
+visualize rank 1-3-5-7, instead of 1,2,3,4 or osmething.
+
 
  
 \subsubsection{SVD reformulation, capacity maybe per feature ablation TBD}
