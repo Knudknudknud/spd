@@ -1,12 +1,12 @@
 # Fdb version 4
-["biber thesis"] 1779896245.22254 "thesis.bcf" "thesis.bbl" "thesis" 1779896528.45968 0
-  "references.bib" 1779305516 13218 71488b51024b87dff030a2684da1be82 ""
-  "thesis.bcf" 1779896528 114057 b6ebdf6f44f19fee70aeb6ec37a45392 "pdflatex"
+["biber thesis"] 1779971090.1522 "thesis.bcf" "thesis.bbl" "thesis" 1779974388.64051 0
+  "references.bib" 1779956677 13468 a2467d0bfef641926e7be2273ae0496f ""
+  "thesis.bcf" 1779974388 113994 b3abddaebd6c1d0eb920506895110528 "pdflatex"
   (generated)
   "thesis.bbl"
   "thesis.blg"
   (rewritten before read)
-["pdflatex"] 1779896509.17182 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1779896528.46065 0
+["pdflatex"] 1779974343.17441 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1779974388.64255 2
   "Images/CC_norms_softmax.jpg" 1778744962 54995 bcfda71b538b6e5dec1e026e506bc627 ""
   "Images/CC_norms_spd.jpg" 1778744956 50138 353815ddcedc856f0c3a1eb019e59efe ""
   "Images/CC_softmax_cosines.jpg" 1778745717 116641 1aec31c0df67e69e017c440ef7c883d8 ""
@@ -35,7 +35,7 @@
   "Images/tms_5_2_plot.png" 1778408312 220208 8eb8bfffcd8d81e33154ada66bde3578 ""
   "Images/tms_5_2_plot_causal_importances.jpg" 1778432865 71074 45046c561a9f28803408da941dbe2b93 ""
   "arxiv.sty" 1774611555 7902 f2cb9d6386c38cb1ddd8d4504a6292a3 ""
-  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1779896485 92264 e39baf354ec64b3ab35d09a996a4f9ef ""
+  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1779974315 90578 c69250ab6cc686e6319a558a30665540 ""
   "c:/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc" 1722946599 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "c:/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1722947038 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "c:/texlive/2024/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1722957685 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -102,7 +102,7 @@
   "c:/texlive/2024/texmf-dist/tex/latex/base/article.cls" 1722947866 20144 67a5f8e0f9e445e8ec6834e595cebdc9 ""
   "c:/texlive/2024/texmf-dist/tex/latex/base/ifthen.sty" 1722947866 5525 3792dcd5bc92158cfaf00cc591e557cf ""
   "c:/texlive/2024/texmf-dist/tex/latex/base/size10.clo" 1722947866 8448 358bf3de18513f057a13bdc6e6770c41 ""
-  "c:/texlive/2024/texmf-dist/tex/latex/biblatex/bbx/alphabetic.bbx" 1722945622 1731 ebd75bda3dd71a7cbd30fde6e3bb6391 ""
+  "c:/texlive/2024/texmf-dist/tex/latex/biblatex/bbx/numeric.bbx" 1722945622 1818 9ed166ac0a9204a8ebe450ca09db5dde ""
   "c:/texlive/2024/texmf-dist/tex/latex/biblatex/bbx/standard.bbx" 1722945622 25680 409c3f3d570418bc545e8065bebd0688 ""
   "c:/texlive/2024/texmf-dist/tex/latex/biblatex/biblatex.cfg" 1722945622 69 249fa6df04d948e51b6d5c67bea30c42 ""
   "c:/texlive/2024/texmf-dist/tex/latex/biblatex/biblatex.def" 1722945622 96838 228f189cb4020ea9f6d467af8aa859c2 ""
@@ -110,7 +110,7 @@
   "c:/texlive/2024/texmf-dist/tex/latex/biblatex/blx-case-expl3.sty" 1722945622 9961 107fdb78f652fccae7bce0d23bdc19cd ""
   "c:/texlive/2024/texmf-dist/tex/latex/biblatex/blx-compat.def" 1722945622 13919 5426dbe90e723f089052b4e908b56ef9 ""
   "c:/texlive/2024/texmf-dist/tex/latex/biblatex/blx-dm.def" 1722945622 32761 18d14e3b502c120f79b2184de4e21d14 ""
-  "c:/texlive/2024/texmf-dist/tex/latex/biblatex/cbx/alphabetic.cbx" 1722945622 4312 24e682e8d56177ec752e5121836ce56e ""
+  "c:/texlive/2024/texmf-dist/tex/latex/biblatex/cbx/numeric.cbx" 1722945622 4629 cda468e8a0b1cfa0f61872e171037a4b ""
   "c:/texlive/2024/texmf-dist/tex/latex/biblatex/lbx/english.lbx" 1722945622 40021 daa5a82ed0967f3ac4b77cb8384cac55 ""
   "c:/texlive/2024/texmf-dist/tex/latex/booktabs/booktabs.sty" 1722945850 6078 f1cb470c9199e7110a27851508ed7a5c ""
   "c:/texlive/2024/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty" 1722946729 13886 d1306dcf79a944f6988e688c1785f9ce ""
@@ -140,10 +140,10 @@
   "c:/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1722958775 5437080 ed7bddc74a2a640cd859bad2f86a3c86 ""
   "c:/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1722959163 6879081 fdeace8d7504e29902b33a8915f1b7e1 ""
   "c:/texlive/2024/texmf.cnf" 1722958746 713 e69b156964470283e0530f5060668171 ""
-  "thesis.aux" 1779896528 21969 f5b9642b764659a3855ac8d79dd67dbd "pdflatex"
-  "thesis.bbl" 1779896248 68367 b505829b81e2376862207715bb4f704d "biber thesis"
-  "thesis.tex" 1779896485 92264 e39baf354ec64b3ab35d09a996a4f9ef ""
-  "thesis.toc" 1779896528 3435 de8f13199c6cd607d3f2a96a408eba5c "pdflatex"
+  "thesis.aux" 1779974387 22020 bb52939fa9aa6399f0cd5c3ae333dbc9 "pdflatex"
+  "thesis.bbl" 1779971096 68651 e74b0d1b526b62204833fa993bbde0f8 "biber thesis"
+  "thesis.tex" 1779974315 90578 c69250ab6cc686e6319a558a30665540 ""
+  "thesis.toc" 1779974388 3435 ed5e2aa8ce67f008463dce7a020c0e81 "pdflatex"
   (generated)
   "thesis.aux"
   "thesis.bcf"
@@ -152,4 +152,3 @@
   "thesis.run.xml"
   "thesis.toc"
   (rewritten before read)
-  "thesis.aux"

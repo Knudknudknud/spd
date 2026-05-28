@@ -1,5 +1,5 @@
 \relax 
-\abx@aux@refcontext{anyt/global//global/global/global}
+\abx@aux@refcontext{nty/global//global/global/global}
 \abx@aux@cite{0}{sharkey2025openproblemsmechanisticinterpretability}
 \abx@aux@segm{0}{0}{sharkey2025openproblemsmechanisticinterpretability}
 \abx@aux@cite{0}{engels2025languagemodelfeaturesonedimensionally}
@@ -81,8 +81,8 @@
 \abx@aux@segm{0}{0}{engels2025languagemodelfeaturesonedimensionally}
 \abx@aux@cite{0}{engels2025languagemodelfeaturesonedimensionally}
 \abx@aux@segm{0}{0}{engels2025languagemodelfeaturesonedimensionally}
-\abx@aux@cite{0}{engels2025languagemodelfeaturesonedimensionally}
-\abx@aux@segm{0}{0}{engels2025languagemodelfeaturesonedimensionally}
+\abx@aux@cite{0}{busch2025}
+\abx@aux@segm{0}{0}{busch2025}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Irreducibility and the natural unit of decomposition}{4}{}\protected@file@percent }
 \newlabel{sec:irreducibility}{{3.2}{4}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Rank-$k$ subcomponents and relational importance}{4}{}\protected@file@percent }
@@ -95,10 +95,12 @@
 \abx@aux@segm{0}{0}{bhagat2025compressed}
 \abx@aux@cite{0}{elhage2022toymodelssuperposition}
 \abx@aux@segm{0}{0}{elhage2022toymodelssuperposition}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{5}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Overview of experiments}{5}{}\protected@file@percent }
 \abx@aux@cite{0}{cunningham2023takingfeatures}
 \abx@aux@segm{0}{0}{cunningham2023takingfeatures}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Overview of experiments}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Toy Model of Superposition}{5}{}\protected@file@percent }
+\newlabel{sec:tms-experiments}{{4.2}{5}{}{}{}}
 \abx@aux@cite{0}{jermyn2024tanhPenaltyDictionaryLearning}
 \abx@aux@segm{0}{0}{jermyn2024tanhPenaltyDictionaryLearning}
 \abx@aux@cite{0}{wright2024featureSuppressionSAEs}
@@ -109,22 +111,18 @@
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Overview of the toy models and their properties. }}{6}{}\protected@file@percent }
 \newlabel{tbl:Experiment_overview}{{1}{6}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Toy Model of Superposition}{6}{}\protected@file@percent }
-\newlabel{sec:tms-experiments}{{4.2}{6}{}{}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Independent features}{6}{}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Decomposition of $\mathrm  {TMS}_{5\text  {-}2}$ using Softmax. The first two panels show the target model's weight columns and the sum of learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ carry meaningful norm and contribute to reconstruction, while the remaining $15$ have negligible weight and are effectively pruned by the method. Each active subcomponent recovers primarily one feature direction, with minor leakage across components.}}{7}{}\protected@file@percent }
 \newlabel{fig:tms_5_2}{{1}{7}{}{}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Causal importance values for the softmax variant on $\mathrm  {TMS}_{5\text  {-}2}$, showing a one-hot assignment for each of the five features.}}{7}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Paired features}{7}{}\protected@file@percent }
 \newlabel{sec:tms-tied-experiment}{{4.2.2}{7}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$, partitioned by group membership.}}{7}{}\protected@file@percent }
+\newlabel{tab:tms-paired-cosine-similarity}{{2}{7}{}{}{}}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$, partitioned by group membership.}}{8}{}\protected@file@percent }
-\newlabel{tab:tms-paired-cosine-similarity}{{2}{8}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Left: SPD decomposition of the paired TMS model. Right: Softmax of the paired TMS model. SPD finds the correct structure of pairing features together but does not attribute one feature pair per subcomponent. Softmax achieves the desired importance decomposition, with the exception of one feature pair. SPD was trained with $200$ subcomponents and Softmax with $100$, as these yielded the best results for each method.}}{8}{}\protected@file@percent }
-\newlabel{fig:both}{{3}{8}{}{}{}}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{AttributionBasedParameterDecomposition}
@@ -133,17 +131,21 @@
 \abx@aux@segm{0}{0}{bhagat2025compressed}
 \abx@aux@cite{0}{bhagat2025compressed}
 \abx@aux@segm{0}{0}{bhagat2025compressed}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Decomposition quality across both TMS regimes. SPD refers to the original method \blx@tocontentsinit {0}\autocite {stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref {sec:rank-k-attention}. If the standard deviation is not reported, it's because its smaller than $0.001$.}}{9}{}\protected@file@percent }
-\newlabel{tab:tms_results}{{3}{9}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3} Toy Model of Compressed Computation }{9}{}\protected@file@percent }
-\newlabel{sec:tcc-experiment}{{4.3}{9}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Decomposition quality across both TMS regimes. SPD refers to the original method \blx@tocontentsinit {0}\autocite {stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref {sec:rank-k-attention}. If the standard deviation is not reported, it's because its smaller than $0.001$.}}{8}{}\protected@file@percent }
+\newlabel{tab:tms_results}{{3}{8}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3} Toy Model of Compressed Computation }{8}{}\protected@file@percent }
+\newlabel{sec:tcc-experiment}{{4.3}{8}{}{}{}}
+\abx@aux@cite{0}{bhagat2025compressed}
+\abx@aux@segm{0}{0}{bhagat2025compressed}
+\abx@aux@cite{0}{AttributionBasedParameterDecomposition}
+\abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
+\abx@aux@cite{0}{stochasticparameterdecomposition}
+\abx@aux@segm{0}{0}{stochasticparameterdecomposition}
+\abx@aux@cite{0}{bhagat2025compressed}
+\abx@aux@segm{0}{0}{bhagat2025compressed}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Left: SPD decomposition of the paired TMS model. Right: Softmax of the paired TMS model. SPD finds the correct structure of pairing features together but does not attribute one feature pair per subcomponent. Softmax achieves the desired importance decomposition, with the exception of one feature pair. SPD was trained with $200$ subcomponents and Softmax with $100$, as these yielded the best results for each method.}}{9}{}\protected@file@percent }
+\newlabel{fig:both}{{3}{9}{}{}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Architecture of the Toy Model of Compressed Computation. Picture taken from \blx@tocontentsinit {0}\autocite {bhagat2025compressed}}}{9}{}\protected@file@percent }
-\abx@aux@cite{0}{AttributionBasedParameterDecomposition}
-\abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
-\abx@aux@cite{0}{stochasticparameterdecomposition}
-\abx@aux@segm{0}{0}{stochasticparameterdecomposition}
-\abx@aux@cite{0}{bhagat2025compressed}
-\abx@aux@segm{0}{0}{bhagat2025compressed}
 \abx@aux@cite{0}{AttributionBasedParameterDecomposition}
 \abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Sampling effect on loss}{10}{}\protected@file@percent }
@@ -158,82 +160,83 @@
 \abx@aux@segm{0}{0}{bhagat2025compressed}
 \@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Per-feature contribution of each subcomponent at the neuron level. Subcomponents contribute to multiple features simultaneously, even when their causal importance is concentrated on a single feature.}}{12}{}\protected@file@percent }
 \newlabel{fig:cc_contribution}{{6}{12}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Left: Softmax. Right: SPD. Pairwise cosine similarity between the $U_c$ and $V_c$ vectors of the causally important subcomponents for both layers. Subcomponents are ordered by decreasing norm.}}{12}{}\protected@file@percent }
-\newlabel{fig:CC_cosines}{{7}{12}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Left: Softmax. Right: SPD. Pairwise cosine similarity between the $U_c$ and $V_c$ vectors of the causally important subcomponents for both layers. Subcomponents are ordered by decreasing norm.}}{13}{}\protected@file@percent }
+\newlabel{fig:CC_cosines}{{7}{13}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Subcomponent norm distributions}{13}{}\protected@file@percent }
 \abx@aux@cite{0}{peters2019sparsesequencetosequencemodels}
 \abx@aux@segm{0}{0}{peters2019sparsesequencetosequencemodels}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Subcomponent Norm Distributions}{13}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Left: Softmax. Right: SPD. Norms of the subcomponents, ordered by decreasing norm. Matrix norm is the fribenius norm of the subcomponent matrix $U_c V_c^T$. Subcomponents are ordered by decreasing norm.}}{13}{}\protected@file@percent }
-\newlabel{fig:CC_norms}{{8}{13}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Left: Softmax. Right: SPD. Norms of the subcomponents, ordered by decreasing norm. Matrix norm is the fribenius norm of the subcomponent matrix $U_c V_c^T$. Subcomponents are ordered by decreasing norm.}}{14}{}\protected@file@percent }
+\newlabel{fig:CC_norms}{{8}{14}{}{}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Distributions of causal importance values for the softmax decomposition on both layers.}}{14}{}\protected@file@percent }
 \newlabel{fig:CC_causal_importance_hist}{{9}{14}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Toy Model of Geometry}{14}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Toy Model of Geometry}{15}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Target model structure}{15}{}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Top: values of $s_{i}$. Middle: response $\rho _{l,[i,g]}$ from each input group to hidden neuron $i$. Bottom: contribution $\pi _{l+1,[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are ordered by $\rho _{l,[i,g]}$, then $s_i$, and lastly by output strength. Neurons with $s_{i} > 0.05$ shown.}}{16}{}\protected@file@percent }
 \newlabel{fig:simplex_target_structure}{{10}{16}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Group to output response $ r_{g,k} = \DOTSB \sum@ \slimits@ _{i}^{d_{\text  {hidden}}} \pi _{l+1,[k,i]}\mathrm  {ReLU}\!\left (\rho _{l,[i,g]}\right )$ obtained by sampling each simplex in isolation and measuring the resulting volume output. The magnitude is concentrated on the diagonal, showing that each simplex strongly influences its own output, with negligible cross-activation.}}{16}{}\protected@file@percent }
-\newlabel{fig:simplex_group_output}{{11}{16}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Group to output response $ r_{g,k} = \DOTSB \sum@ \slimits@ _{i}^{d_{\text  {hidden}}} \pi _{l+1,[k,i]}\mathrm  {ReLU}\!\left (\rho _{l,[i,g]}\right )$ obtained by sampling each simplex in isolation and measuring the resulting volume output. The magnitude is concentrated on the diagonal, showing that each simplex strongly influences its own output, with negligible cross-activation.}}{17}{}\protected@file@percent }
+\newlabel{fig:simplex_group_output}{{11}{17}{}{}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Subcomponent structure}{17}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.3}Comparison of importance values across different minimality coefficients}{17}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Left to right: SPD sampled with one hot sampling, rank fixed at $k=1$, 50 subcomponents, 3 simplices for a total of 18 input features, with $\beta _3$ swept from $10^{-3}$ to $10^{-6}$.}}{18}{}\protected@file@percent }
-\newlabel{fig:spd_minimality_sweep_condensed}{{12}{18}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Left to right: edges: the group importance values given by $\rho _{i,g}$, $w_{2} \times w_{1}$: values given by. Edges are normalized within each layer, for each computation in isolation. The edge width do therefore not reflect importance between plots. Multiple large edges, thus suggest similar magnitudes, while one large edge and many small edges suggest a more concentrated structure. Each middle column has subcomponents such that they determine 95\% of the total magnitude. The columns are not sorted by magnitude.}}{19}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Note that pho, pi are direct layerwise contributions, and the purple arrows are $\Psi $ is defined via the attribution. }}{21}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.4}Comparison of importance values across ranks at fixed minimality}{21}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{25}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.3}Comparison of importance values across different minimality coefficients}{18}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Left to right: SPD sampled with one hot sampling, rank fixed at $k=1$, 50 subcomponents, 3 simplices for a total of 18 input features, with $\beta _3$ swept from $10^{-3}$ to $10^{-6}$.}}{19}{}\protected@file@percent }
+\newlabel{fig:spd_minimality_sweep_condensed}{{12}{19}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Left to right: edges: the group importance values given by $\rho _{i,g}$, $w_{2} \times w_{1}$: values given by. Edges are normalized within each layer, for each computation in isolation. The edge width do therefore not reflect importance between plots. Multiple large edges, thus suggest similar magnitudes, while one large edge and many small edges suggest a more concentrated structure. Each middle column has subcomponents such that they determine 95\% of the total magnitude. The columns are not sorted by magnitude.}}{20}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Note that pho, pi are direct layerwise contributions, and the purple arrows are $\Psi $ is defined via the attribution. }}{22}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.4}Comparison of importance values across ranks at fixed minimality}{22}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{26}{}\protected@file@percent }
 \abx@aux@cite{0}{bushnaq2026interpreting_new_spd}
 \abx@aux@segm{0}{0}{bushnaq2026interpreting_new_spd}
 \abx@aux@cite{0}{bushnaq2026interpreting_new_spd}
 \abx@aux@segm{0}{0}{bushnaq2026interpreting_new_spd}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{26}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}What the experiments test within the irreducibility framework}{26}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Limitations and future work}{27}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Conclusion}{27}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}References}{27}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}Appendix}{29}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Toy Model of Superposition}{29}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.1}Model training}{29}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Toy Model of Compressed Computation}{29}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.1}Model training}{29}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Toy Model of Geometry}{29}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.1}SPD: Sweep over minimality coefficients}{29}{}\protected@file@percent }
-\newlabel{appendix:SPD_minimality_sweep}{{8.3.1}{29}{}{}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.2}SPD: Sweep over ranks for fixed minimality}{31}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.3}Softmax: Sweep over minimality coefficients}{32}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.4}Softmax: Sweep over ranks for fixed minimality}{32}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9}Notes}{32}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10}To add:}{33}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.1}SVD reformulation, capacity maybe per feature ablation TBD}{33}{}\protected@file@percent }
-\newlabel{sec:svd_reformulation}{{10.0.1}{33}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {11}Lukas questions}{33}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{27}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}What the experiments test within the irreducibility framework}{27}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Limitations and future work}{28}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Conclusion}{28}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}References}{28}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Appendix}{30}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Toy Model of Superposition}{30}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.1}Model training}{30}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Toy Model of Compressed Computation}{30}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.1}Model training}{30}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Toy Model of Geometry}{30}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.1}SPD: Sweep over minimality coefficients}{30}{}\protected@file@percent }
+\newlabel{appendix:SPD_minimality_sweep}{{8.3.1}{30}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.2}SPD: Sweep over ranks for fixed minimality}{32}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.3}Softmax: Sweep over minimality coefficients}{33}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.4}Softmax: Sweep over ranks for fixed minimality}{33}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Notes}{33}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}To add:}{34}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {10.0.1}SVD reformulation, capacity maybe per feature ablation TBD}{34}{}\protected@file@percent }
+\newlabel{sec:svd_reformulation}{{10.0.1}{34}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {11}Lukas questions}{34}{}\protected@file@percent }
 \abx@aux@read@bbl@mdfivesum{nohash}
 \abx@aux@read@bblrerun
-\abx@aux@defaultrefcontext{0}{stochasticparameterdecomposition}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{bhagat2025compressed}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{AttributionBasedParameterDecomposition}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{bricken2023monosemanticity}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{bushnaq2026interpreting_new_spd}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{chrisman2025identifyingsparselyactivecircuits}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{absorptionstudyingfeaturesplitting}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{christensen2025decompositionsmalltransformermodels}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{csordás2024recurrentneuralnetworkslearn}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{cunningham2023takingfeatures}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{sparseautoencodershighlyinterpretable}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{dunefsky2024transcodersinterpretablellmfeature}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{elhage2022toymodelssuperposition}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{engels2025languagemodelfeaturesonedimensionally}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{jermyn2024tanhPenaltyDictionaryLearning}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{sparseautoencoderscanonicalunits}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{marks2025sparsefeaturecircuitsdiscovering}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{méloux2025everythingeverywhereoncemechanistic}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{mendel2024sae}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{nanda2023progressmeasuresgrokkingmechanistic}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{olah2020zoomin}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{park2024linearrepresentationhypothesisgeometry}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{peters2019sparsesequencetosequencemodels}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{seshadri2026crosslayer}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{sharkey2025openproblemsmechanisticinterpretability}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{smith2024strong}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{vaswani2023attentionneed}{anyt/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{wright2024featureSuppressionSAEs}{anyt/global//global/global/global}
-\gdef \@abspage@last{35}
+\abx@aux@defaultrefcontext{0}{bhagat2025compressed}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{AttributionBasedParameterDecomposition}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{bricken2023monosemanticity}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{busch2025}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{stochasticparameterdecomposition}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{bushnaq2026interpreting_new_spd}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{absorptionstudyingfeaturesplitting}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{chrisman2025identifyingsparselyactivecircuits}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{christensen2025decompositionsmalltransformermodels}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{csordás2024recurrentneuralnetworkslearn}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{cunningham2023takingfeatures}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{sparseautoencodershighlyinterpretable}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{dunefsky2024transcodersinterpretablellmfeature}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{elhage2022toymodelssuperposition}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{engels2025languagemodelfeaturesonedimensionally}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{jermyn2024tanhPenaltyDictionaryLearning}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{sparseautoencoderscanonicalunits}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{marks2025sparsefeaturecircuitsdiscovering}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{méloux2025everythingeverywhereoncemechanistic}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{mendel2024sae}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{nanda2023progressmeasuresgrokkingmechanistic}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{olah2020zoomin}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{park2024linearrepresentationhypothesisgeometry}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{peters2019sparsesequencetosequencemodels}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{seshadri2026crosslayer}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{sharkey2025openproblemsmechanisticinterpretability}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{smith2024strong}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{vaswani2023attentionneed}{nty/global//global/global/global}
+\abx@aux@defaultrefcontext{0}{wright2024featureSuppressionSAEs}{nty/global//global/global/global}
+\gdef \@abspage@last{37}
