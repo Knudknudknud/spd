@@ -423,99 +423,233 @@ def compute_spd_weight_neuron_contributions(
         "n_layers n_features C d_mlp, n_layers d_mlp n_features -> n_layers n_features C d_mlp",
     )
 
+    print("relu_conns_spd shape:", relu_conns_spd.shape)
+    print("relu_conns_spd:", relu_conns_spd)
     return relu_conns_spd[:, :n_features, :, :]
 
+
+# def plot_spd_feature_contributions_truncated(
+#     components: dict[str, LinearComponent],
+#     target_model: ResidualMLP,
+#     n_features: int | None = 50,
+# ):
+#     n_layers = target_model.config.n_layers
+#     n_features = target_model.config.n_features if n_features is None else n_features
+#     d_mlp = target_model.config.d_mlp
+
+#     # Assert that there are no biases
+#     assert not target_model.config.in_bias and not target_model.config.out_bias, (
+#         "Biases are not supported for these plots"
+#     )
+
+#     # --- Compute neuron contribution tensors ---
+#     relu_conns: Float[Tensor, "n_layers n_features d_mlp"] = (
+#         compute_target_weight_neuron_contributions(
+#             target_model=target_model,
+#             n_features=n_features,
+#         )
+#     )
+
+#     relu_conns_spd: Float[Tensor, "n_layers n_features C d_mlp"] = (
+#         compute_spd_weight_neuron_contributions(
+#             components=components,
+#             target_model=target_model,
+#             n_features=n_features,
+#         )
+#     )
+
+#     max_component_indices = []
+#     for i in range(n_layers):
+#         # For each feature, find the C component with the largest max value over d_mlp
+#         max_component_indices.append(relu_conns_spd[i].max(dim=-1).values.argmax(dim=-1))
+#     # For each feature, use the C values based on the max_component_indices
+#     max_component_contributions: Float[Tensor, "n_layers n_features d_mlp"] = torch.stack(
+#         [
+#             relu_conns_spd[i, torch.arange(n_features), max_component_indices[i], :]
+#             for i in range(n_layers)
+#         ],
+#         dim=0,
+#     )
+
+#     n_rows = 2
+#     fig1, axes1 = plt.subplots(n_rows, 1, figsize=(30, 7), constrained_layout=True)
+#     axes1 = np.atleast_1d(axes1)  # type: ignore
+
+#     labelled_neurons = feature_contribution_plot(
+#         ax=axes1[0],
+#         relu_conns=relu_conns,
+#         n_layers=n_layers,
+#         n_features=n_features,
+#         d_mlp=d_mlp,
+#         legend=True,
+#     )
+#     axes1[0].set_ylabel("Neuron contribution")
+#     axes1[0].set_xlabel(f"Input feature index (first {n_features} shown)")
+#     axes1[0].set_title("Target model")
+#     axes1[0].set_xticks(range(n_features))  # Ensure all xticks have labels
+
+#     feature_contribution_plot(
+#         ax=axes1[1],
+#         relu_conns=max_component_contributions,
+#         n_layers=n_layers,
+#         n_features=n_features,
+#         d_mlp=d_mlp,
+#         pre_labelled_neurons=labelled_neurons,
+#         legend=False,
+#     )
+#     axes1[1].set_ylabel("Neuron contribution")
+#     axes1[1].set_xlabel("Subcomponent index")
+#     axes1[1].set_title("Individual Softmax subcomponents")
+#     axes1[1].set_xticks(range(n_features))
+
+#     # Set the same y-axis limits for both plots
+#     y_min = min(axes1[0].get_ylim()[0], axes1[1].get_ylim()[0])
+#     y_max = max(axes1[0].get_ylim()[1], axes1[1].get_ylim()[1])
+#     axes1[0].set_ylim(y_min, y_max)
+#     axes1[1].set_ylim(y_min, y_max)
+
+#     # Label the x axis with the subnets that have the largest neuron for each feature
+#     axes1[1].set_xticklabels(max_component_indices[0].tolist())  # Labels are the subnet indices
+
+#     return fig1
 
 def plot_spd_feature_contributions_truncated(
     components: dict[str, LinearComponent],
     target_model: ResidualMLP,
-    n_features: int | None = 50,
+    n_features: int | None = 100,
+    only_duplicate_pairs: bool = False,
 ):
     n_layers = target_model.config.n_layers
-    n_features = target_model.config.n_features if n_features is None else n_features
     d_mlp = target_model.config.d_mlp
 
-    # Assert that there are no biases
     assert not target_model.config.in_bias and not target_model.config.out_bias, (
         "Biases are not supported for these plots"
     )
 
-    # --- Compute neuron contribution tensors ---
-    relu_conns: Float[Tensor, "n_layers n_features d_mlp"] = (
+    # =========================================================
+    # ALWAYS COMPUTE ON FULL FEATURE SPACE
+    # =========================================================
+    relu_conns: Float[Tensor, "n_layers N d_mlp"] = (
         compute_target_weight_neuron_contributions(
             target_model=target_model,
-            n_features=n_features,
+            n_features=None,   
         )
     )
 
-    relu_conns_spd: Float[Tensor, "n_layers n_features C d_mlp"] = (
+    relu_conns_spd: Float[Tensor, "n_layers N C d_mlp"] = (
         compute_spd_weight_neuron_contributions(
             components=components,
             target_model=target_model,
-            n_features=n_features,
+            n_features=None, 
         )
     )
 
+    # best SPD component per feature
     max_component_indices = []
     for i in range(n_layers):
-        # For each feature, find the C component with the largest max value over d_mlp
-        max_component_indices.append(relu_conns_spd[i].max(dim=-1).values.argmax(dim=-1))
-    # For each feature, use the C values based on the max_component_indices
-    max_component_contributions: Float[Tensor, "n_layers n_features d_mlp"] = torch.stack(
+        max_component_indices.append(
+            relu_conns_spd[i].max(dim=-1).values.argmax(dim=-1)
+        )
+
+    max_component_indices = torch.stack(max_component_indices, dim=0)  # [layers, N]
+
+    # =========================================================
+    # OPTIONAL: KEEP ONLY DUPLICATE COMPONENT FEATURES
+    # =========================================================
+    if only_duplicate_pairs:
+        comps = max_component_indices[0]  # reference layer
+
+        unique, counts = torch.unique(comps, return_counts=True)
+        dup_components = unique[counts > 1]
+
+        mask = torch.isin(comps, dup_components)
+
+        relu_conns = relu_conns[:, mask]
+        relu_conns_spd = relu_conns_spd[:, mask]
+        max_component_indices = max_component_indices[:, mask]
+
+    # =========================================================
+    # CLEAN SORT: GROUP BY COMPONENT ID (NO MIXED KEYS)
+    # =========================================================
+    comps = max_component_indices[0]
+    perm = torch.argsort(comps, stable=True)
+
+    relu_conns = relu_conns[:, perm]
+    relu_conns_spd = relu_conns_spd[:, perm]
+    max_component_indices = max_component_indices[:, perm]
+
+    # =========================================================
+    # FINAL: TRUNCATE ONLY FOR PLOTTING
+    # =========================================================
+    N = relu_conns.shape[1]
+    k = min(n_features, N)
+
+    relu_conns = relu_conns[:, :k]
+    relu_conns_spd = relu_conns_spd[:, :k]
+    max_component_indices = max_component_indices[:, :k]
+
+    # =========================================================
+    # EXTRACT SPD CONTRIBUTIONS
+    # =========================================================
+    idx = torch.arange(k, device=relu_conns.device)
+
+    max_component_contributions: Float[Tensor, "n_layers k d_mlp"] = torch.stack(
         [
-            relu_conns_spd[i, torch.arange(n_features), max_component_indices[i], :]
+            relu_conns_spd[i, idx, max_component_indices[i, :k], :]
             for i in range(n_layers)
         ],
         dim=0,
     )
 
-    n_rows = 2
-    fig1, axes1 = plt.subplots(n_rows, 1, figsize=(10, 7), constrained_layout=True)
-    axes1 = np.atleast_1d(axes1)  # type: ignore
+    # =========================================================
+    # PLOTTING
+    # =========================================================
+    fig1, axes1 = plt.subplots(2, 1, figsize=(10, 7), constrained_layout=True)
+    axes1 = np.atleast_1d(axes1)
 
     labelled_neurons = feature_contribution_plot(
         ax=axes1[0],
         relu_conns=relu_conns,
         n_layers=n_layers,
-        n_features=n_features,
+        n_features=k,
         d_mlp=d_mlp,
         legend=True,
     )
+
     axes1[0].set_ylabel("Neuron contribution")
-    axes1[0].set_xlabel(f"Input feature index (first {n_features} shown)")
+    axes1[0].set_xlabel(f"Input feature index (first {k} shown)")
     axes1[0].set_title("Target model")
-    axes1[0].set_xticks(range(n_features))  # Ensure all xticks have labels
+    axes1[0].set_xticks(range(k))
 
     feature_contribution_plot(
         ax=axes1[1],
         relu_conns=max_component_contributions,
         n_layers=n_layers,
-        n_features=n_features,
+        n_features=k,
         d_mlp=d_mlp,
         pre_labelled_neurons=labelled_neurons,
         legend=False,
     )
+
     axes1[1].set_ylabel("Neuron contribution")
     axes1[1].set_xlabel("Subcomponent index")
-    axes1[1].set_title("Individual Softmax subcomponents")
-    axes1[1].set_xticks(range(n_features))
+    axes1[1].set_title("Softmax and attention subcomponents")
+    axes1[1].set_xticks(range(k))
 
-    # Set the same y-axis limits for both plots
+    # align y-limits
     y_min = min(axes1[0].get_ylim()[0], axes1[1].get_ylim()[0])
     y_max = max(axes1[0].get_ylim()[1], axes1[1].get_ylim()[1])
     axes1[0].set_ylim(y_min, y_max)
     axes1[1].set_ylim(y_min, y_max)
 
-    # Label the x axis with the subnets that have the largest neuron for each feature
-    axes1[1].set_xticklabels(max_component_indices[0].tolist())  # Labels are the subnet indices
+    axes1[1].set_xticklabels(max_component_indices[0, :k].tolist())
 
     return fig1
-
 
 def plot_neuron_contribution_pairs(
     components: dict[str, LinearComponent],
     target_model: ResidualMLP,
-    n_features: int | None = 50,
+    n_features: int | None = 100,
 ) -> plt.Figure:
     """Create a scatter plot comparing target model and SPD component neuron contributions.
 
@@ -547,6 +681,8 @@ def plot_neuron_contribution_pairs(
             n_features=n_features,
         )
     )
+    for i in relu_conns_spd:
+        print(i.shape)
 
     # For each layer and feature, find the component with the largest max value over d_mlp
     max_component_indices = []
@@ -722,6 +858,9 @@ def plot_subcomponent_cosine_similarities(model, top_k=100, save_path=None):
         print(f"Saved to {save_path}")
     return fig
 
+
+
+
 def main():
     out_dir = REPO_ROOT / "spd/experiments/resid_mlp/out/figures/"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -753,6 +892,7 @@ def main():
             components=components,
             target_model=target_model,
             n_features=10,
+            only_duplicate_pairs=True
         )
         fig.savefig(
             out_dir / f"resid_mlp_weights_{n_layers}layers_{wandb_id}.png",
@@ -765,7 +905,7 @@ def main():
         fig_pairs = plot_neuron_contribution_pairs(
             components=components,
             target_model=target_model,
-            n_features=None,  # Using same number of features as above
+            n_features= 60, 
         )
         fig_pairs.savefig(
             out_dir / f"neuron_contribution_pairs_{n_layers}layers_{wandb_id}.png",
@@ -786,68 +926,8 @@ def main():
             model=model,
             save_path=out_dir / f"subcomponent_norms_{n_layers}layers_{wandb_id}.png",
         )
-        # Define a title formatter for ResidualMLP component names
-        def format_resid_mlp_title(mask_name: str) -> str:
-            """Convert 'layers.X.mlp_in/out' to 'Layer Y - $W_{in/out}$' with LaTeX formatting."""
-            parts = mask_name.split(".")
-            if len(parts) == 3 and parts[0] == "layers":
-                layer_idx = int(parts[1]) + 1  # Convert to 1-based indexing
-                weight_type = parts[2]
-                if weight_type == "mlp_in":
-                    return f"Layer {layer_idx} - $W_{{in}}$"
-                elif weight_type == "mlp_out":
-                    return f"Layer {layer_idx} - $W_{{out}}$"
-            return mask_name  # Fallback to original if pattern doesn't match
-
-        # Generate and save causal importance plots
-        gates: dict[str, Transformer] = {
-            k.removeprefix("gates.").replace("-", "."): v for k, v in model.gates.items()
-        }  # type: ignore
-        batch_shape = (1, target_model.config.n_features)
-        figs_causal = plot_causal_importance_vals(
-            model=model,
-            components=components,
-            gates=gates,
-            batch_shape=batch_shape,
-            device=device,
-            input_magnitude=0.75,
-            plot_raw_cis=False,
-            orientation="vertical",
-            title_formatter=format_resid_mlp_title,
-        )[0]
-        figs_causal["causal_importances_upper_leaky"].savefig(
-            out_dir / f"causal_importance_upper_leaky_{n_layers}layers_{wandb_id}.png",
-            bbox_inches="tight",
-            dpi=500,
-        )
-        print(
-            f"Saved figure to {out_dir / f'causal_importance_upper_leaky_{n_layers}layers_{wandb_id}.png'}"
-        )
         
-
-        # ##### Resid_mlp 1-layer varying sparsity ####
-        # run_ids = [
-        #     "wandb:spd-resid-mlp/runs/xh0qlbkj",  # 1e-6
-        #     "wandb:spd-resid-mlp/runs/kkpzirac",  # 3e-6
-        #     "wandb:spd-resid-mlp/runs/ziro93xq",  # Best. 1e-5
-        #     "wandb:spd-resid-mlp/runs/pnxu3d22",  # 1e-4
-        #     "wandb:spd-resid-mlp/runs/aahzg3zu",  # 1e-3
-        # ]
-        # best_idx = [2]
-
-        # # Create and save the combined figure
-        # fig = plot_increasing_importance_minimality_coeff_ci_vals(run_ids, best_idx=best_idx)
-        # out_dir = REPO_ROOT / "spd/experiments/resid_mlp/out/"
-        # out_dir.mkdir(parents=True, exist_ok=True)
-        # fig.savefig(
-        #     out_dir / "resid_mlp_varying_importance_minimality_coeff_ci_vals.png",
-        #     bbox_inches="tight",
-        #     dpi=400,
-        # )
-        # print(
-        #     f"Saved figure to {out_dir / 'resid_mlp_varying_importance_minimality_coeff_ci_vals.png'}"
-        # )
-
+        
 
 if __name__ == "__main__":
     fire.Fire(main)
