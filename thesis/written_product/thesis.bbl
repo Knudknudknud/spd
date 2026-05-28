@@ -1286,50 +1286,6 @@
       \verb https://arxiv.org/abs/2311.03658
       \endverb
     \endentry
-    \entry{peters2019sparsesequencetosequencemodels}{misc}{}{}
-      \name{author}{3}{}{%
-        {{hash=c5d967fd93e7b18f947bcc25ac7d7496}{%
-           family={Peters},
-           familyi={P\bibinitperiod},
-           given={Ben},
-           giveni={B\bibinitperiod}}}%
-        {{hash=7fb1184b4b06404ea26547130860771e}{%
-           family={Niculae},
-           familyi={N\bibinitperiod},
-           given={Vlad},
-           giveni={V\bibinitperiod}}}%
-        {{hash=9480c28f63984e2f3cbe6ce914f8aa8b}{%
-           family={Martins},
-           familyi={M\bibinitperiod},
-           given={André\bibnamedelimb F.\bibnamedelimi T.},
-           giveni={A\bibinitperiod\bibinitdelim F\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
-      }
-      \strng{namehash}{459b99d6d993050650f349a8607dc26a}
-      \strng{fullhash}{459b99d6d993050650f349a8607dc26a}
-      \strng{fullhashraw}{459b99d6d993050650f349a8607dc26a}
-      \strng{bibnamehash}{459b99d6d993050650f349a8607dc26a}
-      \strng{authorbibnamehash}{459b99d6d993050650f349a8607dc26a}
-      \strng{authornamehash}{459b99d6d993050650f349a8607dc26a}
-      \strng{authorfullhash}{459b99d6d993050650f349a8607dc26a}
-      \strng{authorfullhashraw}{459b99d6d993050650f349a8607dc26a}
-      \field{sortinit}{P}
-      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{eprintclass}{cs.CL}
-      \field{eprinttype}{arXiv}
-      \field{title}{Sparse Sequence-to-Sequence Models}
-      \field{year}{2019}
-      \verb{eprint}
-      \verb 1905.05702
-      \endverb
-      \verb{urlraw}
-      \verb https://arxiv.org/abs/1905.05702
-      \endverb
-      \verb{url}
-      \verb https://arxiv.org/abs/1905.05702
-      \endverb
-    \endentry
     \entry{seshadri2026crosslayer}{inproceedings}{}{}
       \name{author}{6}{}{%
         {{hash=1427840226d72c75a721ffdae5cc38ed}{%
