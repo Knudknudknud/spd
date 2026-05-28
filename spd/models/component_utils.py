@@ -11,7 +11,6 @@ from spd.models.component_model import ComponentModel
 from spd.models.components import EmbeddingComponent, LinearComponent, Transformer
 import torch.nn as nn
 from spd.utils import extract_batch_data
-from entmax import sparsemax
 
 
 
@@ -151,13 +150,7 @@ def calc_causal_importances(
       
         causal_importances[param_name] = torch.softmax(layer_out / temperature, dim=-1)
         causal_importances_upper_leaky[param_name] = torch.softmax(layer_out / temperature, dim=-1)
-        
-        # #Entmax attempt -> idea that we want exact zeros?
-        # #causal_importances[param_name] = entmax15(layer_out / temperature, dim=-1)
-        # #causal_importances_upper_leaky[param_name] = entmax15(layer_out / temperature, dim=-1)
-        # causal_importances[param_name] = sparsemax(layer_out / temperature, dim=-1)
-        # causal_importances_upper_leaky[param_name] = sparsemax(layer_out / temperature, dim=-1)
-        
+ 
     return causal_importances, causal_importances_upper_leaky
 
 

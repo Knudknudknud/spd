@@ -307,6 +307,71 @@
       \field{title}{Towards Monosemanticity: Decomposing Language Models With Dictionary Learning}
       \field{year}{2023}
     \endentry
+    \entry{bushnaq2026interpreting_new_spd}{misc}{}{}
+      \name{author}{8}{}{%
+        {{hash=9c1f60ef07d490aed136933c65e14aa4}{%
+           family={Bushnaq},
+           familyi={B\bibinitperiod},
+           given={Lucius},
+           giveni={L\bibinitperiod}}}%
+        {{hash=375c93d04783a8b8c5887d391db14e08}{%
+           family={Braun},
+           familyi={B\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod}}}%
+        {{hash=e06d0fdb9a1e52ec75bad244bfd4e95f}{%
+           family={Clive-Griffin},
+           familyi={C\bibinithyphendelim G\bibinitperiod},
+           given={Oliver},
+           giveni={O\bibinitperiod}}}%
+        {{hash=f555a13965ffb118677c14b6e19f9ed0}{%
+           family={Bussmann},
+           familyi={B\bibinitperiod},
+           given={Bart},
+           giveni={B\bibinitperiod}}}%
+        {{hash=bc798a9ccefa1796ba4142a14541305a}{%
+           family={Hu},
+           familyi={H\bibinitperiod},
+           given={Nathan},
+           giveni={N\bibinitperiod}}}%
+        {{hash=68543e2b0f6d5a3212c4abbfbf0fb52f}{%
+           family={Ivanitskiy},
+           familyi={I\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=9211f7f8fe7d6f81f45dac768156f7c4}{%
+           family={Linsefors},
+           familyi={L\bibinitperiod},
+           given={Linda},
+           giveni={L\bibinitperiod}}}%
+        {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
+           family={Sharkey},
+           familyi={S\bibinitperiod},
+           given={Lee},
+           giveni={L\bibinitperiod}}}%
+      }
+      \list{institution}{2}{%
+        {Goodfire}%
+        {MATS}%
+      }
+      \strng{namehash}{461546f6b6016fb96b7bb4cfd4b3e44c}
+      \strng{fullhash}{9ff0973acec9bc47b01a06a0ca05f8b8}
+      \strng{fullhashraw}{9ff0973acec9bc47b01a06a0ca05f8b8}
+      \strng{bibnamehash}{461546f6b6016fb96b7bb4cfd4b3e44c}
+      \strng{authorbibnamehash}{461546f6b6016fb96b7bb4cfd4b3e44c}
+      \strng{authornamehash}{461546f6b6016fb96b7bb4cfd4b3e44c}
+      \strng{authorfullhash}{9ff0973acec9bc47b01a06a0ca05f8b8}
+      \strng{authorfullhashraw}{9ff0973acec9bc47b01a06a0ca05f8b8}
+      \field{labelalpha}{Bus+26}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Technical Report}
+      \field{month}{4}
+      \field{title}{Interpreting Language Model Parameters}
+      \field{year}{2026}
+    \endentry
     \entry{chrisman2025identifyingsparselyactivecircuits}{misc}{}{}
       \name{author}{3}{}{%
         {{hash=c5dc16eb49617c627bca527a69e8a6ed}{%
@@ -1640,7 +1705,6 @@
       \endverb
     \endentry
   \enddatalist
-  \missing{bushnaq2026interpreting}
 \endrefsection
 \endinput
 

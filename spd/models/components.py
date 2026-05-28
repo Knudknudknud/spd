@@ -12,32 +12,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-
-# class Transformer(nn.Module):
-#     def __init__(self, in_channels, out_channels, hidden_channels):
-#         super().__init__()
-#         self.W_q = nn.Linear(in_channels, hidden_channels)
-#         self.W_k = nn.Linear(in_channels, hidden_channels)
-#         self.W_v = nn.Linear(in_channels, hidden_channels)
-        
-#         self.self_proj = nn.Sequential(
-#             nn.Linear(in_channels, hidden_channels),
-#             nn.ReLU(),
-#             nn.Linear(hidden_channels, out_channels),
-#         )
-        
-#         self.attn_proj = nn.Linear(hidden_channels, in_channels)
-
-#     def forward_batched(self, x_batch):
-#         Q = self.W_q(x_batch)
-#         K = self.W_k(x_batch)
-#         V = self.W_v(x_batch)
-#         attn_out = F.scaled_dot_product_attention(Q, K, V)
-#         y = x_batch + attn_out
-#         y = y + self.self_proj(y)
-
-#         return y
-
 class Transformer(nn.Module):
     def __init__(self, in_channels, out_channels, hidden_channels, num_heads=1):
         super().__init__()
@@ -45,7 +19,6 @@ class Transformer(nn.Module):
         # Project input into hidden space first
         self.input_proj = nn.Linear(in_channels, hidden_channels)
 
-        # Attention operates entirely in hidden space
         self.attn = nn.MultiheadAttention(
             embed_dim=hidden_channels,
             num_heads=num_heads,

@@ -1,0 +1,43 @@
+\contentsline {section}{\numberline {1}Introduction}{1}{}%
+\contentsline {section}{\numberline {2}Related work}{1}{}%
+\contentsline {subsection}{\numberline {2.1}The linear representation hypothesis}{1}{}%
+\contentsline {subsection}{\numberline {2.2}Activation-space decomposition}{2}{}%
+\contentsline {subsection}{\numberline {2.3}Parameter-space decomposition}{2}{}%
+\contentsline {section}{\numberline {3}Method}{2}{}%
+\contentsline {subsection}{\numberline {3.1}Background on SPD}{2}{}%
+\contentsline {subsection}{\numberline {3.2}Irreducibility and the natural unit of decomposition}{4}{}%
+\contentsline {subsection}{\numberline {3.3}Rank-$k$ subcomponents and relational importance}{4}{}%
+\contentsline {section}{\numberline {4}Results}{5}{}%
+\contentsline {subsection}{\numberline {4.1}Overview of experiments}{5}{}%
+\contentsline {subsection}{\numberline {4.2}Toy Model of Superposition}{6}{}%
+\contentsline {subsubsection}{\numberline {4.2.1}Independent features}{6}{}%
+\contentsline {subsubsection}{\numberline {4.2.2}Paired features}{7}{}%
+\contentsline {subsection}{\numberline {4.3} Toy Model of Compressed Computation }{9}{}%
+\contentsline {subsubsection}{\numberline {4.3.1}Sampling effect on loss}{10}{}%
+\contentsline {subsubsection}{\numberline {4.3.2}Causal importance}{10}{}%
+\contentsline {subsubsection}{\numberline {4.3.3}Subcomponent Norm Distributions}{13}{}%
+\contentsline {subsection}{\numberline {4.4}Toy Model of Geometry}{14}{}%
+\contentsline {subsubsection}{\numberline {4.4.1}Target model structure}{15}{}%
+\contentsline {subsubsection}{\numberline {4.4.2}Subcomponent structure}{17}{}%
+\contentsline {subsubsection}{\numberline {4.4.3}Comparison of importance values across different minimality coefficients}{17}{}%
+\contentsline {subsubsection}{\numberline {4.4.4}Comparison of importance values across ranks at fixed minimality}{21}{}%
+\contentsline {section}{\numberline {5}Discussion}{25}{}%
+\contentsline {section}{\numberline {6}Discussion}{26}{}%
+\contentsline {subsection}{\numberline {6.1}What the experiments test within the irreducibility framework}{26}{}%
+\contentsline {subsection}{\numberline {6.2}Limitations and future work}{27}{}%
+\contentsline {subsection}{\numberline {6.3}Conclusion}{27}{}%
+\contentsline {section}{\numberline {7}References}{27}{}%
+\contentsline {section}{\numberline {8}Appendix}{29}{}%
+\contentsline {subsection}{\numberline {8.1}Toy Model of Superposition}{29}{}%
+\contentsline {subsubsection}{\numberline {8.1.1}Model training}{29}{}%
+\contentsline {subsection}{\numberline {8.2}Toy Model of Compressed Computation}{29}{}%
+\contentsline {subsubsection}{\numberline {8.2.1}Model training}{29}{}%
+\contentsline {subsection}{\numberline {8.3}Toy Model of Geometry}{29}{}%
+\contentsline {subsubsection}{\numberline {8.3.1}SPD: Sweep over minimality coefficients}{29}{}%
+\contentsline {subsubsection}{\numberline {8.3.2}SPD: Sweep over ranks for fixed minimality}{31}{}%
+\contentsline {subsubsection}{\numberline {8.3.3}Softmax: Sweep over minimality coefficients}{32}{}%
+\contentsline {subsubsection}{\numberline {8.3.4}Softmax: Sweep over ranks for fixed minimality}{32}{}%
+\contentsline {section}{\numberline {9}Notes}{32}{}%
+\contentsline {section}{\numberline {10}To add:}{33}{}%
+\contentsline {subsubsection}{\numberline {10.0.1}SVD reformulation, capacity maybe per feature ablation TBD}{33}{}%
+\contentsline {section}{\numberline {11}Lukas questions}{33}{}%

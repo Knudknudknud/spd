@@ -75,7 +75,7 @@
 \newpage
 \begin{abstract}
 Some super cool abstract of all my findings \footnote{Very important to add quantization somewhere. https://arxiv.org/pdf/2303.13506, new SPD paper in related work and discussion - prticularly they also say something about their minimality loss, and lastly extend the transformer thing in the paper to be more clear of the architecture. Particulraly no positional encoding?}
-Add your github and folder for wandb.
+Add your github and folder for wandb. \footnote{todo}
 \end{abstract}
 \pagenumbering{arabic}
 
@@ -84,7 +84,8 @@ Add your github and folder for wandb.
 
 Mechanistic interpretability seeks to reverse-engineer neural
 networks into a set of human-interpretable mechanisms.
-Different branches of the field pursue this goal with different focal points: Either through directions in activation space, computational subgraphs, or components of the network's parameters.
+Here, different
+branches of the field pursue this goal with different focal points, either by disentangling directions in activation space, discovering computational subgraphs, or directly decomposing components of the network's parameters.
 
 However, both the atomic structure for decomposition
  and the decomposition itself remain open problems.
@@ -109,9 +110,7 @@ computation, exposing the grouping directly but collapsing per side-length infor
 
 Recently, 
 a formal definition of irreducibility was introduced to disambiguate cases such
-as the cube example. \footnote{I got this deifnition wrong, we decompose f not the V's, we thus musn't show delta orthogonolaity,
-and the argument with that the V's can be linear combinations isnt as important anymore. However we still have the same argument, that
-they can be low dimensional instead of rank 1. Secondly we need to state clearly that f is a function $f: d_{input} \to  \mathbb{R}^{d_{fi}}$}
+as the cube example.
 \autocite{engels2025languagemodelfeaturesonedimensionally}
 Features are irreducible, and thus constitute units of decomposition,
 if their joint distribution cannot be decomposed into independent
@@ -125,12 +124,14 @@ function.
 
 This work extends SPD by examining its behaviour on dependent features,
 in settings where the multi-dimensional feature hypothesis posits
-a feature-level or a structural-level unit \footnote{I mean feature-level, structure level is wrong under this view but it sounds good} \autocite{engels2025languagemodelfeaturesonedimensionally}. 
-Additionally a reformulation of the importance function is proposed,
-to encourage that features that are manipulated jointly are grouped together, by computing importance relationally across components.
+that features should be grouped in higher dimensional subcomponents. \autocite{engels2025languagemodelfeaturesonedimensionally}. 
+Additionally an alternative formulation of the importance function is 
+examined, where the importance of a component is computed relationally across subcomponents, rather than independently, to encourage that features that are manipulated jointly are grouped together.
+Lastly, a new toy model "The toy Model of Geometry" is introduced,
+that computes the volume of a simplex from its vertices, to explore
+this multidimensional setting.
 
-
-My findings
+My findings \footnote{to do}
 % The findings in this work suggest that while SPD does perform better in terms of faithfulness, the method struggles in terms of interpretability,
 % where the importance values do not 
 % While this extension is theoretically well grounded, it only manages to partially recover the ground-truth decompositions,
@@ -143,7 +144,7 @@ My findings
 A widespread view in mechanistic interpretability is the linear representation hypothesis: high-level concepts are encoded as directions in a network's representation space \autocite{park2024linearrepresentationhypothesisgeometry}. Together with the superposition hypothesis \autocite{elhage2022toymodelssuperposition}, it forms a central tenet of interpretability: each feature corresponds to a single direction, and a hidden state is a sparse linear combination of feature directions.
 
 Recent work questions how strictly this view should be taken, distinguishing between a weak form of the hypothesis, that some features are linear, from a stronger form that all features are \autocite{mendel2024sae,smith2024strong}. 
-Empirically multiple counterexamples to the stronger form have been proposed, include recurrent networks encoding token position by magnitude rather than direction \autocite{csordás2024recurrentneuralnetworkslearn}, transformers representing cyclical concepts such as days of the week \autocite{engels2025languagemodelfeaturesonedimensionally} or modular arithmetic \autocite{nanda2023progressmeasuresgrokkingmechanistic} in irreducible low-dimensional subspaces.
+Empirically multiple counterexamples to the stronger form have been proposed, including recurrent networks that encode token position by magnitude \autocite{csordás2024recurrentneuralnetworkslearn}, transformers representing cyclical concepts such as days of the week \autocite{engels2025languagemodelfeaturesonedimensionally} or modular arithmetic \autocite{nanda2023progressmeasuresgrokkingmechanistic} in irreducible low-dimensional subspaces.
 \subsection{Activation-space decomposition}
 Decomposing a network's activations predominantly focuses on disentangling layer activations into interpretable features.
 Here, sparse autoencoders (SAE) are one of the most widely researched methods \autocite{sparseautoencodershighlyinterpretable, bricken2023monosemanticity},
@@ -181,10 +182,19 @@ subcomponents and learning a per-input importance
 function over them, at the cost of requiring post-hoc
 clustering to recover higher-rank mechanisms;
 both methods are detailed in
-Section~\ref{sec:spd_background}. Other parameter-space
-approaches include local loss landscape decomposition \autocite{chrisman2025identifyingsparselyactivecircuits}.
+Section~\ref{sec:spd_background}.
 
-
+In concurrent work, adVersarial Parameter Decomposition (VPD)
+\autocite{bushnaq2026interpreting_new_spd} extends this line of
+research by replacing SPD's stochastic masking procedure with an
+adversarial objective that searches for subcomponent ablations capable
+of invalidating the learned importance assignments. The method enforces
+that, for any input, every subset of subcomponents containing those
+identified as causally important must still reconstruct the network's
+output. VPD also scales parameter decomposition to a small transformer
+language model, including its attention layers. Other parameter-space
+approaches include local loss landscape decomposition
+\autocite{chrisman2025identifyingsparselyactivecircuits}.
 
 \section{Method}
 
@@ -197,7 +207,7 @@ to the original weights, minimal in the number required per input,
 and individually as simple as possible.
 
 To formalise this, consider a neural network $f(x, W)$ with weight matrices $W = \{W^1, \dots, W^L\}$.
-A set of parameter components $\{W^l_c\}_{c=1}^{C}$ are said to comprise the network's mechanisms if they satisfy the following properties:
+A set of parameter components5 are said to comprise the network's mechanisms if they satisfy the following properties:
 \renewcommand\labelitemi{\tiny$\bullet$}
 \begin{itemize}
     \setlength\itemsep{0em}
@@ -219,8 +229,8 @@ and its top-$k$ attribution is sensitive to hyperparameter choice.
 
 SPD \autocite{stochasticparameterdecomposition} addresses these limitations by enforcing a rank-one structure on each component, allowing more components to be learned at fixed memory cost, and replacing top-$k$ attribution with a learned causal importance function. Formally, each weight matrix $W^l$ is decomposed into a sum of $C$ rank-one subcomponents:
 \begin{equation}
-W^{l}_{i,j} \approx \sum_{c=1}^{C} U^{l}_{c,i} V^{l}_{c,j}, 
-\quad \text{where} \quad U^l \in \mathbb{R}^{C \times d_{\text{out}}}, \, V^l \in \mathbb{R}^{C \times d_{\text{in}}}
+W^{l}_{i,j} \approx \sum_{c=1}^{C} U^{l}_{i,c} V^{l}_{c,j}, 
+\quad \text{where} \quad U^l \in \mathbb{R}^{d_{\text{out}} \times C}, \, V^l \in \mathbb{R}^{C \times d_{\text{in}}}
 \end{equation}
 where C is a hyperparameter, for the number of components for each layer, $l$ indexes the layer and $i,j$ are the hidden indices.
 The subcomponent count, C, may be chosen to be larger than both $d_{in}$ and $d_{out}$, enabling the method to learn features in superposition \autocite{stochasticparameterdecomposition}.
@@ -244,8 +254,8 @@ and output a scalar importance for the corresponding subcomponent:
 \begin{equation}
 g^{l}_{c}(x) = \Gamma^l_c(x) = \sigma_{H}(\gamma^{l}_{c}(h^{l}_{c}(x))), \qquad h^{l}_{c}(x) = \vec{V}_{c}^{l\top} \vec{a}^l(x)
 \end{equation}
-where $\sigma_{H}$ is a hard sigmoid and $\vec{a}^l(x)$ is the
-activation at layer $l$. These importance values serve as the lower bound for how much a subcomponent can be masked. With $r^l_{c} \sim \mathcal{U}(0, 1)$ sampled per subcomponent, the masked weight matrix is given by:
+here $\sigma_{H}$ is a hard sigmoid and $\vec{a}^l(x)$ is the
+activation vector of layer $l$. These importance values serve as the lower bound for how much a subcomponent can be masked. With $r^l_{c} \sim \mathcal{U}(0, 1)$ sampled per subcomponent, the masked weight matrix is given by:
 \begin{equation}
 \begin{aligned}
     m_{c}^l(x, r) &= g^{l}_{c}(x) + \bigl(1 - g^{l}_{c}(x)\bigr)\, r^l_{c}, \\
@@ -297,50 +307,66 @@ The full SPD objective is a weighted sum of these terms:
 
 \subsection{Irreducibility and the natural unit of decomposition}
 \label{sec:irreducibility}
-To appropriately evaluate the performance of a multi-dimensional feature decomposition method,
-it's necessary to have a clear definition of what the ground-truth decomposition is. The original
-superposition hypothesis states that the hidden states can be represented as a linear combination of sparse one-dimensional features. \cite{elhage2022toymodelssuperposition,engels2025languagemodelfeaturesonedimensionally}
+To appropriately evaluate the performance of a multi-dimensional
+feature decomposition method,
+it's necessary to have a clear definition of what the ground-truth
+decomposition is. The original
+superposition hypothesis states that the hidden states
+can be represented as a linear combination of sparse
+one-dimensional features \cite{elhage2022toymodelssuperposition,engels2025languagemodelfeaturesonedimensionally}.
+
 
 \textbf{Definition:} The hidden state 
 $x_{i,l}$ can be written as:
 \begin{equation}
-    x_{i,l} = \sum_i v_i \, f_i(t)
+    x_{i,l} = \sum_j v_j \, f_j(t)
 \end{equation}
-where $v_{i} \in \mathbb{R}^d$ are pairwise $\delta$-orthogonal directions \footnote{should i say what delta is or is it clear that its small?} and $f_{i}(t) \in \mathbb{R}$ are sparse scalar activations, with $f_{i}(t)=0$ outside the domain of feature $i$.
+where $v_{j} \in \mathbb{R}^d$ are pairwise orthogonal vectors, up to a small margin and $f_{j}(t) \in \mathbb{R}$ are sparse one-dimensional features, with $f_{j}(t)=0$ outside the domain of feature $j$.
 
 Recent work has shown, that this may be insufficiently strict \autocite{smith2024strong,engels2025languagemodelfeaturesonedimensionally}, as it does not capture the structure of multi-dimensional features.
 In particular, transformer models are shown to
 organise cyclical concepts in low-dimensional subspaces
 that do not decompose into meaningful linear components, but are instead manipulated jointly \autocite{engels2025languagemodelfeaturesonedimensionally}.
 
-To accomodate these features, the same paper proposes a correction to the superposition hypothesis,
-alongside a formal definition of irreducibility that defines,
-when a feature is in its atomic form and when it can be decomposed into smaller
-units without loss of information.
+To accommodate these features, the paper proposes a correction to the
+superposition hypothesis alongside a formal definition of irreducibility,
+which characterises when a feature is in its atomic form and when
+it can be decomposed into smaller units without loss of information.
+This definition is adopted, but with a restated mixture case,
+that is aligned with the paper's own definition of activeness.
 
-\textbf{Definition:} A feature $f: \mathbb{R}^{i} \to \mathbb{R}^{d_f}$ is
-truly multi-dimensional, if it cannot be written as a sum of two independent features
-or as a the sum of two non-co-occurring features. More formally, a feature is
-reducible into features
-$a$ and $b$ if there exists an affine transformation
+
+\textbf{Definition (Reducibility).}
+A feature $f:\mathbb{R}^{i}\to\mathbb{R}^{d_f}$ is reducible into features
+$a:\mathbb{R}^{i}\to\mathbb{R}^{k}$ and $b:\mathbb{R}^{i}\to\mathbb{R}^{d_f-k}$,
+with $k,d_{f}-k > 0$, if there exists an affine transformation
 \begin{equation}
     f \mapsto Rf + c \equiv \binom{a}{b}
 \end{equation}
-for some orthonormal $d_{f} \times d_{f}$ matrix $R$, and additive constant c, such that
-the joint distribution $p(a, b)$ satisfies one of two conditions:
-\renewcommand\labelitemi{\tiny$\bullet$}
+for some orthonormal $d_f \times d_f$ matrix $R$ and additive constant $c$,
+such that the joint distribution $p(a,b)$, conditioned on inputs where $f$
+is active, satisfies one of:
 \begin{itemize}
     \setlength\itemsep{0em}
-    \item \textbf{$p$ is separable}: $p(a, b)= p(a) \, p(b)$
-    \item \textbf{$p$ is a mixture of two disjoint distributions}: 
-    $p(a, b) = w \, p(a) \, \delta(b) + (1 - w) \, p'(a,b | b \neq 0)$,
-
+    \item \textbf{Separable}: $p(a,b) = p(a)\,p(b)$;
+    \item \textbf{Mixture}: $p(a,b) = w\,p(a)\,\delta(b) + (1-w)\,p'(a,b \mid b \neq 0)$,
+    where the two terms have disjoint support, one
+    concentrated on $b = 0$ and the other on $b \neq 0$.
 \end{itemize}
-Here $a$ and $b$ are the first $k$ and remaining $d_f - k$ components of $Rf + c$,
-$p$ is conditioned on inputs where $f$ is active, $w \in (0, 1)$ and $\delta$ is the Dirac delta \footnote{can i get away with just writing $p(a|b=0)$}.
-In the mixture, the two distributions have disjoint support, with one distribution having no mass where $b$ is active, and the other having no mass where $b$ is zero.
+where $w \in (0,1)$, and $\delta$ is the Dirac delta distribution.
+A feature is irreducible if no such R and c make it separable or a mixture.
 
-Under this decomposition, the superposition hypothesis takes the form:
+The mixture condition of \autocite{engels2025languagemodelfeaturesonedimensionally}
+is restated in terms of disjoint support alone.
+In the original definition, a mixture is characterised
+as a decomposition in which a and b are never
+simultaneously active.
+This is inconsistent with the papers own definition of activeness,
+where a feature is active on the
+subset of inputs that it maps into $\mathbb{R}^{d_{f}}$,
+so whenever f is active both components a and b are active by construction.
+The formal expression is recovered only if “inactive” is taken to mean equal to zero,
+consistent with the $\delta(b)$ term.
 
 
 \textbf{Definition:} Every hidden state $x_{i,l}(t)$ can be written as a sum of feature contributions
@@ -351,24 +377,19 @@ where each $f_i(t) \in \mathbb{R}^{d_{f_i}}$ is an irreducible
 feature with internal dimensionality $d_{f_i} \geq 1$, each
 $V_i \in \mathbb{R}^{d \times d_{f_i}}$ and $\| V_i^\top V_j \| < \delta$ for $i \neq j$.
 
-
-Secondly, and more importantly for SPD, if the multidimensional
-superposition hypothesis holds, some features f may require multiple
-rank-one subcomponents. It is not trivial that an irreducible function
-f (e.g. as shown in Section \ref{fig:tms-paired-comparison}) arises from sampling
-two dependent and non-overlapping features that can still be compressed 
-into a single rank-one component if the model learns to group them along a shared direction.
-
-However, when the model learns genuinely multi-dimensional features,
-these cannot in general be represented by a rank-one subcomponent.
-Instead, they occupy structured higher-dimensional subspaces,
-implying either the need for higher-rank representations or post hoc
-clustering of the underlying rank-one components.
+If the multi-dimensional superposition hypothesis
+holds, then some features are incapturable
+by a single subcomponent as defined in SPD.
+Therefore either the rank constraint must be relaxed,
+or the decomposition must be clustered post-hoc,
+to group together the rank-one subcomponents that together
+form the multi-dimensional feature. In SPD, the latter
+was chosen, while this work explores the former.
 
 \subsection{Rank-$k$ subcomponents and relational importance}
 \label{sec:rank-k-attention}
 In the original SPD paper, the subcomponents are constructed as rank-one matrices, through an outer product of two vectors.
-This formulation is however incompatible with the multi-dimensional superposition hypothesis. (Section \ref{sec:irreducibility})
+This formulation is however incompatible with the multi-dimensional superposition hypothesis.
 A decomposition into lower-dimensional subcomponents, necessarily forces features to be split across multiple subcomponents, or to be approximated through a single subcomponent at the cost of reconstruction.
 
 To represent multi-dimensional features, the pairs of vectors are replaced with pairs of matrices.
@@ -379,7 +400,7 @@ W^{l}_{i,j} \approx \sum_{c=1}^{C} \sum_{r=1}^{k} U^{l}_{c,i,r} V^{l}_{c,j,r},
 Each subcomponent $U^l_c {V^l_c}^{\top} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
 has rank at most $k$, recovering the original SPD definition when $k=1$.
 As in the multi-dimensional superposition hypothesis, $k$ is an upper bound on
-each subcomponent's representational capacity; the effective rank may be lower,
+each subcomponent's representational capacity; the effective rank may be lower.
 
 In SPD, each subcomponent’s importance is computed independently through an MLP followed by a sigmoid nonlinearity,
 allowing multiple subcomponents to be active for a given input and thus distribute a
@@ -391,10 +412,15 @@ To address this, the causal importance function is redefined to maximize the con
 \begin{equation}
     g^l_{c}(x) = p\!\left(W^l_c \mid \{h^l_{c'}(x)\}^{C}_{c'=1}\right), \quad h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
 \end{equation}
-where $\vec{a}^l(x)$ is the activation of layer $l$ and C is the set of subcompoennts in layer $l$.
-The distribution is computed with a classic transformer block operating over subcomponents, with a softmax over their activations.
-\autocite{vaswani2023attentionneed}
+here $\vec{a}^l(x)$ is the activation vector of layer $l$ and C is the set of subcompoennts in layer $l$.
 
+The conditional importance is computed using a standard transformer block following the architecture of \autocite{vaswani2023attentionneed}. For each layer l,
+the read activations \(h_c^l(x) \in \mathbb{R}^k\) of the \(C\) subcomponents are treated as a sequence of tokens,
+with no positional encoding.
+These activations are first projected into the transformer residual stream through a learned linear projection. The resulting representations are then processed by a standard transformer block consisting of a single attention head,
+a feed-forward network, residual connections, and layer normalisation.
+
+Finally, each subcomponent representation is projected down to a single scalar score, and a softmax over all C subcomponents is computed.
 This produces a normalized assignment over subcomponents, $\sum_{c=1}^{C}g^l_c(x) = 1$,
 causing the original minimality loss to become degenerate, as each layer contributes a constant value independent of the model state.
 Instead, it's replaced
@@ -405,41 +431,32 @@ with entropy, to pressure the assignment to concentrate on as few subcomponents 
 
 An unfortunate limitation of this formulation is its computational cost. Computing
 relational importance via a transformer over subcomponents scales
-quadratically with the number of subcomponents compared to the linear cost of the original independent importance functions.  \footnote{Play with attention approximations}
+quadratically with the number of subcomponents compared to the linear cost of the original independent importance functions. 
 
 \section{Results}
 \subsection{Overview of experiments}
-To evaluate how the proposed changes affect SPD’s performance,
+To evaluate how the proposed changes affect SPD's performance,
 and how these relate to the multi-dimensional superposition hypothesis,
-the result section is structured around three experiments \footnote{maybe 4}, each with the purpose of isolating a specific structural property.
+the result section is structured around four experiments.
 For an overview see table \ref{tbl:Experiment_overview}.
 
-The first experiment reuses the Toy model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition}
-once sampled with independent features and once with paired features,
-where these features are sampled in pairs, creating the simplest case of
-statistical dependence. In particular, the model learns to group the paired features along a single direction, allowing
-rank 1 subcomponets to capture full features, without having to split them across multiple subcomponents. 
+The first two experiments reuse the Toy model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition}
+once sampled with independent inputs and once with paired.
+The paired setting introduces statistical dependence between features,
+where the toy model assigns both features to a single direction, allowing a 
+single rank 1 subcomponent to capture both inputs, without having to split them across multiple subcomponents. 
 
+The third experiment reuses another known experiment from SPD, the Toy Model of
+Compressed Computation, where a model must compute more functions than there are
+available directions in a lower-dimensional space, by computing $y_{i} = x_{i} + \text{ReLU}(x_{i})$ through
+a lower dimensional bottleneck.\autocite{bhagat2025compressed}. 
 
-The second experiment also reuses a known experiment from SPD, the Toy model of compressed computation,
-where a model must learn to compute more functions, than the number of available directions in a lower dimensional space.
-Particularly, this experiment is interesting to explore how softmax and attention affect the decomposition.
-Softmax in particular, is best when the ground truth decomposition is meant to pick a singular subcomponent for each feature,
-due to its properties[some source], the toy model of compressed computation, does not allow for a one-hot assignment,
-as no disentanglement is possible, and to stay faithful to the original model, should learn to distribute mass across multiple subcomponents.
-
-
-The third experiment generalizes the paired setting to a
+The fourth experiment generalizes the paired setting to a
 k-dimensional case by computing the volume of a simplex
 from its vertices. The ground truth decomposition is still
 shown to be dependent, but the features can now not be contained in a single rank-one subcomponent, as the geometry of the feature is more complex.
 This experiment serves to test how well softmax and sigmoid gating can group feature parts together, when their expressiveness is increased.
 
-% Finally, the fourth experiment trains a model to learn a logical
-% expression composed of two disjoint distributions,
-% one of which is lower-dimensional. This experiment tests
-% the final condition of the irreducibility
-%  definition (Section \ref{sec:irreducibility}).
 \begin{table*}[h!]
 \centering
 
@@ -468,7 +485,7 @@ This experiment serves to test how well softmax and sigmoid gating can group fea
 Objective & $x \in \mathbb{R} \mapsto x$ 
           & $x \in \mathbb{R}^d \mapsto x$ 
           & $x \in \mathbb{R} \mapsto x + \mathrm{ReLU}(x)$ 
-          & $x \in \mathbb{R}^d \mapsto \mathrm{vol}(x) \in \mathbb{R}^{+}$\\
+          & $x \in \mathbb{R}^d \mapsto \mathbb{R}$\\
 \midrule
 
 Statistical dependence&
@@ -639,13 +656,14 @@ SPD correctly identifies that features should be paired in single subcomponents 
 \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
 & SPD & Softmax & SPD & Softmax & SPD & Softmax \\
 \midrule
-MMCS  & $1.00$ & $0.985 \pm 0.016$ & $1.00$ & $0.812 \pm 0.105$ & $0.9997$ & $0.9920 \pm 0.003$ \\
-ML2R  & $1.00$ & $0.797 \pm 0.205$ & $1.055 \pm 0.045$ & $0.623 \pm 0.231$ & $0.796 \pm 0.434$ & $0.732 \pm 0.350$ \\
+MMCS  & $1.00$ & $ \pm 0.016$ & $1.00$ & $0.812 \pm 0.105$ & $0.9997$ & $0.9920 \pm 0.003$ \\
+ML2R  & $1.00$ & $ \pm 0.205$ & $1.055 \pm 0.045$ & $0.623 \pm 0.231$ & $0.796 \pm 0.434$ & $0.732 \pm 0.350$ \\
 \bottomrule
 \end{tabular}
 \caption{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite{stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it's because its smaller than $0.001$.}
 \label{tab:tms_results}
 \end{table}
+\footnote{add correct values!!!}
 
 
 Overall across the three settings, SPD with sigmoid gating produces better results on both MMCS and ML2R, despite the more entangled importance assignments observed in the paired regime (Figure~\ref{fig:both}). The MMCS gap is generally small, but with substantially larger variation in ML2R. 
@@ -659,7 +677,12 @@ to maintain accurate reconstruction despite imperfect feature isolation.
 
 \subsection{ Toy Model of Compressed Computation }
 \label{sec:tcc-experiment}
-The Toy Model of Compressed Computation,
+The Toy Model of Compressed Computation, \footnote{Sometihng about it is not entirely clear what the ground truth decomposition here would be through, the multidimensional feature hypothesis,
+as it appears that the model does not learn to compute functions in superposition, but instead attribute it to the noise of the embedding matrices,
+also mention that hte naive solution is ot learn half of the features, but the other half left to guessing. Therefore it is not immediately celar, how the second layer
+should be decomposed as we dont know the function it learns, however we can examine how the subcomponents appear to learn and how this is attributeable to their losses.
+No we need to see the whole map across both layers as the function f, as the importance values learn the cross layer thing? we dont shink between layers,
+i.e the full xi + relu(i)}
 a model that was already studied by SPD \autocite{stochasticparameterdecomposition}, APD \autocite{AttributionBasedParameterDecomposition} and more recently by \autocite{bhagat2025compressed}, is a
 toy model trained to compute the elementwise function $y_i = x_i + \mathrm{ReLU}(x_i)$ through a residual MLP with a lower-dimensional hidden layer.
 
@@ -1031,13 +1054,17 @@ Secondly, the additive contribution of hidden neuron $i$ to output $k$ through s
     \pi^{(c)}_{l+1,[k,i]} := \left(W^{(c)}_{l+1[k,i]}\right) \quad \text{such that } \pi_{l+1,[k,i]} = \sum_{c=1}^{C} \pi^{(c)}_{l+1,[k,i]}
 \end{equation}
 
-Lastly, define the subcomponent routing matrix $\Psi \in \mathbb{R}^{|C|\times|C|}$
-as the matrix product between the total influence of all input features on the hidden neurons
-and the total contribution of the hidden neuron to all output features.
-
+Lastly, the subcomponent routing matrix $\Psi \in \mathbb{R}^{|C|\times|C|}$,
+captures how strongly one component influences another, across all hidden neurons.
 \begin{equation}
     \Psi_{c',c} := \sum_{i=1}^{d_{\text{hidden}}} \left( \sum_{k=1}^{d_{\text{out}}} W^{(c')}_{l+1,[k,i]} \right) \left( \sum_{j=1}^{d_{\text{in}}} W^{(c)}_{l,[i,j]} \right).
 \end{equation}
+The form of $\Psi_{c',c}$ follows from how the two subcomponents would compose if the network were linear. Ignoring the ReLU, the path from input to output through subcomponent $c$ then $c'$ is the matrix product $W^{(c')}_{l+1} W^{(c)}_{l}$, whose total signal is obtained by summing over the shared hidden neurons. The inner sums collect the total input read by $c$ and the total output written by $c'$ at each hidden neuron $i$,
+and their product summed over $i$ is the corresponding entry
+of that composition by the distributive property.
+The ReLU means this is not exact, so $\Psi$ is best read
+as a linearised measure of how strongly $c$ routes into $c'$ rather
+than a precise contribution.
 Like before, a larger value indicates a stronger routing from subcomponent $c$ to subcomponent $c'$.
 These three quantities together describe the routing through the decomposition. The input contribution
 $\rho^{(c)}_{l,[i,g]}$ shows how each simplex group feeds into subcomponent $c$, the output contribution $\pi^{(c)}_{l+1,[k,i]}$ shows how subcomponent $c$ feeds into each output, and the routing matrix $\Psi_{c',c}$ composes the two, measuring how strongly a subcomponent that reads from the input ($c$) connects to one that writes to the output ($c'$) through shared hidden neurons.
@@ -1049,27 +1076,28 @@ under different levels of pressure toward sparsity.
 Since a rank-1 subcomponent
 cannot represent a full simplex, the focus lies in
 how each method allocates importance across subcomponents, when
-the capacity is insufficient for a full simplex.
+the capacity is insufficient.
 
 In particular, softmax is conditioned to assigned to maximize the probability
 of the input feature belonging to a single subcomponent, while
 SPD with sigmoid gating can freely distribute importance across multiple subcomponents.
 
-For the result section only minimality values between $10^{-3}$ and $10^{-6}$ are shown, with values $1e-1$ to $1e-7$ shown in the Appendix \ref{appendix:SPD_minimality_sweep}.
+For the result section only minimality values between $1^{-3}$ and $1^{-6}$ are shown, with values $1e-1$ to $1e-7$ shown in Appendix \ref{appendix:SPD_minimality_sweep}.
 
 When SPD is trained with large minimality coefficients,
 the decomposition finds no meaningful structure: only one
 subcomponent carries non-negligible importance, and it is
 causally important for just a single coordinate of one simplex.
-When the coefficient lies between $10^{-4}$ and $10^{-5}$,
+When the coefficient lies between $1^{-4}$ and $1^{-5}$,
 a clustering structure emerges.
 Each simplex concentrates onto a small group of
-subcomponents, and in the second layer the
-routing passes through a single subcomponent per simplex.
+subcomponents, and in the second layer, one 
+subcomponent is causally important for each simplex.
+
 The grouping is thus aligned with the hypothesized ground-truth decomposition,
 although the subcomponents within each group are not cleanly separated, with
 coordinate level importance spread across multiple subcomponents.
-For coefficients around $10^{-6}$ and below, this clustered structure dissolves,
+For coefficients around $1^{-6}$ and below, this clustered structure dissolves,
 with subcomponents becoming important for multiple different simplices.
 
 \begin{figure}[H]
@@ -1085,8 +1113,8 @@ though this is not reflected in the importance values.
 At $10^{-6}$ the subcomponents remain entangled, but the norm is distributed
 more evenly across them.
 At $10^{-5}$ the structure is much clearer, with a small number of subcomponents
-routing the majority of the signal. Secondly, the 95\% threshold for visualization is reached with
-far fewer subcomponents, and each simplex has a disentangled path through a single second-layer subcomponent that is relevant for only one simplex.
+routing the majority of the signal. Secondly, 
+the magnitude is spread across far fewer subcomponents, and each simplex has a disentangled path through a single second-layer subcomponent that is relevant for only one simplex.
 
 
 \begin{figure}[H]
@@ -1119,13 +1147,13 @@ important for all three simplices.
 
 The routing analysis tells a different story, than the importance values.
 Despite the concentrated importance values, the magnitude remains
-spread sparsely across many subcomponents, with a large number of subcomponents
-being required to reach the 95\% threshold, in both the input and output layers.
-Softmax variant therefore distributes the routing diffusely even where its importance assignment appears concentrated,
+spread sparsely across many subcomponents, with a large number of subcomponents,
+remaining active in both the input and output layers.
+Softmax therefore distributes the routing diffusely even where its importance assignment appears concentrated,
 replicating the results found in Section~\ref{sec:tcc-experiment}. 
-For values below $10^{-4}$, the second-layer routing splits into one causally important subcomponents per simplex,
-albeit more entangled than in SPD.
-
+For values below $10^{-4}$, the second-layer
+subcomponents become more specialized on one output group out,
+albeit in a more entangled manner than for spd.
 
 \begin{figure}[H]
     \centering
@@ -1163,64 +1191,36 @@ does not lead to a collapse of the simplices into a single subcomponent.
 Only at $k=4$ does a single subcomponent become causally important 
 for both simplex 2 and 3, while simplex 1 remains separate.
 
+The routing structure aligns with this.
+As the rank increases the subcomponents become
+increasingly entangled, receiving from and distributing
+to multiple simplices, with the same pattern at $k=4$, where
+simplices 2 and 3 share a single subcomponent in the output layer.
+
 %SPD:
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_rank_1_to_5.png}
 \end{figure}
-
-The routing structure
-partial aligns with this,
-the subcomponents become increasingly more entangled, with 
-subcomponentss recieiving and distributing to multiple simplices.
-At the same time the, particularly for lower ranks, SPD does not
-manage to shrink the magnitude of the non-causally important subcomponents
-proportionally to the causally important ones, with many
-non-causally important subcomponents contributing meaningfully to
-the total magnitude,
-disaligning the observations made in
-the original SPD paper. \autocite{stochasticparameterdecomposition} 
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth, height=3.5cm]{}
-\end{figure}
-
-
- This is also contradicting of 
-the tendency seen in section \ref{sec:tcc-experiment}, where
-the minimality loss was observed to concentrate magnitude on the causally important subcomponents,
-while remaining subcomponents had negligible magnitude.
-Here, the added capacity does lead to more concentrated causal importance values,
-but does not ablate the magnitude in the same manner.
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_io_routing_chain_rank_1_to_5.png}
 \end{figure}
-
-Magnitude plot!
 \footnote{Try a plot, where we normalize not per plot, but across plots?}
+
 
 
 For Softmax, the causal importance values, show the pattern that was
 expected to occur, as the rank increases, the subcomponents
-move away from being important or a single coordinate, and instead gradually group towards
+move away from being important for a single coordinate, and instead gradually group towards
 a single subcomponent per simplex. For the output layer,
-the same trend is seen with the decrease in minimality coefficient,
+the same trend is seen as with the decrease in minimality coefficient,
 where one subcomponent becomes causally important for all three simplices.
-However as before, the importance values seem to be decieiving.
+However as before, the importance values seem to be deceiving.
 
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_rank_1_to_5}
-\end{figure}
-
-%Softmax:
-softmax as before does not concentrate the magnitude,
-as we already observed to be the case in Tcc,
-but the increased rank also does not lead to an increase concentration 
+Softmax as before does not concentrate the magnitude,
+as we already observed to be the case of Tcc \ref{sec:tcc-experiment},
+but the increased rank also does not lead to an increased concentration 
 of the importance despite, the visualization of the importance values suggesting it would.
 The connections remain enangled, with many subcomponents recieving and distributing
 to multiple simplices,
@@ -1229,6 +1229,14 @@ layer two and onto the final projections,
 as the layer 2 subcomponents have their representational capacity raised, they do take up a much larger
 portion of the total magnitude, where one subcomponent makes up a majority of the magnitude and also the predominant
 routing towards the output, admittedly for all three of them at once.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_rank_1_to_5}
+\end{figure}
+
+%Softmax:
 
 \begin{figure}[H]
     \centering
@@ -1278,277 +1286,84 @@ Section that discusses new SPD variant and how it addresses some of the issues w
 
 \section{Discussion}
 
-At some point (discussion, not here) you should name that it's the same phenomenon each time — assignment concentrates, representation doesn't follow. Three independent instances of one mechanism is a stronger result than three separate observations, but only if you connect them. You've set that up well; just make sure the discussion cashes it in.
 
-% ============================================================
-\subsection{Summary of empirical findings}
-% Keep this short and specific. State what each experiment actually showed,
-% not generic claims about "frameworks" or "inductive biases".
-\begin{itemize}
-    \item \textbf{TMS, independent features:} SPD attains higher MMCS and ML2R; the softmax variant recovers the correct number of active subcomponents but with magnitude shrinkage. Both reach near one-hot importance.
-    \item \textbf{TMS, paired features:} both reconstruct faithfully, but the softmax variant assigns one subcomponent per pair while SPD spreads each pair across several subcomponents. SPD still leads on the directional metrics.
-    \item \textbf{Compressed computation:} near one-hot importance does not correspond to a monosemantic decomposition; the $100$-subcomponent, $50$-dimensional geometry forces shared output directions. Consistent with the $50$-dimensional subspace interpretation \autocite{bhagat2025compressed}.
-    \item \textbf{Geometry (Experiment 3):} % PLACEHOLDER — see dedicated subsection below
-    \item \textbf{Cross-cutting observation:} sparsity in the importance assignment does not imply sparsity in the underlying representation; magnitude leaks across subcomponents independently of the importance values.
-\end{itemize}
+Across all three experimental settings, both SPD and the softmax variation produced
+decompositions that were faithful to the target weights and reconstructed the layer outputs accurately.
+However, the two methods did so with vastly different structures. 
 
+In particular, while softmax produced a sparsity of causal importance assignment,
+this did not translat to a sparsity of representation.
+The variant repeatedly produced concentrated, near one-hot importance 
+while the underlying representation remained spread across subcomponents.
 
-\subsubsection{Summary of empirical findings}
+The pattern appeared in three forms. In the Toy Model of Compressed
+Computation, the one-hot assignment suggested a monosemantic decomposition,
+yet when probed each subcomponent was found to contribute meaningfully to 
+multiple computations, even where the imporance values suggested otherwise.
 
-Across the experimental settings,
-both SPD and spd with softmax gating produced faithful decompositions,
-that were faithful to the target model's computations.
-The main difference between the two was 
-not directly reflected in the reconstruction quality,
-but was left hidden in the structure of the decompositions they produced.
+In the geometric experiment,
+the importance values likewise suggested a monosemantic decomposition,
+yet when the routing structure was analyzed, subcomponents 
+activated meaningfully on multiple input features, and likewise sent 
+meaningful signals to multiple simplex outputs, mimicing the observations seen in the compressed computation model.
 
-On the Toy Model of Superposition with independent features, the original SPD method attained a similar mean max cosine similarity, but more accurate mean $L_2$ ratio,
-recovering both the direction and the magnitude of each feature accurately.
-The softmax variant recovered the correct number of active subcomponents,
-pruned the remainder to near-zero,
-but concentrated less of each feature's magnitude
-within its best-aligned subcomponent, as there was some leakage across the active subcomponents,
-producing a lower mean $L_2$ ratio with higher variance. This came
-despite the fact that softmax and SPD achieved the same ground-truth importance assignment.
+Finally in the independent Toy Model of Superposition, where both SPD and softmax achieved the same ground-truth importance assignment,
+softmax nevertheless diverged on the mean max cosine similarity and mean $l_{2}$ ratio between the subcomponents and the ground-truth features.
 
-When the input features were sampled in pairs, introducing statistical dependence, both methods reconstructed the target faithfully, but their importance assignments diverged.
-Softmax assigned each feature pair to a single subcomponent,
-recovering the grouped structure that the dependence induces,
-while SPD showed that multiple input features were grouped within the same subcomponent.
-Despite this cleaner assignment, the softmax variant stil underperformed on the directional alignment
-and magnitude metrics.
+It was initially hypothesized that
+a normalized distribution of the importance values would directly
+affect the magnitude of each subcomponent,
+where the percentual reconstruction and predicted importance value
+would correlate.
 
-In the Toy Model of Compressed Computation,
-where a near one-hot importance assignment was observed, the initial interpretation was that the model had learned a monosemantic decomposition, with each subcomponent representing a single feature.
-However, this interpretation seemed to contradict the results of \autocite{bhagat2025compressed}, which showed that the model's computation operates within a shared $50$-dimensional subspace rather than implementing $100$ separate computations.
-Additionally on close analysis, each subcomponent was associated with multiple features,
-which contradicts the monosemantic interpretation of the one-hot importance assignment.
+However, the results suggest that
+softmax with its entropy loss term, do not bring down the norm of inactive componens to near-zero,
+where they were still residually active and contributing meaningfully to the output decomposition.
+Secondly this appears to also introduce a misinterpretation, where
+the proposed imporance values suggest one-hot feature handling,
+with all loss terms converging to near-zero, and yet full ownership
+of a feature is not achieved. 
+Surprisingly,
+spd's own minimality loss, which also only indirectly
+penalizes the norm distribution by minimizing the importance predictions,
+does seem to achieve the deisred near zero norms.
+ An intial hypothesis was that the softmax distribution itself could not produce hard zeros, but the near-bimodal distribution of importance values ruled this out, as the importance values themselves did reach near-exact zero,
+yet the norms of the corresponding subcomponents still had a trail of meaningful magnitude.
 
-On the Toy Model of Geometry, where each feature is a simplex whose volume depends jointly on all of its vertices and so cannot be reduced to a single direction, the recovered decomposition depended on both the subcomponent rank and the strength of the minimality pressure. % CONFIRM with results: at rank one, the simplex was split across multiple subcomponents; as the rank increased, a single subcomponent could capture an entire simplex, shifting the decomposition toward the structural level. The original method recovered a clean decomposition only within a narrow minimality range, whereas the softmax variant [state behaviour across the same range].
-
-Taken together, these findings point to a single recurring observation: sparsity in the importance assignment does not imply sparsity in the underlying representation.
-Even when importance becomes near one-hot,
-the magnitude of a feature may remain distributed
-across multiple subcomponents, since the faithfulness
-loss is indifferent to how the reconstruction mass is allocated.
-This distinction between the sparsity of the assignment
-and the sparsity of the representation organises much
-of the discussion that follows.
-
-% ============================================================
-\subsection{Sparsity of assignment is not sparsity of representation}
-% Core methodological caution. Two halves of ONE insight:
-%   (A) monosemanticity side, from CC; (B) magnitude side, from norms + minimality.
-% State the shared mechanism once, here. Faithfulness-vs-disentanglement and
-% VPD subsections should REFERENCE this, not re-derive it.
-\begin{itemize}
-    \item Claim: a sparse / one-hot causal importance assignment does not imply a
-          sparse (monosemantic, norm-concentrated) underlying representation.
-          Importance lives on the assignment side; the representation is a separate object.
-
-    % ---- Half A: monosemanticity side (anchor on CC) ----
-    \item Prior work reads one-hot importance as evidence of a monosemantic decomposition;
-          the CC results show this inference is invalid (one-hot importance, yet shared structure).
-    \item Two senses, computed on different objects:
-        \begin{itemize}
-            \item importance is read off $V^\top a$ (the read side),
-            \item the contribution to a feature comes from $U V^\top$ (the representation),
-            \item these can and do disagree -- cite Fig.~\ref{fig:cc_contribution}
-                  (concentrated importance, but subcomponents contribute to multiple features).
-        \end{itemize}
-    \item Modus tollens (restate briefly): IF softmax genuinely encoded 100 features in
-          superposition, its active $U_c,V_c$ would be near-orthogonal. They are not
-          (Fig.~\ref{fig:CC_cosines}), and $W_{\text{out}}$ must project into the
-          $50$-dim MLP space; consistent with the shared $50$-dim subspace of
-          \autocite{bhagat2025compressed}. So concentrated importance $\neq$ superposition encoding.
-    \item The non-orthogonality is therefore structural ($C > d_{\text{MLP}}$), not a sign
-          of superposition.
-
-    % ---- Half B: magnitude side (fold-in: norms + minimality) ----
-    \item Same decoupling, measured in norms instead of monosemanticity:
-          tightening the minimality coefficient sharpens the ASSIGNMENT but not the
-          representational MAGNITUDE.
-        \begin{itemize}
-            \item softmax leaves a residual low-norm tail / no hard zeros, SPD hard-prunes
-                  -- Fig.~\ref{fig:CC_norms}; the magnitude cost shows up as low ML2R
-                  in Tab.~\ref{tab:tms_results}.
-            \item mechanism: the additive faithfulness MSE is indifferent to HOW reconstruction
-                  mass is split across subcomponents, so a penalty on $g$ (Sec.~\ref{spd_minimality})
-                  controls which components are nominally active, not the magnitude they carry.
-        \end{itemize}
-    \item Controls ruling out the gating distribution as the cause:
-        \begin{itemize}
-            \item importance is already near-bimodal at $0/1$ (Fig.~\ref{fig:CC_causal_importance_hist}),
-                  so soft gating is not what blocks hard zeros.
-            \item sparsemax (capable of exact zeros) yields qualitatively identical norm
-                  distributions -- leak is not from the gating nonlinearity.
-        \end{itemize}
-    \item Controlled demonstration (geometry, Sec.~\ref{...}): sweeping $\beta_3$ sharpens the
-          assignment (concentrates onto fewer subcomponents) while magnitude does not fully follow.
-          % cross-ref the minimality-sweep figure once written
-
-% ---- Synthesis + practice ----
-    \item Synthesis (state once): assignment-level pressure (minimality, sparser gating)
-          cannot by itself control representation-level structure -- neither monosemanticity (A)
-          nor magnitude (B).
-    \item Implication for practice: importance values must not be used on their own as a
-          measure of representational sparsity, monosemanticity, or norm concentration.
-          A representational check is required -- contribution analysis, $U/V$ cosines,
-          norm distribution, effective rank.
-    \item Caveat applying to our own Experiment 3: the rank sweep shows importance concentrating
-          onto $\sim K$ subcomponents, but by this argument that is not yet proof the subcomponents
-          OWN whole simplices -- needs representational confirmation (U/V structure,
-          effective rank $\approx$ simplex dimensionality).
-
-    % AUTHOR NOTES, not rendered text -- keep these concepts in their own subsections:
-    % - faithfulness-vs-disentanglement subsection should pick THIS up as the tradeoff knob.
-    % - VPD subsection should reference BACK to this (residual norms = what adversarial
-    %   ablation removes; leak may grow with C). Do NOT introduce VPD here.
-\end{itemize}
-
-\subsubsection{Sparsity of assignment is not sparsity of representation}
+In any case, softmax appears to not be the correct
+solution to parameter decomposition, particularly highlighted by
+the case of the compressed computation model,
+where softmax aims to assign a feature to a single subcomponent,
+however if this feature is a genuine construction of
+a larger dimensional subspace,
+and cannot be attributed to a direction in superposition, 
+this construct is adverserial.
+Similarly, as seen with the sampling distribution,
+Softmax achieved much
+better results and convergence of the minimality loss, when samplin was done with one-hot-sampling,
+which may not be optimal in larger models, where a
+features may be composed of mixtures, and would have to be separated
+into lower-dimensional parts. \ref{sec:irreducibility}.
+Additionaly softmax introduces a much higher degree of
+binary importance predictions, where a subcomponent is either
+important or not important, where it is hypothesized that
+it should instead lie on a continium between the two. \autocite{bushnaq2026interpreting_new_spd}
 
 
-A repeating observation across the experiments is that
-a sparse causal importance assignment does not imply
-a sparse underlying representation.
-Particularly importance is a property of the assignment,
-where the importance is calculated on the input projection of each subcomponent,
-while the full representation is a seperate object, that
-is determined by the full contribution of each subcomponent $UV$.
-The two need not coincide, and in these experiments
-hav disaligned.
-
-The clearest example of this comes from the Toy Model of Compressed
-Computation. Here, Softmax assigns one-hot importance,
-which taken in conjunction with the stochastic reconstruction loss,
-which uses this importance assignment as a lower bound,
-would make it natural, given that the model achieves near-zero
-reconstruction error, to read this as evidence of a monosemantic
-decomposition, where all other subcomponents can be ablated
-without affecting the model's behaviour.
-
-However examining the representation contradicts this assumption,
-every subcomponent has one-hot importance,
-yet every subcomponent contributes to multiple features (Figure~\ref{fig:cc_contribution}).
-Particularly this both implies that the subcomponent should
-have importance to multiple features, and not contain
-all of the mass for a single feature.
-
-Ofcourse, this could be read as evidence of superposition,
-where feature leakage arises from near-orthogonal subcomponents,
-but this is contradicted by the results of \autocite{bhagat2025compressed},
-which show that the trained $W_{\text{out}}$ operates within a shared $50$-dimensional subspace rather than implementing $100$ separate computations.
-
-
-This disalignment in the Softmax variant
-is also observed in the magnitudes,
-where sharpening the minimality coefficient concentrates
-importance onto fewer subcomponents,
-but does not concentrate the entire representational magnitude
-to the same degree, leaving a residual low-norm tail rather than pruning to hard zeros as SPD does (Figure~\ref{fig:CC_norms})
-and is influencial in the lower mean $L_2$ ratio in the Toy Model of Superposition (Table~\ref{tab:tms_results}).
-Initially it was thought, that the softmax gating, which cannot produce exact zeros, was responsible for this residual mass, but the near-bimodal importance distribution (Figure~\ref{fig:CC_causal_importance_hist}) and the qualitatively identical norm distribution obtained with sparsemax, which can produce exact zeros, rule out this explanation.
-
-
-These disalignments are also easily overseen, where
-the decompositions show clear importance assignments, that
-look convincing with respect to the expected decomposition,
-while also achieving good reconstruction and faithfulness metrics.
-
-Faithfulness computes the difference between the summed subcomponent
-reconstruction and the target weight matrix, so it is indifferent
-to how reconstruction mass is allocated across subcomponents.
-
-Similarly reconstruction computes the output of the model given
-all the subcomponents, which again allows multiple equally
-faithful and equally reconstructive decompositions with different mass allocations.
+With that said, SPD also does achieve the desired results
+in the geometric decomposition, where features while grouped,
+are split jointly across multiple subcomponents, which can
+only be recovered through post-hoc clustering,
+where increasing the rank of the components leads to 
+the incorrect intention, instead of gradually claiming ownership
+of full features the minimality loss instead encourages
+multiple different features to be jointly attributed to 
+the same subcomponent and instead, chooses
+to represent fewer subcomponents all together.
 
 
 
- A penalty on the
-importance values $g$ (Section~\ref{spd_minimality}) therefore
-controls which subcomponents are nominally active, not the
-magnitude they carry. [This part requires the knowledge from
-the geometry experiment, where we will see how
-SPD does when none of its components are active.
-]
 
-Taken together,
-the minimality loss in neither its original form nor the softmax variant,
-can be used on its to own to control or even measure the
-sparsity of the underlying representation,
-and must currently be supplemented with a separate representational check.
-
-
-[This is a good bridge to the VSPD paper,
-where both can be ablated together something?]????
-
-% ============================================================
-\subsection{Relation to adversarial parameter decomposition}
-% The VPD tie-in (already drafted at paragraph level; condensed bullets here).
-\begin{itemize}
-    \item VPD \autocite{bushnaq2026interpreting} identifies the same assignment-representation gap from the ablation side: the minimality loss can be satisfied by splitting a mechanism into narrow subcomponents under stochastic masking.
-    \item VPD's fix is adversarial ablation, which activates supposedly unimportant subcomponents in combination and penalises any residual representation they carry; plus a superlinear frequency penalty.
-    \item The relational importance function attacks the same gap from the assignment side (competition for ownership) rather than the ablation side.
-    \item The two are complementary: adversarial sampling could be combined with relational importance.
-    \item The observed magnitude leakage (small non-zero norms on unimportant subcomponents) is exactly the structure adversarial ablation is designed to remove, pointing to a concrete next step.
-\end{itemize}
-
-
-% ============================================================
-\subsection{Rank extension and the structure of the recovered weights}
-% EXPERIMENT 3 PLACEHOLDER — the geometric / simplex results.
-% Fill in once the rank sweep and minimality sweep are analysed.
-\begin{itemize}
-    \item % How the importance assignment changes as the rank k increases:
-          % does a single subcomponent absorb an entire simplex, or does importance
-          % stay spread across coordinate/vertex-level subcomponents?
-    \item % How the weight structure (U, V matrices) changes with k:
-          % effective rank of recovered subcomponents vs the imposed upper bound k;
-          % whether the SVD of a subcomponent reveals fewer than k active directions.
-    \item % The interaction between rank and minimality:
-          % at low k or low minimality -> finer (coordinate/vertex) decomposition;
-          % at high k with sufficient minimality -> structural (whole-simplex) decomposition.
-    \item % Comparison SPD vs softmax across ranks:
-          % the narrow minimality window in which SPD recovers clean structure,
-          % versus the softmax variant's behaviour across the same range.
-    \item % Tie back to the cube example from the introduction:
-          % which of feature-level / intermediate / structural-level each method lands on,
-          % and whether rank is necessary or sufficient to reach the structural level.
-    \item % State explicitly what rank extension buys: capacity to represent an
-          % irreducible feature without splitting, and how this shows up in the importance.
-\end{itemize}
-
-This should also mention that rank k does not
-work with the minimality loss that SPD uses,
-as we see that the components just split the same feature across multiple subcomponents,
-again a consequence of that fiathfulness is indifferent to how the reconstruction mass is allocated across subcomponents.
-
-And if not mentioned in the section above, it should mention 
-how the faithfulness even when everything is zero,
-still has some decomposition? This did however
-not occur, when spd-baseline was run, perhaps this comes
-as a consequence of that many features are responsible
-for one computation, so it can be spread across
-even more features? Use the causal importance frequency plots
-
-
-
-% ============================================================
-\subsection{The non-uniqueness of the minimal decomposition}
-% Your strongest, most original point. Build it carefully.
-\begin{itemize}
-    \item Rank-1 with one component per feature is not, in general, the minimal description: in the paired regime, an aligned pair can be captured by one rank-1 subcomponent or split across two, both reconstructing identically.
-    \item The rank constraint therefore does not determine a unique decomposition; it admits a coarser grouping and a finer splitting of the same aligned directions.
-    \item Minimality in the number of components is a property of how the importance function groups or splits, not of the rank constraint alone.
-    \item This is the ambiguity the relational importance function is designed to resolve: pressuring jointly-manipulated directions toward a shared subcomponent.
-    \item Connect to the underdetermination of the objective: reconstruction plus $\ell_p$ minimality plus rank-1 does not pin down a canonical factorisation.
-\end{itemize}
-
-\subsection{The non-uniqueness of the minimal decomposition}
-
-A rank-1 decomposition with one component per feature is often taken to be the minimal description of a computation, but the paired regime shows that it is not. When a feature pair is aligned onto a single direction, it can be captured by one rank-1 subcomponent or split across two, and both reconstruct the target identically. The rank constraint therefore does not pick out a unique decomposition: it admits both a coarser grouping and a finer splitting of the same aligned directions, with no difference in faithfulness to separate them. Minimality in the number of components is thus not determined by the rank constraint alone, but by how the importance function chooses to group or split. This is the ambiguity the relational importance function is designed to resolve, pressuring directions that are manipulated jointly toward a shared subcomponent rather than leaving the grouping to chance. More broadly, it shows that reconstruction, $\ell_p$ minimality, and a rank-1 constraint together do not pin down a canonical factorisation; the decomposition that emerges is selected as much by the inductive bias of the importance function as by any intrinsic property of the model.
 
 
 % ============================================================
@@ -1561,16 +1376,66 @@ A rank-1 decomposition with one component per feature is often taken to be the m
     \item The thesis therefore primarily tests whether dependent or irreducible features are correctly grouped, rather than whether reducible features are correctly split.
 \end{itemize}
 
+In SPD, the rank-1 constraint is intended to be sufficient for the simplicity requirement of a mechanism.
+However, this is not the case in general, since even the smallest structural
+unit can admit multiple decompositions of different sizes.
+Particularly in the Toy Model of Superposition, where initially independent features are assigned
+unique subcomponents, each active on a single direction, 
+however as tms is extended to a paired setting, where the input features are nominally two-dimensional,
+the learnt representation aligns them within a signel direction, and thus allows for a decomposition,
+where both features are represented by the same subcomponent, which is still rank-1, however
+now responding to two features rather than one. This pattern is not unique to TMS,
+and is also observed within VPD, where several independent mechanisms,
+each active on a disjoint subset of the inputs, can sum to a single 
+rank-1 matrix, which is then attributed to be causally important for all of the mechanisms.
+VPD or SPD would therefore not further encourage the decomposition of this matrix into its constituent mechanisms, as the minimality requirement is already satisfied.
+\autocite{bushnaq2026interpreting_new_spd}
+
+
+Here also add part to how rank k extension does not work with
+spd-
+
 % ============================================================
 \subsection{Limitations and future work}
-\begin{itemize}
-    \item The softmax variant does not produce hard zeros; sparsemax and entmax do not resolve the residual magnitude, which may grow with the number of subcomponents.
-    \item The relational importance function scales quadratically in the number of subcomponents, unlike SPD's linear independent importance functions.
-    \item SPD recovers clean structure on the geometric model only within a narrow minimality range, raising a robustness question.
-    \item Future directions: adversarial ablation combined with relational importance; attention approximations to reduce the quadratic cost; direct evaluation of the mixture condition.
-    \item This paper does not address mixtures, and therefore does not conclude on every aspect of irreducibility.
-    \item Toy models.
-\end{itemize}
+
+Beyond the limitations mentioned above,
+this work has a few primary shortcomings.
+
+A limitation of the comparison in this work is that the relational importance function
+differs from SPD's gating in two respects at once. The original method
+computes each subcomponent's importance independently through a
+small multilayer perceptron, whereas the variant here computes
+importance relationally, through a transformer block with a softmax over
+subcomponent activations.
+
+Secondly from the view of irreducibility this work does not directly address the case of mixtures,
+where some features are constructed as a mixture of a higher and lower dimenisonal feature,
+
+Thirdly, the causal importance function and redesign towards higher dimensional features,
+was insufficient not leading to the correct and hoped outcome. Additionally
+the attention mechanism only 
+concentrates on the causal importances within a single layer and does not
+propose a method to scale this to cross layer features, nor does it examine
+cross layer features directly.
+
+fourth this work is concentrated to toy models with known ground truth decompositions.
+
+
++ Here add that relational importance is only defined on a layer basis,
+as it quickly became too costly.
+
+
+
+% softmax mismatch (assignment vs representation)
+% non-uniqueness / identifiability issues
+% rank-1 not implying unique decomposition (key SPD point)
+% grouped vs split mechanisms (your VPD/TMS examples)
+% empirical mismatch across experiments
+% mixture/irreducibility as a missing axis (explicitly acknowledged)
+% SPD behaving differently but still not solving decomposition
+% limitation that rank increase doesn’t fix the core issue (already implicit)
+
+
 
 % ============================================================
 \subsection{Conclusion}
@@ -1578,25 +1443,6 @@ A rank-1 decomposition with one component per feature is often taken to be the m
 % the relational variant trades magnitude fidelity for cleaner importance assignment,
 % the assignment-representation gap is general, and rank extension is necessary but
 % the importance function determines which decomposition within that capacity is found.
-\section{Acknowledgements}
-
-\section{Other things to consider?}
-Minimal descriptive length?
-\subsection{That some features are multidimensional}
-Think back to SAE, that learn a dictionary of features,
-then find hte linear combination of those features,
-however that this fails for cyclical features, as
-its cheaper to learn a single feature, than
-learn a direction and a periodic function.
-Now for your experiment, the dream scenario is that
-we allowe a multi dimensional component,
-and that this can learn the cyclical feature, i.e a weekly cycle or modular arithmatic
-either do this or extend TMS to be multi-dimensional,
-show if it works better with ur gnn or not,
-likewise we need to show that through individual masking of features,
-we can teach a component to kill one of its features,
-if it is better explained by a rank 1 component than rank 2.
-
 
 \section{References}
 
@@ -1725,6 +1571,11 @@ Remember to add the VPD to related work,
 remember to add the citation that irreducibility definition is wrong.
 
 
+Oral exam add just Attention to current SPD, cover the loophole.
+
+
+visualize rank 1-3-5-7, instead of 1,2,3,4 or osmething.
+
 
  
 \subsubsection{SVD reformulation, capacity maybe per feature ablation TBD}
@@ -1738,25 +1589,13 @@ Most importantly should address if models learn lower dimensional representation
 or if its another k sensitivity as in APD.
 
 
-
-The competition pressure introduced by the softmax has a
-theoretical motivation under the multi-dimensional superposition
-hypothesis. The hypothesis predicts that different irreducible
-features occupy approximately orthogonal projection subspaces;
-the softmax-and-attention mechanism implements a training pressure
-toward this orthogonality at the level of SPD's atoms. Atoms whose
-$V$ matrices share input directions cannot be cleanly distinguished
-on inputs that activate those directions, and the softmax
-penalises ambiguous allocations. The optimiser's response is to
-push the atoms' $V$ matrices toward disjoint subspaces, recovering
-the orthogonality structure the hypothesis posits.
-
 Remember to add an experiment that shows if softmax enforce the orthogonality constraint from engels.
 
 
 Remember to add the correct mean max cosine similarity and l2 values
 to the tms section.
 
+add vpd to related work.
 
 \section{Lukas questions}
 - Show him CC,
