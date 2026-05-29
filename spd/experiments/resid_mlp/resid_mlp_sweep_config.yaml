@@ -9,7 +9,7 @@ parameters:
   importance_minimality_coeff:
     values: [1e-5,1e-4,1e-3,1e-2,1e-6]
   lr:
-    values: [1e-3, 2e-3, 3e-3]
+    values: [2e-3]
 
 command:
 - ${env}

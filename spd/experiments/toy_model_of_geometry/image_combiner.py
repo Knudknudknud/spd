@@ -227,7 +227,7 @@ combine_images(
     image_paths,
     save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\Io_routing_chain_combined_rank_3_and_5.png",
     ncols=2,     
-    size=6,
+    size=8,
     dpi=350,
 )
 print("Combined image saved.")
