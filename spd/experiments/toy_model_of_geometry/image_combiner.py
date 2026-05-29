@@ -194,9 +194,11 @@ image_paths = [
     #SPD
     r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001\io_routing_chain.png",
     r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001\io_routing_chain.png",
     #Softmax
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001\io_routing_chain.png",
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001\io_routing_chain.png",
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001\io_routing_chain.png",
 ]
 combine_images(
     image_paths,dpi=350,
