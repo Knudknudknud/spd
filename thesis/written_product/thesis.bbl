@@ -18,52 +18,7 @@
 
 
 \refsection{0}
-  \datalist[entry]{anyt/global//global/global/global}
-    \entry{stochasticparameterdecomposition}{misc}{}{}
-      \name{author}{3}{}{%
-        {{hash=9c1f60ef07d490aed136933c65e14aa4}{%
-           family={Bushnaq},
-           familyi={B\bibinitperiod},
-           given={Lucius},
-           giveni={L\bibinitperiod}}}%
-        {{hash=375c93d04783a8b8c5887d391db14e08}{%
-           family={Braun},
-           familyi={B\bibinitperiod},
-           given={Dan},
-           giveni={D\bibinitperiod}}}%
-        {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
-           family={Sharkey},
-           familyi={S\bibinitperiod},
-           given={Lee},
-           giveni={L\bibinitperiod}}}%
-      }
-      \strng{namehash}{24c2f3d1b406bf4db61bd01103dd5547}
-      \strng{fullhash}{24c2f3d1b406bf4db61bd01103dd5547}
-      \strng{fullhashraw}{24c2f3d1b406bf4db61bd01103dd5547}
-      \strng{bibnamehash}{24c2f3d1b406bf4db61bd01103dd5547}
-      \strng{authorbibnamehash}{24c2f3d1b406bf4db61bd01103dd5547}
-      \strng{authornamehash}{24c2f3d1b406bf4db61bd01103dd5547}
-      \strng{authorfullhash}{24c2f3d1b406bf4db61bd01103dd5547}
-      \strng{authorfullhashraw}{24c2f3d1b406bf4db61bd01103dd5547}
-      \field{labelalpha}{BBS25}
-      \field{sortinit}{B}
-      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{eprintclass}{cs.LG}
-      \field{eprinttype}{arXiv}
-      \field{title}{Stochastic Parameter Decomposition}
-      \field{year}{2025}
-      \verb{eprint}
-      \verb 2506.20790
-      \endverb
-      \verb{urlraw}
-      \verb https://arxiv.org/abs/2506.20790
-      \endverb
-      \verb{url}
-      \verb https://arxiv.org/abs/2506.20790
-      \endverb
-    \endentry
+  \datalist[entry]{nty/global//global/global/global}
     \entry{bhagat2025compressed}{misc}{}{}
       \name{author}{4}{}{%
         {{hash=0910913d267e93b385ad23da7ef2ed73}{%
@@ -95,7 +50,6 @@
       \strng{authornamehash}{704b9f995eec298e9ab5d7da00ac63c7}
       \strng{authorfullhash}{12b921780ec324afc69f2d124629f239}
       \strng{authorfullhashraw}{12b921780ec324afc69f2d124629f239}
-      \field{labelalpha}{Bha+25}
       \field{sortinit}{B}
       \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
       \field{labelnamesource}{author}
@@ -142,7 +96,6 @@
       \strng{authornamehash}{f0e8223285a5b7e3351b5d7fefcd4ff4}
       \strng{authorfullhash}{a21b4418c42803527eb32ad51029c0fa}
       \strng{authorfullhashraw}{a21b4418c42803527eb32ad51029c0fa}
-      \field{labelalpha}{Bra+25}
       \field{sortinit}{B}
       \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
       \field{labelnamesource}{author}
@@ -297,7 +250,6 @@
       \strng{authornamehash}{8cee1bca37043bb81df0ee2bf2415e70}
       \strng{authorfullhash}{7e39f89e630d15b5177d6962d238219b}
       \strng{authorfullhashraw}{7e39f89e630d15b5177d6962d238219b}
-      \field{labelalpha}{Bri+23}
       \field{sortinit}{B}
       \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
       \field{labelnamesource}{author}
@@ -306,6 +258,80 @@
       \field{note}{https://transformer-circuits.pub/2023/monosemantic-features/index.html}
       \field{title}{Towards Monosemanticity: Decomposing Language Models With Dictionary Learning}
       \field{year}{2023}
+    \endentry
+    \entry{busch2025}{thesis}{}{}
+      \name{author}{1}{}{%
+        {{hash=90a1134357324da1ab64ce5c896c1556}{%
+           family={Busch},
+           familyi={B\bibinitperiod},
+           given={Alexander\bibnamedelima Julius},
+           giveni={A\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Hamburg University of Technology}%
+      }
+      \list{location}{1}{%
+        {Hamburg}%
+      }
+      \strng{namehash}{90a1134357324da1ab64ce5c896c1556}
+      \strng{fullhash}{90a1134357324da1ab64ce5c896c1556}
+      \strng{fullhashraw}{90a1134357324da1ab64ce5c896c1556}
+      \strng{bibnamehash}{90a1134357324da1ab64ce5c896c1556}
+      \strng{authorbibnamehash}{90a1134357324da1ab64ce5c896c1556}
+      \strng{authornamehash}{90a1134357324da1ab64ce5c896c1556}
+      \strng{authorfullhash}{90a1134357324da1ab64ce5c896c1556}
+      \strng{authorfullhashraw}{90a1134357324da1ab64ce5c896c1556}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Mathematical Models of Superposition in Neural Network Architectures}
+      \field{type}{mathesis}
+      \field{year}{2025}
+    \endentry
+    \entry{stochasticparameterdecomposition}{misc}{}{}
+      \name{author}{3}{}{%
+        {{hash=9c1f60ef07d490aed136933c65e14aa4}{%
+           family={Bushnaq},
+           familyi={B\bibinitperiod},
+           given={Lucius},
+           giveni={L\bibinitperiod}}}%
+        {{hash=375c93d04783a8b8c5887d391db14e08}{%
+           family={Braun},
+           familyi={B\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod}}}%
+        {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
+           family={Sharkey},
+           familyi={S\bibinitperiod},
+           given={Lee},
+           giveni={L\bibinitperiod}}}%
+      }
+      \strng{namehash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{fullhash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{fullhashraw}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{bibnamehash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{authorbibnamehash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{authornamehash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{authorfullhash}{24c2f3d1b406bf4db61bd01103dd5547}
+      \strng{authorfullhashraw}{24c2f3d1b406bf4db61bd01103dd5547}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.LG}
+      \field{eprinttype}{arXiv}
+      \field{title}{Stochastic Parameter Decomposition}
+      \field{year}{2025}
+      \verb{eprint}
+      \verb 2506.20790
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2506.20790
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2506.20790
+      \endverb
     \endentry
     \entry{bushnaq2026interpreting_new_spd}{misc}{}{}
       \name{author}{8}{}{%
@@ -362,7 +388,6 @@
       \strng{authornamehash}{461546f6b6016fb96b7bb4cfd4b3e44c}
       \strng{authorfullhash}{9ff0973acec9bc47b01a06a0ca05f8b8}
       \strng{authorfullhashraw}{9ff0973acec9bc47b01a06a0ca05f8b8}
-      \field{labelalpha}{Bus+26}
       \field{sortinit}{B}
       \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
       \field{labelnamesource}{author}
@@ -371,51 +396,6 @@
       \field{month}{4}
       \field{title}{Interpreting Language Model Parameters}
       \field{year}{2026}
-    \endentry
-    \entry{chrisman2025identifyingsparselyactivecircuits}{misc}{}{}
-      \name{author}{3}{}{%
-        {{hash=c5dc16eb49617c627bca527a69e8a6ed}{%
-           family={Chrisman},
-           familyi={C\bibinitperiod},
-           given={Brianna},
-           giveni={B\bibinitperiod}}}%
-        {{hash=9c1f60ef07d490aed136933c65e14aa4}{%
-           family={Bushnaq},
-           familyi={B\bibinitperiod},
-           given={Lucius},
-           giveni={L\bibinitperiod}}}%
-        {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
-           family={Sharkey},
-           familyi={S\bibinitperiod},
-           given={Lee},
-           giveni={L\bibinitperiod}}}%
-      }
-      \strng{namehash}{9e3fc05f8537046982abe0ef04daa03c}
-      \strng{fullhash}{9e3fc05f8537046982abe0ef04daa03c}
-      \strng{fullhashraw}{9e3fc05f8537046982abe0ef04daa03c}
-      \strng{bibnamehash}{9e3fc05f8537046982abe0ef04daa03c}
-      \strng{authorbibnamehash}{9e3fc05f8537046982abe0ef04daa03c}
-      \strng{authornamehash}{9e3fc05f8537046982abe0ef04daa03c}
-      \strng{authorfullhash}{9e3fc05f8537046982abe0ef04daa03c}
-      \strng{authorfullhashraw}{9e3fc05f8537046982abe0ef04daa03c}
-      \field{labelalpha}{CBS25}
-      \field{sortinit}{C}
-      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{eprintclass}{cs.LG}
-      \field{eprinttype}{arXiv}
-      \field{title}{Identifying Sparsely Active Circuits Through Local Loss Landscape Decomposition}
-      \field{year}{2025}
-      \verb{eprint}
-      \verb 2504.00194
-      \endverb
-      \verb{urlraw}
-      \verb https://arxiv.org/abs/2504.00194
-      \endverb
-      \verb{url}
-      \verb https://arxiv.org/abs/2504.00194
-      \endverb
     \endentry
     \entry{absorptionstudyingfeaturesplitting}{misc}{}{}
       \name{author}{6}{}{%
@@ -458,7 +438,6 @@
       \strng{authornamehash}{dddfc9644b53cdd1363280a0cdac9d5d}
       \strng{authorfullhash}{adfdb13d4905335fc06f6898b72c4a34}
       \strng{authorfullhashraw}{adfdb13d4905335fc06f6898b72c4a34}
-      \field{labelalpha}{Cha+25}
       \field{sortinit}{C}
       \field{sortinithash}{4d103a86280481745c9c897c925753c0}
       \field{labelnamesource}{author}
@@ -475,6 +454,50 @@
       \endverb
       \verb{url}
       \verb https://arxiv.org/abs/2409.14507
+      \endverb
+    \endentry
+    \entry{chrisman2025identifyingsparselyactivecircuits}{misc}{}{}
+      \name{author}{3}{}{%
+        {{hash=c5dc16eb49617c627bca527a69e8a6ed}{%
+           family={Chrisman},
+           familyi={C\bibinitperiod},
+           given={Brianna},
+           giveni={B\bibinitperiod}}}%
+        {{hash=9c1f60ef07d490aed136933c65e14aa4}{%
+           family={Bushnaq},
+           familyi={B\bibinitperiod},
+           given={Lucius},
+           giveni={L\bibinitperiod}}}%
+        {{hash=a22658e80bec4197f6d5d0beadf07cfb}{%
+           family={Sharkey},
+           familyi={S\bibinitperiod},
+           given={Lee},
+           giveni={L\bibinitperiod}}}%
+      }
+      \strng{namehash}{9e3fc05f8537046982abe0ef04daa03c}
+      \strng{fullhash}{9e3fc05f8537046982abe0ef04daa03c}
+      \strng{fullhashraw}{9e3fc05f8537046982abe0ef04daa03c}
+      \strng{bibnamehash}{9e3fc05f8537046982abe0ef04daa03c}
+      \strng{authorbibnamehash}{9e3fc05f8537046982abe0ef04daa03c}
+      \strng{authornamehash}{9e3fc05f8537046982abe0ef04daa03c}
+      \strng{authorfullhash}{9e3fc05f8537046982abe0ef04daa03c}
+      \strng{authorfullhashraw}{9e3fc05f8537046982abe0ef04daa03c}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.LG}
+      \field{eprinttype}{arXiv}
+      \field{title}{Identifying Sparsely Active Circuits Through Local Loss Landscape Decomposition}
+      \field{year}{2025}
+      \verb{eprint}
+      \verb 2504.00194
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2504.00194
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2504.00194
       \endverb
     \endentry
     \entry{christensen2025decompositionsmalltransformermodels}{misc}{}{}
@@ -498,7 +521,6 @@
       \strng{authornamehash}{8ac99e40de528164cc5354f2cb2acc11}
       \strng{authorfullhash}{8ac99e40de528164cc5354f2cb2acc11}
       \strng{authorfullhashraw}{8ac99e40de528164cc5354f2cb2acc11}
-      \field{labelalpha}{CR25}
       \field{sortinit}{C}
       \field{sortinithash}{4d103a86280481745c9c897c925753c0}
       \field{labelnamesource}{author}
@@ -548,7 +570,6 @@
       \strng{authornamehash}{fa67f9e3ef8b214350e4e2470178dbae}
       \strng{authorfullhash}{7d3a1175335fbb7718fb8da06cf7d65c}
       \strng{authorfullhashraw}{7d3a1175335fbb7718fb8da06cf7d65c}
-      \field{labelalpha}{Cso+24}
       \field{sortinit}{C}
       \field{sortinithash}{4d103a86280481745c9c897c925753c0}
       \field{labelnamesource}{author}
@@ -586,10 +607,8 @@
       \strng{authorfullhash}{a9bfc7f10989cfcbc759919686cfb78e}
       \strng{authorfullhashraw}{a9bfc7f10989cfcbc759919686cfb78e}
       \field{extraname}{1}
-      \field{labelalpha}{Cun+23}
       \field{sortinit}{C}
       \field{sortinithash}{4d103a86280481745c9c897c925753c0}
-      \field{extraalpha}{1}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://www.alignmentforum.org/posts/z6QQJbtpkEAX3Aojj/interim-research-report-taking-features-out-of-superposition}}
@@ -634,10 +653,8 @@
       \strng{authorfullhash}{71542c9b3d8bb54096acc4edb13b192c}
       \strng{authorfullhashraw}{71542c9b3d8bb54096acc4edb13b192c}
       \field{extraname}{2}
-      \field{labelalpha}{Cun+23}
       \field{sortinit}{C}
       \field{sortinithash}{4d103a86280481745c9c897c925753c0}
-      \field{extraalpha}{2}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.LG}
@@ -680,7 +697,6 @@
       \strng{authornamehash}{6cfe98c2773f47e88bc0eb85749f04ec}
       \strng{authorfullhash}{6cfe98c2773f47e88bc0eb85749f04ec}
       \strng{authorfullhashraw}{6cfe98c2773f47e88bc0eb85749f04ec}
-      \field{labelalpha}{DCN24}
       \field{sortinit}{D}
       \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
       \field{labelnamesource}{author}
@@ -790,7 +806,6 @@
       \strng{authornamehash}{61579b5b16e1bfa48390e215a6b71526}
       \strng{authorfullhash}{e46b54b96590ff9e09c9f81fdca69bf7}
       \strng{authorfullhashraw}{e46b54b96590ff9e09c9f81fdca69bf7}
-      \field{labelalpha}{Elh+22}
       \field{sortinit}{E}
       \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
       \field{labelnamesource}{author}
@@ -845,7 +860,6 @@
       \strng{authornamehash}{ca3bb68d8f3ad74b9668790840d1f735}
       \strng{authorfullhash}{900376e2c83c940f2055ad10dfac4bd5}
       \strng{authorfullhashraw}{900376e2c83c940f2055ad10dfac4bd5}
-      \field{labelalpha}{Eng+25}
       \field{sortinit}{E}
       \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
       \field{labelnamesource}{author}
@@ -888,7 +902,6 @@
       \strng{authornamehash}{9c3aafdaa89ee79aa326c12310c92dd1}
       \strng{authorfullhash}{9c3aafdaa89ee79aa326c12310c92dd1}
       \strng{authorfullhashraw}{9c3aafdaa89ee79aa326c12310c92dd1}
-      \field{labelalpha}{JT24}
       \field{sortinit}{J}
       \field{sortinithash}{b2f54a9081ace9966a7cb9413811edb4}
       \field{labelnamesource}{author}
@@ -958,7 +971,6 @@
       \strng{authornamehash}{f0ccd1e0ff6bf32cbb2a57479f33a088}
       \strng{authorfullhash}{ddaec44b722a21f532810ea081627188}
       \strng{authorfullhashraw}{ddaec44b722a21f532810ea081627188}
-      \field{labelalpha}{Lea+25}
       \field{sortinit}{L}
       \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
       \field{labelnamesource}{author}
@@ -1018,7 +1030,6 @@
       \strng{authornamehash}{88be691d68b6ea1ccfde9f56a22c32b9}
       \strng{authorfullhash}{8f304591f54e57a8d3c056496b92b581}
       \strng{authorfullhashraw}{8f304591f54e57a8d3c056496b92b581}
-      \field{labelalpha}{Mar+25}
       \field{sortinit}{M}
       \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
       \field{labelnamesource}{author}
@@ -1068,7 +1079,6 @@
       \strng{authornamehash}{d98eb2ce721651c43ed7a46dc6297ddb}
       \strng{authorfullhash}{dc63e3efedcf2d7d60ec5ae1a0341061}
       \strng{authorfullhashraw}{dc63e3efedcf2d7d60ec5ae1a0341061}
-      \field{labelalpha}{Mél+25}
       \field{sortinit}{M}
       \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
       \field{labelnamesource}{author}
@@ -1103,7 +1113,6 @@
       \strng{authornamehash}{b1e9d3be8a9b8d964a385d6870f89c73}
       \strng{authorfullhash}{b1e9d3be8a9b8d964a385d6870f89c73}
       \strng{authorfullhashraw}{b1e9d3be8a9b8d964a385d6870f89c73}
-      \field{labelalpha}{Men24}
       \field{sortinit}{M}
       \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
       \field{labelnamesource}{author}
@@ -1155,7 +1164,6 @@
       \strng{authornamehash}{17416b474b680d3d76c582e2248551c2}
       \strng{authorfullhash}{de62432f40d141140b04262d2f3ce01b}
       \strng{authorfullhashraw}{de62432f40d141140b04262d2f3ce01b}
-      \field{labelalpha}{Nan+23}
       \field{sortinit}{N}
       \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
       \field{labelnamesource}{author}
@@ -1215,7 +1223,6 @@
       \strng{authornamehash}{bf69a5e61eaa0b31f97d786de7bf5591}
       \strng{authorfullhash}{870a593c6474b096b3554d57385c387f}
       \strng{authorfullhashraw}{870a593c6474b096b3554d57385c387f}
-      \field{labelalpha}{Ola+20}
       \field{sortinit}{O}
       \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
       \field{labelnamesource}{author}
@@ -1261,7 +1268,6 @@
       \strng{authornamehash}{a1f79c3c79aa5e2aad2b25ee3d7e8670}
       \strng{authorfullhash}{a1f79c3c79aa5e2aad2b25ee3d7e8670}
       \strng{authorfullhashraw}{a1f79c3c79aa5e2aad2b25ee3d7e8670}
-      \field{labelalpha}{PCV24}
       \field{sortinit}{P}
       \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
       \field{labelnamesource}{author}
@@ -1278,51 +1284,6 @@
       \endverb
       \verb{url}
       \verb https://arxiv.org/abs/2311.03658
-      \endverb
-    \endentry
-    \entry{peters2019sparsesequencetosequencemodels}{misc}{}{}
-      \name{author}{3}{}{%
-        {{hash=c5d967fd93e7b18f947bcc25ac7d7496}{%
-           family={Peters},
-           familyi={P\bibinitperiod},
-           given={Ben},
-           giveni={B\bibinitperiod}}}%
-        {{hash=7fb1184b4b06404ea26547130860771e}{%
-           family={Niculae},
-           familyi={N\bibinitperiod},
-           given={Vlad},
-           giveni={V\bibinitperiod}}}%
-        {{hash=9480c28f63984e2f3cbe6ce914f8aa8b}{%
-           family={Martins},
-           familyi={M\bibinitperiod},
-           given={André\bibnamedelimb F.\bibnamedelimi T.},
-           giveni={A\bibinitperiod\bibinitdelim F\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
-      }
-      \strng{namehash}{459b99d6d993050650f349a8607dc26a}
-      \strng{fullhash}{459b99d6d993050650f349a8607dc26a}
-      \strng{fullhashraw}{459b99d6d993050650f349a8607dc26a}
-      \strng{bibnamehash}{459b99d6d993050650f349a8607dc26a}
-      \strng{authorbibnamehash}{459b99d6d993050650f349a8607dc26a}
-      \strng{authornamehash}{459b99d6d993050650f349a8607dc26a}
-      \strng{authorfullhash}{459b99d6d993050650f349a8607dc26a}
-      \strng{authorfullhashraw}{459b99d6d993050650f349a8607dc26a}
-      \field{labelalpha}{PNM19}
-      \field{sortinit}{P}
-      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{eprintclass}{cs.CL}
-      \field{eprinttype}{arXiv}
-      \field{title}{Sparse Sequence-to-Sequence Models}
-      \field{year}{2019}
-      \verb{eprint}
-      \verb 1905.05702
-      \endverb
-      \verb{urlraw}
-      \verb https://arxiv.org/abs/1905.05702
-      \endverb
-      \verb{url}
-      \verb https://arxiv.org/abs/1905.05702
       \endverb
     \endentry
     \entry{seshadri2026crosslayer}{inproceedings}{}{}
@@ -1366,7 +1327,6 @@
       \strng{authornamehash}{0c6dceb13ec5c6ed2dbf811fbb3b864b}
       \strng{authorfullhash}{421b1b2e44b3d3981823bf8a6c6bc6a8}
       \strng{authorfullhashraw}{421b1b2e44b3d3981823bf8a6c6bc6a8}
-      \field{labelalpha}{Ses+26}
       \field{sortinit}{S}
       \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
       \field{labelnamesource}{author}
@@ -1537,7 +1497,6 @@
       \strng{authornamehash}{197c5c452cf13ad7593da8697eb2722f}
       \strng{authorfullhash}{cedd6c82acbc6a95d1234c480a668a2d}
       \strng{authorfullhashraw}{cedd6c82acbc6a95d1234c480a668a2d}
-      \field{labelalpha}{Sha+25}
       \field{sortinit}{S}
       \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
       \field{labelnamesource}{author}
@@ -1572,7 +1531,6 @@
       \strng{authornamehash}{901f01ae77fb6a76c3f1ce5dfb3de257}
       \strng{authorfullhash}{901f01ae77fb6a76c3f1ce5dfb3de257}
       \strng{authorfullhashraw}{901f01ae77fb6a76c3f1ce5dfb3de257}
-      \field{labelalpha}{Smi24}
       \field{sortinit}{S}
       \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
       \field{labelnamesource}{author}
@@ -1640,7 +1598,6 @@
       \strng{authornamehash}{ee273ab30cfb889666f8c4d806eb9ce7}
       \strng{authorfullhash}{f82970bbd2bdd7a002d2af62b743d5cc}
       \strng{authorfullhashraw}{f82970bbd2bdd7a002d2af62b743d5cc}
-      \field{labelalpha}{Vas+23}
       \field{sortinit}{V}
       \field{sortinithash}{afb52128e5b4dc4b843768c0113d673b}
       \field{labelnamesource}{author}
@@ -1683,7 +1640,6 @@
       \strng{authornamehash}{b8275ce0b115b5162de56e2f5c345fd3}
       \strng{authorfullhash}{b8275ce0b115b5162de56e2f5c345fd3}
       \strng{authorfullhashraw}{b8275ce0b115b5162de56e2f5c345fd3}
-      \field{labelalpha}{WS24}
       \field{sortinit}{W}
       \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
       \field{labelnamesource}{author}
