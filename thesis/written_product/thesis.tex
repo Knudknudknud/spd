@@ -1105,7 +1105,15 @@ in which a single subcomponent is causally important for all three simplices. (F
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{SPD_minimality_sweep_condensed_1e-3_to_1e-6.png}
-    \caption{Left to right: SPD sampled with one hot sampling, rank fixed at $k=1$, 50 subcomponents, 3 simplices for a total of 18 input features, with $\beta_3$ swept from $10^{-3}$ to $10^{-6}$.  For the full sweep over minimality coefficients, see Appendix~\ref{appendix:SPD_minimality_sweep}.}
+    \caption{Causal importance values for SPD across the minimality sweep, with each input activated
+    in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
+    The panels correspond to $\beta_3$ values in $[10^{-3}, 10^{-5}, 10^{-6}]$, all at rank 1. 
+    Within each panel
+    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
+    block structure visible, so the column index is not comparable across panels.
+    The full sweep over $10^{-1}$ to $10^{-6}$ can be found in the appendix.}
     \label{fig:spd_minimality_sweep_condensed}
 \end{figure}
 
@@ -1113,9 +1121,15 @@ in which a single subcomponent is causally important for all three simplices. (F
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{Softmax_minimality_sweep_condensed_1e-3_to_1e-6.png}
-    \caption{Left to right: Softmax sampled with one hot sampling, rank fixed at $k=1$, 50
-    subcomponents, 3 simplices for a total of 18 input features, with $\beta_3$ swept from
-    $10^{-3}$ to $10^{-6}$. Full sweep in the appendix.}
+    \caption{Causal importance values for Softmax with attention across the minimality sweep, with each input activated
+    in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
+    The panels correspond to $\beta_3$ values in $[10^{-3}, 10^{-5}, 10^{-6}]$, all at rank 1.
+    Within each panel
+    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
+    block structure visible, so the column index is not comparable across panels.
+    The full sweep over $10^{-1}$ to $10^{-6}$ can be found in the appendix.}
     \label{fig:softmax_minimality_sweep_condensed}
 \end{figure}
 
@@ -1138,6 +1152,19 @@ the routing suggests that it instead gradually becomes split into multiple.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{Io_routing_chain_for_spd_and_softmax_combined_minimality_1e-3_and_1e-5.png}
+    \caption{Overview of routing patterns for SPD and softmax with attention, with the rank fixed at $k=1$ and the minimality
+    coefficient fixed varied over [$10^{-3},10^{-5},10^{-6}$] (left to right). Within each panel, only the
+    subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
+    edges, from each input group $g$ to a first-layer subcomponent $c$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
+    $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    edge sets, so they are comparable within a set but not across sets or panels.
+    The full sweep over $10^{-1}$ to $10^{-6}$ for both methods can be found in the appendix.}
+    \label{fig:softmax_spd_minimality_sweep_condensed}
 \end{figure}
 
 
@@ -1170,12 +1197,30 @@ where one subcomponent becomes causally important for all three simplices, with 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_rank_1_to_5.png}
+    \caption{Causal importance values for SPD across the rank sweep, with each input activated
+    in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
+    The panels correspond to the rank set to [1, 3, and 5], with the minimiality coefficient fixed at $10^{-5}$.
+    Within each panel
+    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
+    block structure visible, so the column index is not comparable across panels.
+    The full sweep over ranks 1 to 6 can be found in the appendix.}
 \end{figure}
 
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_rank_1_to_5}
+    \caption{Causal importance values for Softmax with attention across the rank sweep, with each input activated
+    in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
+    The panels correspond to the rank set to [1, 3, and 5], with the minimiality coefficient fixed at $10^{-3}$.
+    Within each panel
+    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
+    block structure visible, so the column index is not comparable across panels.
+    The full sweep over ranks 1 to 6 for both methods can be found in the appendix.}
 \end{figure}
 
 As in previous observations, the routing patterns indicate that the importance values reflect subcomponent behavior in SPD. Increasing the rank does not concentrate importance onto a single subcomponent per simplex. Instead, input-layer subcomponents are able to activate across multiple simplices.
@@ -1188,6 +1233,19 @@ Rank does have a clearer effect in the second layer, where a single subcomponent
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Io_routing_chain_combined_rank_3_and_5.png}
+        \caption{Overview of routing patterns for SPD and softmax with attention, with SPD's minimality coefficient fixed at $10^{-5}$ and softmax's at $10^{-3}$,
+    and the rank varied over [1,3,5] (left to right). Within each panel, only the
+    subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
+    edges, from each input group $g$ to a first-layer subcomponent $c$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
+    $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    edge sets, so they are comparable within a set but not across sets or panels.
+    The full sweep over ranks 1 to 6 for both methods can be found in the appendix.}
+    \label{fig:softmax_spd_rank_sweep_condensed}
 \end{figure}
 
 
@@ -1325,13 +1383,32 @@ that didnt fit in the main text
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{SPD_minimality_sweep_full_1e1_to_1e-6.png}
+    \caption{Causal importance values for SPD across the minimality sweep, with each input activated
+    in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
+    The panels correspond to $\beta_3$ values from $10^{-1}$ to $10^{-6}$. Within each panel
+    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
+    block structure visible, so the column index is not comparable across panels.}
     \label{appendix:SPD_minimality_sweep}
+    
 \end{figure}
 
 \newpage
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{SPD_minimality_io_sweep_full_1e1_to_1e-6.png}
+    \caption{Overview of routing patterns for SPD at rank 1, with the minimality
+    coefficient fixed varied over $10^{-1}$ to $10^{-6}$ (left to right). Within each panel, only the
+    subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
+    edges, from each input group $g$ to a first-layer subcomponent $c$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
+    $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
 
 \newpage
@@ -1339,11 +1416,29 @@ that didnt fit in the main text
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_rank_1_to_8.png}
+    \caption{Causal importance values for SPD across the rank sweep, with minimality coefficient $\beta_{3} = 10^{-5}$. Each with each input activated
+    in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
+    The panels correspond to the rank values from $1$ to $6$. Within each panel
+    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
+    block structure visible, so the column index is not comparable across panels.}
 \end{figure}
 \newpage
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_io_routing_chain_rank_1_to_8.png}
+    \caption{Overview of routing patterns for SPD across ranks 1 to 6, with the minimality
+    coefficient fixed at $10^{-5}$ (left to right). Within each panel, only the
+    subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
+    edges, from each input group $g$ to a first-layer subcomponent $c$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
+    $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
 
 \newpage
@@ -1352,12 +1447,30 @@ that didnt fit in the main text
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_minimality_sweep_full_1e1_to_1e-6.png}
+    \caption{Causal importance values for Softmax with attention across the minimality sweep, with each input activated
+    in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
+    The panels correspond to $\beta_3$ values from $10^{-1}$ to $10^{-6}$. Within each panel
+    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
+    block structure visible, so the column index is not comparable across panels.}
 \end{figure}
 
 \newpage
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_minimality_io_sweep_full_1e1_to_1e-6.png}
+    \caption{Overview of routing patterns for Softmax with attention at rank 1, with the minimality
+    coefficient varied over $10^{-1}$ to $10^{-6}$ (left to right). Within each panel, only the
+    subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
+    edges, from each input group $g$ to a first-layer subcomponent $c$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
+    $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
 
 \newpage
@@ -1366,14 +1479,32 @@ that didnt fit in the main text
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e3_rank_1_to_8.png}
+    \caption{Causal importance values for Softmax with attention across the rank sweep, with minimality coefficient $\beta_{3} = 10^{-3}$. Each input activated
+    in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
+    The panels correspond to the rank values from $1$ to $6$. Within each panel
+    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
+    block structure visible, so the column index is not comparable across panels.}
+    \label{appendix:SPD_rank_sweep}
 \end{figure}
 
 \newpage
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_rank_io_sweep_full_rank_1_to_8.png}
+    \caption{Overview of routing patterns for Softmax with attention across ranks 1 to 6, with the minimality
+    coefficient fixed at $10^{-3}$ (left to right). Within each panel, only the
+    subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
+    edges, from each input group $g$ to a first-layer subcomponent $c$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
+    $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
-
 
 
 
