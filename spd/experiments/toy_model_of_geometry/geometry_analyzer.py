@@ -164,7 +164,7 @@ def plot_group_output_matrix(
     im = ax.imshow(P, cmap="viridis", aspect="auto")
 
     ax.set_title(title)
-    ax.set_xlabel("Output neuron")
+    ax.set_xlabel("Output group")
     ax.set_ylabel("Input group")
     ax.set_xticks(range(n_out))
     ax.set_yticks(range(n_groups))
@@ -236,13 +236,13 @@ def build_columns(read, write, n_groups, n_outputs, c1, c2):
             "order": list(range(n_groups)),
         },
         {
-            "title": "W2 subcomponents",
+            "title": "W1 subcomponents",
             "ids": [str(i) for i in c1],
             "imp": read.sum(1),
             "order": list(range(len(c1))),    
         },
         {
-            "title": "W1 subcomponents",
+            "title": "W2 subcomponents",
             "ids": [str(i) for i in c2],
             "imp": write.sum(1),
             "order": list(range(len(c2))),
@@ -503,9 +503,9 @@ def main() -> None:
     ranks = [2,2,2]
     group_features, _, _ = get_group_features(ranks)
 
-    plot_input_hidden_output_translation(W1, W2, group_features, save_dir=model_dir, title="Layered translation from input groups to outputs")
+    plot_input_hidden_output_translation(W1, W2, group_features, save_dir=model_dir, title="Hidden neuron activations to input and output groups", threshold=0.05)
     dataset = SimplexDataset([2,2,2], device=DEVICE)
-    plot_group_output_matrix(W1, W2, save_dir=model_dir, title="Group output matrix (Target Model)", dataset=dataset)
+    plot_group_output_matrix(W1, W2, save_dir=model_dir, title="Input to output matrix (Target Model)", dataset=dataset)
 
 if __name__ == "__main__":
     main()  
