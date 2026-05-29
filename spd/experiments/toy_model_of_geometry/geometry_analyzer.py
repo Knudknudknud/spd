@@ -10,7 +10,15 @@ import numpy as np
 import torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from simplex_dataset import SimplexDataset
+import matplotlib
 
+matplotlib.rcParams.update({
+    "font.size": 20,
+    "axes.titlesize": 24,
+    "axes.labelsize": 20,
+    "xtick.labelsize": 20,
+    "ytick.labelsize": 20  
+})
 
 
 def get_group_features(
