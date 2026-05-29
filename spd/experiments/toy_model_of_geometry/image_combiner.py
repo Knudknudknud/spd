@@ -214,9 +214,11 @@ combine_images(
 #Combined io sweep at rank 3,5 for spd and softmax together
 image_paths = [
     #SPD
+    r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\rank_sweep_2\rank_1\io_routing_chain.png",
     r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\rank_sweep_2\rank_3\io_routing_chain.png",
     r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\rank_sweep_2\rank_5\io_routing_chain.png",
     #Softmax
+    r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1\io_routing_chain.png",
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3\io_routing_chain.png",
     r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5\io_routing_chain.png",
 ]
