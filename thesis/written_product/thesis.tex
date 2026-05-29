@@ -602,8 +602,25 @@ Like in the original SPD paper, two TMS models are trained: $\mathrm{TMS}_{5\tex
 \end{figure}
 In the original SPD paper, the baseline achieves
  near perfect alignment on both TMS models, with MMCS and ML2R approximately equal to $1$. The softmax and attention variant, while achieving near-zero losses, does not manage to perfectly align its components with the target model nor concentrate the entire feature magnitude within a single subcomponent, resulting in a lower ML2R with high variance. For the larger model this skews the geometry further.
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{2}{c}{$\mathrm{TMS}_{5\text{-}2}$} & \multicolumn{2}{c}{$\mathrm{TMS}_{40\text{-}10}$} & \multicolumn{2}{c}{$\mathrm{TMS}_{40\text{-}10}$ paired} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+& SPD & Softmax & SPD & Softmax & SPD & Softmax \\
+\midrule
+MMCS  & $1.00$ & $ \pm 0.016$ & $1.00$ & $0.812 \pm 0.105$ & $0.9997$ & $0.9920 \pm 0.003$ \\
+ML2R  & $1.00$ & $ \pm 0.205$ & $1.055 \pm 0.045$ & $0.623 \pm 0.231$ & $0.796 \pm 0.434$ & $0.732 \pm 0.350$ \\
+\bottomrule
+\end{tabular}
+\caption{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite{stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it's due to it being smaller than $0.001$.}
+\label{tab:tms_results}
+\end{table}
+\footnote{add correct values!!!}
 
-\textbf{TODO:} Insert a table for this!\footnote{important}
+\footnote{important}
 
 While the softmax variant does not recover the exact geometry, it correctly concentrates the entire
 magnitude on the right number of subcomponents, pruning the rest to near-zero
@@ -612,14 +629,7 @@ these differences, the causal importance values match the original SPD method on
 $\mathrm{TMS}_{5\text{-}2}$, with both assigning a single subcomponent to each of the five inputs.
 This breaks down on the larger $\mathrm{TMS}_{40\text{-}10}$, where softmax no longer reaches a clean
 one-hot assignment and some subcomponents become important for several inputs at once.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth, height=7cm]{tms_5_2_plot_causal_importances.jpg}
-    \caption{Causal importance values for the Softmax-with-attention variant on $\mathrm{TMS}_{5\text{-}2}$,
-    for both tied weight matrices, the encoder $W$ (left) and the
-    decoder $W^{\top}$ (right). Importance is measured by activating each input in isolation, with value equal to $0.75$. In both
-    matrices, each of the five inputs is assigned a single subcomponent, giving a one-hot assignment.}
-\end{figure}
+
 \subsubsection{Paired features}
 \label{sec:tms-tied-experiment}
 
@@ -671,7 +681,7 @@ MMCS  & $1.00$ & $ \pm 0.016$ & $1.00$ & $0.812 \pm 0.105$ & $0.9997$ & $0.9920 
 ML2R  & $1.00$ & $ \pm 0.205$ & $1.055 \pm 0.045$ & $0.623 \pm 0.231$ & $0.796 \pm 0.434$ & $0.732 \pm 0.350$ \\
 \bottomrule
 \end{tabular}
-\caption{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite{stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it's because its smaller than $0.001$.}
+\caption{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite{stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it's due to it being smaller than $0.001$.}
 \label{tab:tms_results}
 \end{table}
 \footnote{add correct values!!!}
@@ -685,7 +695,13 @@ SPD correctly identifies that features should be paired in single subcomponents 
     \includegraphics[width=0.48\linewidth,height=10cm]{spd_40_10_paired.jpg}
     \hfill
     \includegraphics[width=0.48\linewidth,height=10cm]{softmax_40_10_paired.jpg}
-    \caption{Left: SPD decomposition of the paired TMS model. Right: Softmax of the paired TMS model. SPD finds the correct structure of pairing features together but does not attribute one feature pair per subcomponent. Softmax achieves the desired importance decomposition, with the exception of one feature pair. SPD was trained with $200$ subcomponents and Softmax with $100$, as these yielded the best results for each method.}
+    \caption{Left: SPD decomposition of the paired TMS model. Right: Softmax decomposition of the paired TMS model.}
+    Each input value is
+    activated in isolation at magnitude 0.75. the top heatmap is the first layer W1 and the bottom heatmap is the second
+    layer W2, with rows corresponding to the subcompoent index and columns corresponding to the causal importance
+    value. The subcomponents are permuted within each panel to make the block structure visible.
+    SPD finds the correct structure of pairing features together but does not attribute one feature pair per subcomponent. Softmax achieves the desired importance decomposition, with the exception of one feature pair. SPD was trained with $200$ subcomponents and Softmax with $100$, as these yielded the best results for each method.
+    
     \label{fig:both}
 \end{figure}
 
@@ -782,7 +798,12 @@ while the remaining subcomponents have negligible importance for that feature in
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{softmax_CC.jpg}
-    \caption{Causal importance values for Softmax on the Toy Model of Compressed Computation. Each input feature activates a near one-hot importance pattern across subcomponents. Sampled using one-hot sampling.}
+    \caption{Causal importance values for Softmax on the Toy Model of Compressed Computation,
+    with each input activated in isolation at magnitude $0.75$.
+    the top heatmap is the first layer $W_1$ and the bottom
+    heatmap is the second layer $W_2$, with rows corresponding to the subcompoent index and
+    columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
+    block structure visible. The model is trained using one-hot sampling.}
     \label{fig:cc_importance}
 \end{figure}
 
@@ -824,7 +845,9 @@ as was also observed in TMS. \footnote{caption todo} The one-hot importance assi
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=8cm]{cc_softmax_attention.png}
-    \caption{Per-feature contribution of each subcomponent at the neuron level. Subcomponents contribute to multiple features simultaneously, even when their causal importance is concentrated on a single feature.}
+    \caption{Per-feature contribution of each subcomponent at the neuron level.
+     Subcomponents contribute to multiple features simultaneously,
+    even when their causal importance is concentrated on a single feature.}
     \label{fig:cc_contribution}
 \end{figure}
 % A natural follow-up question is whether the recovered subcomponents are nonetheless arranged as $100$ near-orthogonal directions. To examine this, the pairwise cosine similarities between the $U_c$ and $V_c$ \footnote{notation inconsistency again, k is not present} are shown in Figure~\ref{fig:CC_cosines}. \footnote{caption to do}
@@ -860,14 +883,15 @@ non-negligible norms in both $W_{\text{in}}$
 and $W_{\text{out}}$. 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.48\linewidth,height=5cm]{CC_norms_softmax.jpg}
+    \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_softmax.jpg}
     \hfill
-    \includegraphics[width=0.48\linewidth,height=5cm]{CC_norms_spd.jpg}
-    \caption{Left: Softmax. Right: SPD. Norms of the subcomponents, ordered by decreasing norm. Matrix norm is the fribenius norm of the subcomponent matrix $U_c V_c^T$. Subcomponents are ordered by decreasing norm.}
+    \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_spd.jpg}
+    \caption{Left: Softmax. Right: SPD. Subcomponent norms, sorted by decreasing matrix norm
+    $\|U_c V_c^\top\|$ (bars). The vector norms $\|U_c\|$ and $\|V_c\|$ are overlaid as lines.}
     \label{fig:CC_norms}
 \end{figure}
 
-SPD, by contrast, shows a
+SPD, by contrast, shows a \footnote{Remember to rerun with better layer names.}
 sharp drop in norm after the causally important subcomponents,
 with the inactive components pruned to near-zero norm in $W_{in}$ and a trailing tail of small but non-negligible norms in $W_{out}$.
 
@@ -885,11 +909,13 @@ reconstruction mass is distributed across subcomponents during optimisation. \fo
     \includegraphics[width=0.48\linewidth,height=5cm]{cc_softmax_causal_importance_hist.jpg}
     \hfill
     \includegraphics[width=0.48\linewidth,height=5cm]{cc_softmax_causal_importance_hist2.jpg}
-    \caption{Distributions of causal importance values for the softmax decomposition on both layers.}
+    \caption{Histograms of the causal importance values for the softmax decomposition, taken over a
+    single batch at the end of training, for $W_{\text{in}}$ (left) and $W_{\text{out}}$ (right). The
+    frequency axis is logarithmic.}
     \label{fig:CC_causal_importance_hist}
 \end{figure}
 
-More generally, this behaviour is likely related to the feature
+More generally, \footnote{Remember to rerun with different layer names for better naming} this behaviour is likely related to the feature
 shrinkage phenomenon previously observed in both TMS and this toy model.
 The faithfulness objective is computed additively as the MSE between
 the summed subcomponent reconstruction and the target weight matrix,
@@ -969,8 +995,8 @@ less influential. \footnote{Double check value for figure with cutoff also consi
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=5cm]{geom_input_output.jpg}
-    \caption{Top: values of $s_{i}$. Middle: response $\rho_{l,[i,g]}$ from each input group to hidden neuron $i$. Bottom: contribution $\pi_{l+1,[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are ordered by $\rho_{l,[i,g]}$, then $s_i$, and lastly by output strength. Neurons with $s_{i} > 0.05$ shown.}
+    \includegraphics[width=\linewidth, height=5cm]{w1_w2_input_hidden_output_translation.png}
+    \caption{Top:$\rho^{l}_{[i,g]}$ from each input group to hidden neuron $i$. Bottom: contribution $\pi^{l} _{[k,i]}$ of each hidden neuron to each simplex's volume output. Neurons are ordered by $\rho_{l,[i,g]}$, then $s_i$, and lastly by output strength. Only neurons that activate strongly for one simplex and one output are shown.}
     \label{fig:simplex_target_structure}
 \end{figure}
 The model learns a predominantly modular structure, \footnote{caption text to do} in which each
@@ -979,10 +1005,10 @@ contribute strongly to its output, with negligible influence on the other output
 is shown in Figure~\ref{fig:simplex_group_output}.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=9cm]{geom_input_output_final.jpg}
-    \caption{Group to output response $r_{g,k} = \sum_{i}^{d_{\text{hidden}}} \pi_{l+1,[k,i]}\mathrm{ReLU}\!\left(\rho_{l,[i,g]}\right)$ obtained by sampling each simplex in isolation and measuring the resulting volume output. The magnitude is concentrated on the diagonal, showing
-that each simplex strongly influences its own output,
-with negligible cross-activation.}
+    \includegraphics[width=\linewidth, height=9cm]{group_output_matrix_simplex.png}
+    \caption{Group-to-output response of the trained network. Each entry
+    $P_{g,k} = \tfrac{1}{N}\sum_{n} \big[\, W_2\,\mathrm{ReLU}(W_1 x^{(g)}_n)\,\big]_k$ is the mean
+    activation to output $k$ when only simplex $g$ is active in the input, averaged over 200 samples.}
     \label{fig:simplex_group_output}
 \end{figure}
 Based on these results \footnote{figure text to do, also make sure group starts at 1 not 0 same for out}, it is reasonable to assume that the model learns to compute the volume of each simplex separately,
@@ -1211,7 +1237,7 @@ where one subcomponent becomes causally important for all three simplices, with 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_rank_1_to_5}
+    \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e3_rank_1_3_5.png}
     \caption{Causal importance values for Softmax with attention across the rank sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to the rank set to [1, 3, and 5], with the minimiality coefficient fixed at $10^{-3}$.
@@ -1365,12 +1391,13 @@ which were tuned against the known ground truth.
 
 \section{Appendix}
 \subsection{Toy Model of Superposition}
-\subsubsection{Model training}
+\subsubsection{Model training result}
+add the losses here.
 
 
 \subsection{Toy Model of Compressed Computation}
 \subsubsection{Model training}
-
+add the losses here
 
 
 
@@ -1378,6 +1405,7 @@ which were tuned against the known ground truth.
 \subsection{Toy Model of Geometry}
 This section contains full size images over the entire sweep of minimality coefficients,
 that didnt fit in the main text
+add the losses of trianing
 \newpage
 \subsubsection{SPD: Sweep over minimality coefficients}
 \begin{figure}[H]
