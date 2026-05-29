@@ -7,7 +7,9 @@ parameters:
   seed:
     values: [67]
   importance_minimality_coeff:
-    values: [1e-5,1e-4,1e-3,1e-2,1e-1,1.0]
+    values: [1e-5,1e-4,1e-3,1e-2,1e-6]
+  lr:
+    values: [1e-3, 2e-3, 3e-3]
 
 command:
 - ${env}
