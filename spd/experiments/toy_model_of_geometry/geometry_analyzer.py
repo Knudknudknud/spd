@@ -10,15 +10,6 @@ import numpy as np
 import torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from simplex_dataset import SimplexDataset
-import matplotlib
-
-matplotlib.rcParams.update({
-    "font.size": 20,
-    "axes.titlesize": 24,
-    "axes.labelsize": 20,
-    "xtick.labelsize": 20,
-    "ytick.labelsize": 20  
-})
 
 
 def get_group_features(
@@ -379,16 +370,16 @@ def render_io_chain(columns, flows, save_path, title=None, edge_frac=0.05):
                 zorder=3,
             ))
 
-            ax.text(xs[i], yc, label, ha="center", va="center", fontsize=8)
+            ax.text(xs[i], yc, label, ha="center", va="center", fontsize=12)
 
-        ax.text(xs[i], 1.06, col["title"], ha="center", fontsize=11)
+        ax.text(xs[i], 1.06, col["title"], ha="center", fontsize=14)
 
     ax.set_xlim(-0.35, 3.35)
     ax.set_ylim(-0.1, 1.13)
     ax.axis("off")
 
     if title:
-        fig.suptitle(title, y=0.9)
+        fig.suptitle(title, y=0.9, fontsize=16)
 
     save_figure(fig, save_path)
     plt.close(fig)
