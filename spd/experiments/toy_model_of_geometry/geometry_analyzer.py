@@ -438,21 +438,21 @@ def main() -> None:
       
     run_dirs = [
         #minimaities
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "(Softmax, minimality 1e-1)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01", "(Softmax, minimality 1e-2)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001", "(Softmax, minimality 1e-3)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001", "(Softmax, minimality 1e-4)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001", "(Softmax, minimality 1e-5)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001", "(Softmax, minimality 1e-6)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "Softmax, minimality 1e-1"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01", "Softmax, minimality 1e-2"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001", "Softmax, minimality 1e-3"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001", "Softmax, minimality 1e-4"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001", "Softmax, minimality 1e-5"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001", "Softmax, minimality 1e-6"),
         #Rank plots:
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1", "(Softmax, Rank 1)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2", "(Softmax, Rank 2)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3", "(Softmax, Rank 3)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4", "(Softmax, Rank 4)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "(Softmax, Rank 5)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "(Softmax, Rank 6)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "(Softmax, Rank 7)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "(Softmax, Rank 8)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1", "Softmax, Rank 1"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2", "Softmax, Rank 2"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3", "Softmax, Rank 3"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4", "Softmax, Rank 4"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "Softmax, Rank 5"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "Softmax, Rank 6"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "Softmax, Rank 7"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "Softmax, Rank 8"),
     ]
     
     model_dir = r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\smaller_test"
@@ -490,7 +490,7 @@ def main() -> None:
 
         group_features, _, _ = get_group_features(ranks)
 
-        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.80, edge_frac=0.01,sort_nodes=True, sweeps=10)
+        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title=run_title, coverage=0.80, edge_frac=0.01,sort_nodes=True, sweeps=10)
 
     
     model_dir = Path(model_dir)
