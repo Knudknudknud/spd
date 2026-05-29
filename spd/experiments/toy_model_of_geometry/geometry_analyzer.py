@@ -1,4 +1,5 @@
 
+
 from pathlib import Path
 import einops
 from einops import reduce
@@ -70,35 +71,21 @@ def plot_input_hidden_output_translation(
     output_strength = B.max(axis=0)
     keep = (input_strength >= threshold) & (output_strength >= threshold)
 
-
-
-    routing_strength = A[dominant_input, :] * B[dominant_output, :]
-    order = np.lexsort((dominant_output, -routing_strength, dominant_input))
+    order = np.lexsort((dominant_output, dominant_input))
     neuron_order = order[keep[order]]
     A_sorted = A[:, neuron_order]
     B_sorted = B[:, neuron_order]
 
 
 
-    fig, (ax_strength, ax_top, ax_bottom) = plt.subplots(
-        3, 1,
+    fig, (ax_top, ax_bottom) = plt.subplots(
+        2, 1,
         figsize=(16, 6),
         sharex=True,
-        gridspec_kw={"height_ratios": [1.2, n_groups, n_outputs]},
+        gridspec_kw={"height_ratios": [n_groups, n_outputs]},
     )
 
-    # #top plot
-    # strengths = routing_strength[neuron_order]
-    # x = np.arange(len(neuron_order))
 
-    # ax_strength.bar(x, strengths, width=1.0, color="0.4", edgecolor="none")
-    # ax_strength.set_ylabel("Routing\nstrength")
-    # ax_strength.set_xlim(-0.5, len(neuron_order) - 0.5)
-    # ax_strength.set_title("Routing strength (input dominant x output dominant)")
-
-    # # invisible spacer so this panel's width matches the heatmaps below
-    # spacer = make_axes_locatable(ax_strength).append_axes("right", size="2%", pad=0.1)
-    # spacer.axis("off")
 
     #As
     im_top = ax_top.imshow(A_sorted, aspect="auto", cmap="Blues")
@@ -121,14 +108,11 @@ def plot_input_hidden_output_translation(
     cax_bottom = make_axes_locatable(ax_bottom).append_axes("right", size="2%", pad=0.1)
     plt.colorbar(im_bottom, cax=cax_bottom)
 
-
-
     sorted_dominant_input = dominant_input[neuron_order]
     group_sizes = np.bincount(sorted_dominant_input, minlength=n_groups)
-    boundaries = np.cumsum(group_sizes)[:-1]   # drop the rightmost edge
+    boundaries = np.cumsum(group_sizes)[:-1]
 
     for boundary in boundaries:
-        ax_strength.axvline(boundary - 0.5, color="black", lw=1)
         ax_top.axvline(boundary - 0.5, color="black", lw=1)
         ax_bottom.axvline(boundary - 0.5, color="black", lw=1)
 
@@ -196,6 +180,10 @@ def plot_group_output_matrix(
 
 
 def compute_io_flows(C1, C2, group_features):
+    """
+    Computes the read, write and subcomponent matrix as defined in the thesis 
+    C1 has shape (C, d_hid, d_in) and C2 has shape (C, d_out, d_hid)
+    """
 
     read_per_group = []
 
@@ -218,20 +206,14 @@ def compute_io_flows(C1, C2, group_features):
     return read, overlap, write
 
 
-def pick_components(read, write, coverage=0.95, min_mass=0):
+def pick_components(read, write, coverage=0.95):
     """
-    Drop any subcomponent below `min_mass`, then keep the fewest survivors making
-    up `coverage` of the remaining mass. C1 ranked by total read (into hiddens),
-    C2 by total write (into outputs).
-    read: (C1, n_groups)   write: (C2, n_outputs)
+    Picks components that together contribute a fraction of the total layer magnitude.
     """
     contrib1 = np.abs(read).sum(axis=1)    # (C1,) input-side inflow
     contrib2 = np.abs(write).sum(axis=1)   # (C2,) output-side outflow
 
     def cover(v):
-        live = np.where(v >= min_mass)[0]
-        if live.size == 0:
-            raise ValueError("No components meet the minimum mass requirement.")
         
         order = np.argsort(-v)
         cum = np.cumsum(v[order])
@@ -407,7 +389,7 @@ def render_io_chain(columns, flows, save_path, title=None, edge_frac=0.05):
 def plot_io_routing_chain(
     C1, C2, group_features, save_dir,
     title=None, coverage=0.5,
-    edge_frac=0.01, sort_nodes=True, sweeps=20, min_mass=0.05,
+    edge_frac=0.01, sort_nodes=True, sweeps=20,
 ):
     read, overlap, write = compute_io_flows(C1, C2, group_features)
     #Read has dim (C,_n groups), overlap ahs dim (C1, C2), write has dim (C2, n_outputs)
@@ -415,7 +397,7 @@ def plot_io_routing_chain(
     #Select only the components that matter significantly
     c1, c2 = pick_components(
         read, write,
-        coverage=coverage, min_mass=min_mass,
+        coverage=coverage,
     )
 
     #pick components that satisfy minimum mass
@@ -431,7 +413,6 @@ def plot_io_routing_chain(
         C2.shape[1],
         c1, c2,
     )
-
 
     if sort_nodes:
         edges = [
@@ -453,43 +434,26 @@ def plot_io_routing_chain(
         edge_frac,
     )
 
+
 def main() -> None:
       
     run_dirs = [
         #minimaities
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "(minimality 1e-1)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01", "(minimality 1e-2)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001", "(minimality 1e-3)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001", "(minimality 1e-4)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001", "(minimality 1e-5)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001", "(minimality 1e-6)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "(Softmax, minimality 1e-1)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01", "(Softmax, minimality 1e-2)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001", "(Softmax, minimality 1e-3)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001", "(Softmax, minimality 1e-4)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001", "(Softmax, minimality 1e-5)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001", "(Softmax, minimality 1e-6)"),
         #Rank plots:
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1", "(Rank 1)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2", "(Rank 2)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3", "(Rank 3)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4", "(Rank 4)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "(Rank 5)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "(Rank 6)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "(Rank 7)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "(Rank 8)"),
-        #rank sweep at 1e-3:
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_1", "(Rank 1)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_2", "(Rank 2)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_3", "(Rank 3)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_4", "(Rank 4)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_5", "(Rank 5)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_6", "(Rank 6)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_7", "(Rank 7)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_8", "(Rank 8)"),
-        # #k_sweep at 1e-6
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_1", "(Rank 1)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_2", "(Rank 2)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_3", "(Rank 3)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_4", "(Rank 4)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_5", "(Rank 5)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_6", "(Rank 6)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_7", "(Rank 7)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_8", "(Rank 8)")
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1", "(Softmax, Rank 1)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2", "(Softmax, Rank 2)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3", "(Softmax, Rank 3)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4", "(Softmax, Rank 4)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "(Softmax, Rank 5)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "(Softmax, Rank 6)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "(Softmax, Rank 7)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "(Softmax, Rank 8)"),
     ]
     
     model_dir = r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\smaller_test"
@@ -527,10 +491,7 @@ def main() -> None:
 
         group_features, _, _ = get_group_features(ranks)
 
-        plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group output matrix " + run_title)
-        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.80, edge_frac=0.01, min_mass=0,sort_nodes=True, sweeps=10)
-        plot_subcomponent_norms(state_dict,save_dir=RUN_DIR, title="Subcomponent norms")
-
+        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.80, edge_frac=0.01,sort_nodes=True, sweeps=10)
 
     
     model_dir = Path(model_dir)
@@ -544,6 +505,8 @@ def main() -> None:
     group_features, _, _ = get_group_features(ranks)
 
     plot_input_hidden_output_translation(W1, W2, group_features, save_dir=model_dir, title="Layered translation from input groups to outputs")
-    
+    dataset = SimplexDataset([2,2,2], device=DEVICE)
+    plot_group_output_matrix(W1, W2, save_dir=model_dir, title="Group output matrix (Target Model)", dataset=dataset)
+
 if __name__ == "__main__":
     main()  
