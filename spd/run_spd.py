@@ -267,6 +267,7 @@ def optimize(
                         device=device,
                     )
                 
+                
                 ci_histogram_figs = plot_ci_histograms(causal_importances=causal_importances)
                 fig_dict.update(ci_histogram_figs)
 

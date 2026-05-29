@@ -1,7 +1,7 @@
 # ########## 1 layer ##########
 # --- WandB ---
-wandb_project: spd-resid-mlp
-wandb_run_name: null
+wandb_project: Thesis_softmax_minimality_sweep_residual_mlp
+wandb_run_name: spd_softmax_minimality_sweep_resid_mlp
 wandb_run_name_prefix: ""
 
 # --- General ---
@@ -22,15 +22,15 @@ recon_coeff: null
 stochastic_recon_coeff: 1.0
 recon_layerwise_coeff: null
 stochastic_recon_layerwise_coeff: 1.0
-importance_minimality_coeff: 1.0e-05
+importance_minimality_coeff: 1.0e-03
 pnorm: 2
 output_loss_type: mse
 
 # --- Training ---
-batch_size: 1024
-steps: 30_000
+batch_size: 2048
+steps: 40_000
 lr: 2e-3
-lr_schedule: constant
+lr_schedule: cosine
 lr_warmup_pct: 0.0
 n_eval_steps: 100
 
@@ -46,7 +46,7 @@ pretrained_model_path: "C:\\Users\\Knud\\uni\\spd\\spd\\experiments\\resid_mlp\\
 # --- Task Specific ---
 task_config:
   task_name: residual_mlp
-  feature_probability: 0.01
+  feature_probability: 0.05
   #data_generation_type: "at_least_zero_active"
   data_generation_type: "exactly_one_active"
 # ########## 2 layers ##########

@@ -1,31 +1,4 @@
-"""
-Analysis utilities for SPD GeometryModel components.
 
-This analyzes the learned SPD low-rank components directly:
-    ΔW = A @ B
-
-rather than the frozen base model weights.
-
-The goal is to compare:
-    - vanilla GeometryModel structure
-vs
-    - learned SPD component structure
-
-in exactly the same analysis pipeline.
-
-Assumptions
------------
-Checkpoint contains:
-    components.linear1.A
-    components.linear1.B
-    components.linear2.A
-    components.linear2.B
-
-and each effective component matrix is reconstructed as:
-    W = A @ B
-
-If shapes do not match expected dimensions, flip multiplication order.
-"""
 
 from pathlib import Path
 import einops
@@ -36,7 +9,7 @@ from matplotlib.patches import PathPatch, Rectangle
 import numpy as np
 import torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+from simplex_dataset import SimplexDataset
 
 
 
@@ -60,96 +33,6 @@ def save_figure(fig: plt.Figure, save_path: Path) -> None:
     plt.close(fig)
 
 
-
-def plot_contribution_of_components_to_outputs(
-    W,
-    save_dir,
-    title,
-    group_size=6,
-    threshold=0.05,
-):
-    """
-    Visualize hidden-neuron contributions to grouped outputs.
-    """
-
-    W = np.asarray(W).T
-
-    n_outputs, n_hidden = W.shape
-    n_groups = n_outputs // group_size
-
-
-    #sum over "out", meaning we calculate how much each group contributes to every hidden neuron, i.e what fraction each group contributes, but wihtout the fraction.
-    W_grouped = reduce(
-        W,
-        "(group out) hidden -> group hidden",
-        "sum",
-        out=group_size,
-    )
-
-
-    #select the index of the group that contributes the most to each hidden neuron.
-    dominant_group = np.argmax(W_grouped, axis=0)
-
-    #select the value of the contribution of the dominant group for each hidden neuron.
-    dominant_strength = W_grouped[dominant_group,np.arange(n_hidden),]
-
-    #if the dominant feature is "weak", it doesnt do much for the computation.
-    keep_mask = dominant_strength >= threshold
-
-    # ------------------------------------------------------------
-    # Sort neurons group-by-group
-    # ------------------------------------------------------------
-    neuron_groups = []
-
-    for g in range(n_groups):
-        #select, where each group is g and their strength is above the threshold.
-        ids = np.flatnonzero((dominant_group == g) & keep_mask)
-
-        #sort the neurosn in this group by their contribution strength to the group.
-        order = np.argsort(W_grouped[g, ids])[::-1]
-        neuron_groups.append(ids[order])
-    #combine
-    neuron_order = np.concatenate(neuron_groups)
-    #Reorder columns
-    W_sorted = W_grouped[:, neuron_order]
-
-
-
-    fig, ax = plt.subplots(
-        figsize=(16, 0.7 * n_groups + 1.5)
-    )
-
-    im = ax.imshow(
-        W_sorted,
-        aspect="auto",
-        cmap="Reds",
-        vmin=0,
-        vmax=max(W_grouped.max(), 1e-12),
-    )
-
-    # Draw vertical lines seperating the neuron groups
-    group_sizes = [len(g) for g in neuron_groups]
-    boundaries = np.cumsum([0] + group_sizes)   
-    for boundary in boundaries[1:-1]:
-        ax.axvline(boundary - 0.5, color="black", lw=1)
-
-    ax.set_yticks(range(n_groups))
-    ax.set_yticklabels([
-        f"out {g * group_size}–{(g + 1) * group_size - 1}"
-        for g in range(n_groups)
-    ])
-
-    ax.set_xlabel("Hidden neurons")
-    ax.set_ylabel("Output groups")
-    ax.set_title(title)
-
-    plt.colorbar(im, ax=ax)
-    plt.tight_layout()
-
-    filename = title.replace(" ", "_").lower() + ".png"
-
-    save_figure(fig, save_dir / filename)
-    plt.close(fig)
 
 
 def plot_input_hidden_output_translation(
@@ -184,56 +67,32 @@ def plot_input_hidden_output_translation(
     #Across every group, pick the one that maximally activates it.
     dominant_input = np.argmax(A, axis=0)
     dominant_output = np.argmax(B, axis=0)
-
     input_strength = A.max(axis=0)
     output_strength = B.max(axis=0)
-
-
     keep = (input_strength >= threshold) & (output_strength >= threshold)
 
-
-    neurons = np.arange(A.shape[1])
-
-    #For each neuron, look up its strength of routing from its 
-    routing_strength = A[dominant_input, neurons] * B[dominant_output, neurons]
-
-    # Sort by (input group, output, -strength).
-    # lexsort treats the LAST key as primary, so the order in the tuple matters.
-
-    order = np.lexsort((dominant_output, -routing_strength, dominant_input))
+    order = np.lexsort((dominant_output, dominant_input))
     neuron_order = order[keep[order]]
-
     A_sorted = A[:, neuron_order]
     B_sorted = B[:, neuron_order]
 
 
 
-    fig, (ax_strength, ax_top, ax_bottom) = plt.subplots(
-        3, 1,
+    fig, (ax_top, ax_bottom) = plt.subplots(
+        2, 1,
         figsize=(16, 6),
         sharex=True,
-        gridspec_kw={"height_ratios": [1.2, n_groups, n_outputs]},
+        gridspec_kw={"height_ratios": [n_groups, n_outputs]},
     )
 
-    #top plot
-    strengths = routing_strength[neuron_order]
-    x = np.arange(len(neuron_order))
 
-    ax_strength.bar(x, strengths, width=1.0, color="0.4", edgecolor="none")
-    ax_strength.set_ylabel("Routing\nstrength")
-    ax_strength.set_xlim(-0.5, len(neuron_order) - 0.5)
-    ax_strength.set_title("Routing strength (input dominant x output dominant)")
-
-    # invisible spacer so this panel's width matches the heatmaps below
-    spacer = make_axes_locatable(ax_strength).append_axes("right", size="2%", pad=0.1)
-    spacer.axis("off")
 
     #As
     im_top = ax_top.imshow(A_sorted, aspect="auto", cmap="Blues")
     ax_top.set_ylabel("Input group")
     ax_top.set_title("Input group contribution to hidden neurons")
     ax_top.set_yticks(range(n_groups))
-    ax_top.set_yticklabels([f"group {g}" for g in range(n_groups)])
+    ax_top.set_yticklabels([f"group {g+1}" for g in range(n_groups)])
 
     cax_top = make_axes_locatable(ax_top).append_axes("right", size="2%", pad=0.1)
     plt.colorbar(im_top, cax=cax_top)
@@ -243,20 +102,17 @@ def plot_input_hidden_output_translation(
     ax_bottom.set_ylabel("Output")
     ax_bottom.set_xlabel("Hidden neurons")
     ax_bottom.set_yticks(range(n_outputs))
-    ax_bottom.set_yticklabels([f"out {i}" for i in range(n_outputs)])
+    ax_bottom.set_yticklabels([f"output {i+1}" for i in range(n_outputs)])
     ax_bottom.set_title("Hidden neuron contribution to outputs")
 
     cax_bottom = make_axes_locatable(ax_bottom).append_axes("right", size="2%", pad=0.1)
     plt.colorbar(im_bottom, cax=cax_bottom)
 
-
-
     sorted_dominant_input = dominant_input[neuron_order]
     group_sizes = np.bincount(sorted_dominant_input, minlength=n_groups)
-    boundaries = np.cumsum(group_sizes)[:-1]   # drop the rightmost edge
+    boundaries = np.cumsum(group_sizes)[:-1]
 
     for boundary in boundaries:
-        ax_strength.axvline(boundary - 0.5, color="black", lw=1)
         ax_top.axvline(boundary - 0.5, color="black", lw=1)
         ax_bottom.axvline(boundary - 0.5, color="black", lw=1)
 
@@ -267,77 +123,67 @@ def plot_input_hidden_output_translation(
     plt.close(fig)
 
 def plot_group_output_matrix(
-    W1,
-    W2,
-    group_features,
+    W_in,                 # W_in : inner matrix, shape (hidden, n_features)
+    W_out,                 # W_out: outer matrix, shape (n_out, hidden)
+    dataset,            # SimplexDataset
     save_dir,
     title=None,
-    n_samples=50,
+    n_samples=200,
 ):
     """
-    For each input group:
-        1. sample a simplex distribution over its features
-        2. run forward pass through linear ReLU network
-        3. average output responses
+    For each input group g (one per output dimension of `dataset`):
+        1. sample n_samples valid simplices for that group via the dataset
+        2. place their flattened vertices in the feature vector (others zero)
+        3. forward pass through the linear-ReLU network
+        4. average the output responses
 
-    Result:
-        P[g, out] = expected output when group g is activated
+    P[g, out] = mean network output when only group g is active.
     """
+    device = dataset.device
+    W_in  = torch.as_tensor(W_in, dtype=torch.float32, device=device)
+    W_out = torch.as_tensor(W_out, dtype=torch.float32, device=device)
 
-    n_groups = len(group_features)
-    n_out = W2.shape[0]
-    d_in = W1.shape[1]
-
+    n_groups = dataset.output_dim
+    n_out    = W_out.shape[0]
     P = np.zeros((n_groups, n_out))
 
+    with torch.no_grad():
+        for g, (k, group) in enumerate(zip(dataset.dimensions, dataset.groups)):
+            # (n_samples, k+1, k) non-degenerate simplices for this group
+            vertices = dataset._sample_valid_simplices(n_samples, k)
 
-    for g, feat_idx in enumerate(group_features):
+            X = torch.zeros(n_samples, dataset.n_features, device=device)
+            X[:, group] = vertices.reshape(n_samples, -1)   # fill only group g
 
-        feat_idx = np.asarray(feat_idx)
-        k = len(feat_idx)
+            # forward pass
+            H = torch.relu(X @ W_in.T)
+            Y = H @ W_out.T
 
-        # construct n_samples random points on a k dim simplex
-        simplex = np.random.dirichlet(
-            np.ones(k),
-            size=n_samples,
-        )
-
-        #Create an empty matrix, where we will fill in the simplices.
-        X = np.zeros((n_samples, d_in))
-        X[:, feat_idx] = simplex
-
-        # forward pass
-        H = np.maximum(X @ W1.T, 0.0)   
-        Y = H @ W2.T 
-
-        # average response
-        P[g] = Y.mean(axis=0)
-
+            P[g] = Y.mean(dim=0).cpu().numpy()
 
     fig, ax = plt.subplots(figsize=(4.5, 3.5))
-
     im = ax.imshow(P, cmap="viridis", aspect="auto")
 
     ax.set_title(title)
     ax.set_xlabel("Output neuron")
     ax.set_ylabel("Input group")
-
     ax.set_xticks(range(n_out))
     ax.set_yticks(range(n_groups))
-
-    ax.set_xticklabels([f"out{i}" for i in range(n_out)])
-    ax.set_yticklabels([f"g{i}" for i in range(n_groups)])
+    ax.set_xticklabels([f"out{i+1}" for i in range(n_out)])
+    ax.set_yticklabels([f"g{i+1}" for i in range(n_groups)])
 
     plt.colorbar(im, ax=ax)
     plt.tight_layout()
 
-    save_figure(fig, save_dir / "group_output_matrix_simplex.png")
+    save_figure(fig, save_dir / title)
     plt.close(fig)
 
 
-
-
 def compute_io_flows(C1, C2, group_features):
+    """
+    Computes the read, write and subcomponent matrix as defined in the thesis 
+    C1 has shape (C, d_hid, d_in) and C2 has shape (C, d_out, d_hid)
+    """
 
     read_per_group = []
 
@@ -360,24 +206,14 @@ def compute_io_flows(C1, C2, group_features):
     return read, overlap, write
 
 
-def pick_components(read, write, coverage=0.95, min_mass=0):
+def pick_components(read, write, coverage=0.95):
     """
-    Drop any subcomponent below `min_mass`, then keep the fewest survivors making
-    up `coverage` of the remaining mass. C1 ranked by total read (into hiddens),
-    C2 by total write (into outputs).
-    read: (C1, n_groups)   write: (C2, n_outputs)
+    Picks components that together contribute a fraction of the total layer magnitude.
     """
-    #contrib1 = read.sum(axis=1)      # (C1,) total read per input subcomponent
-    #contrib2 = write.sum(axis=1)     # (C2,) total write per output subcomponent
-    
-    #Resorted to this version as the components would cancel each other out otherwise.
     contrib1 = np.abs(read).sum(axis=1)    # (C1,) input-side inflow
     contrib2 = np.abs(write).sum(axis=1)   # (C2,) output-side outflow
 
     def cover(v):
-        live = np.where(v >= min_mass)[0]
-        if live.size == 0:
-            raise ValueError("No components meet the minimum mass requirement.")
         
         order = np.argsort(-v)
         cum = np.cumsum(v[order])
@@ -521,35 +357,6 @@ def render_io_chain(columns, flows, save_path, title=None, edge_frac=0.05):
                 0.15 + 0.5 * np.abs(r),
             )
 
-        # flows
-    # for i, M in enumerate(flows):
-    #     max_flow = M.max()
-        
-    #     #horizontal starting, end points bw= beam width
-    #     x0 = xs[i] + bw / 2
-    #     x1 = xs[i + 1] - bw / 2
-
-        
-    #     #threshold = edge_frac * max_flow
-    #     #active_sources, active_targets = np.where(M > threshold)
-    #     active_sources, active_targets = np.indices(M.shape).reshape(2, -1)
-    #     for s, d in zip(active_sources, active_targets):
-
-    #         flow_value = M[s, d]
-    #         r = flow_value / max_flow #this normalizes to 0 <= 1 <= 1
-
-
-    #         ribbon(
-    #             x0,
-    #             columns[i]["centers"][s],
-    #             x1,
-    #             columns[i + 1]["centers"][d],
-    #             np.abs(0.5 + 7 * r),
-    #             flow_colors[i],
-    #             np.minimum(1.0,0.3 +0.5 * np.abs(r))
-    #         )
-
-    # nodes
     for i, col in enumerate(columns):
         for j, label in enumerate(col["ids"]):
             yc = col["centers"][j]
@@ -582,7 +389,7 @@ def render_io_chain(columns, flows, save_path, title=None, edge_frac=0.05):
 def plot_io_routing_chain(
     C1, C2, group_features, save_dir,
     title=None, coverage=0.5,
-    edge_frac=0.01, sort_nodes=True, sweeps=20, min_mass=0.05,
+    edge_frac=0.01, sort_nodes=True, sweeps=20,
 ):
     read, overlap, write = compute_io_flows(C1, C2, group_features)
     #Read has dim (C,_n groups), overlap ahs dim (C1, C2), write has dim (C2, n_outputs)
@@ -590,7 +397,7 @@ def plot_io_routing_chain(
     #Select only the components that matter significantly
     c1, c2 = pick_components(
         read, write,
-        coverage=coverage, min_mass=min_mass,
+        coverage=coverage,
     )
 
     #pick components that satisfy minimum mass
@@ -606,7 +413,6 @@ def plot_io_routing_chain(
         C2.shape[1],
         c1, c2,
     )
-
 
     if sort_nodes:
         edges = [
@@ -628,100 +434,26 @@ def plot_io_routing_chain(
         edge_frac,
     )
 
-def plot_subcomponent_norms(state_dict,save_dir, title=None):
-    component_names = sorted({
-        k.split(".")[1]
-        for k in state_dict.keys()
-        if k.startswith("components.") and k.endswith(".A")
-    })
 
-    fig, axes = plt.subplots(
-        1,
-        len(component_names),
-        figsize=(6 * len(component_names), 4),
-        squeeze=False,
-    )
-
-    with torch.no_grad():
-        for i, name in enumerate(component_names):
-
-            A = state_dict[f"components.{name}.A"]
-            B = state_dict[f"components.{name}.B"]
-
-            # AB per subcomponent
-            W = einops.einsum(
-                A, B,
-                "d_in C K, C K d_out -> C d_in d_out"
-            )
-
-            ab_norms = W.norm(dim=(1, 2)).cpu().numpy()
-
-            # A: d_in C K
-            a_norms = A.norm(dim=(0, 2)).cpu().numpy()
-
-            # B: C K d_out
-            b_norms = B.norm(dim=(1, 2)).cpu().numpy()
-
-            # sort by AB importance
-            order = np.argsort(ab_norms)[::-1]
-
-            ab_norms = ab_norms[order]
-            a_norms = a_norms[order]
-            b_norms = b_norms[order]
-
-            x = np.arange(len(ab_norms))
-
-            ax = axes[0, i]
-
-            ax.bar(x, ab_norms, label=r"$\|UV\|$", alpha=0.6)
-
-            title = str(title)
-            ax.set_title(name)
-            ax.set_xlabel("Subcomponent (sorted by ||UV||)")
-            ax.set_ylabel("Norm")
-            ax.legend()
-
-    plt.tight_layout()
-
-    save_figure(fig, save_dir / title)
-    
 def main() -> None:
       
     run_dirs = [
         #minimaities
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "(minimality 1e-1)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01", "(minimality 1e-2)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001", "(minimality 1e-3)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001", "(minimality 1e-4)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001", "(minimality 1e-5)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001", "(minimality 1e-6)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "(Softmax, minimality 1e-1)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01", "(Softmax, minimality 1e-2)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001", "(Softmax, minimality 1e-3)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001", "(Softmax, minimality 1e-4)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001", "(Softmax, minimality 1e-5)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001", "(Softmax, minimality 1e-6)"),
         #Rank plots:
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1", "(Rank 1)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2", "(Rank 2)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3", "(Rank 3)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4", "(Rank 4)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "(Rank 5)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "(Rank 6)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "(Rank 7)"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "(Rank 8)"),
-        #rank sweep at 1e-3:
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_1", "(Rank 1)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_2", "(Rank 2)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_3", "(Rank 3)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_4", "(Rank 4)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_5", "(Rank 5)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_6", "(Rank 6)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_7", "(Rank 7)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-3\rank_8", "(Rank 8)"),
-        # #k_sweep at 1e-6
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_1", "(Rank 1)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_2", "(Rank 2)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_3", "(Rank 3)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_4", "(Rank 4)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_5", "(Rank 5)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_6", "(Rank 6)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_7", "(Rank 7)"),
-        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\k_sweep_at_1e-6\rank_8", "(Rank 8)")
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1", "(Softmax, Rank 1)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2", "(Softmax, Rank 2)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3", "(Softmax, Rank 3)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4", "(Softmax, Rank 4)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "(Softmax, Rank 5)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "(Softmax, Rank 6)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "(Softmax, Rank 7)"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "(Softmax, Rank 8)"),
     ]
     
     model_dir = r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\smaller_test"
@@ -759,27 +491,22 @@ def main() -> None:
 
         group_features, _, _ = get_group_features(ranks)
 
-        plot_group_output_matrix(W1, W2, group_features, save_dir=RUN_DIR, title="Group output matrix " + run_title)
-        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.80, edge_frac=0.01, min_mass=0,sort_nodes=True, sweeps=10)
-        plot_subcomponent_norms(state_dict,save_dir=RUN_DIR, title="Subcomponent norms")
+        plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title="Group to output routing " + run_title, coverage=0.80, edge_frac=0.01,sort_nodes=True, sweeps=10)
 
-
+    
     model_dir = Path(model_dir)
     state_dict = torch.load(
         model_dir / "geometry.pth",
         map_location=DEVICE,
     )
-    print(state_dict.keys())
     W1 = state_dict["linear1.weight"].detach().cpu().numpy()
     W2 = state_dict["linear2.weight"].detach().cpu().numpy()
     ranks = [2,2,2]
     group_features, _, _ = get_group_features(ranks)
 
     plot_input_hidden_output_translation(W1, W2, group_features, save_dir=model_dir, title="Layered translation from input groups to outputs")
-    # plot_io_routing_chain(
-    #     A1, B1, group_features, model_dir,
-    #     title="Input → hidden → output routing chain (components, smaller test)",
-    #     components=False,
-    # )
+    dataset = SimplexDataset([2,2,2], device=DEVICE)
+    plot_group_output_matrix(W1, W2, save_dir=model_dir, title="Group output matrix (Target Model)", dataset=dataset)
+
 if __name__ == "__main__":
     main()  
