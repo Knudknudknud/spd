@@ -236,13 +236,13 @@ def build_columns(read, write, n_groups, n_outputs, c1, c2):
             "order": list(range(n_groups)),
         },
         {
-            "title": "W2 subcomponents",
+            "title": "W1 subcomponents",
             "ids": [str(i) for i in c1],
             "imp": read.sum(1),
             "order": list(range(len(c1))),    
         },
         {
-            "title": "W1 subcomponents",
+            "title": "W2 subcomponents",
             "ids": [str(i) for i in c2],
             "imp": write.sum(1),
             "order": list(range(len(c2))),
