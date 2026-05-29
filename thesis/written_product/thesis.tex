@@ -1137,18 +1137,8 @@ the routing suggests that it instead gradually becomes split into multiple.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=12cm]{SPD_minimality_io_sweep_condensed_1e-3_to_1e-6.png}
+    \includegraphics[width=\linewidth, height=12cm]{Io_routing_chain_for_spd_and_softmax_combined_minimality_1e-3_and_1e-5.png}
 \end{figure}
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth, height=12cm]{Softmax_minimality_io_sweep_condensed_1e-3_to_1e-6.png}
-    \caption{Left to right: edges: the group importance values given by $\rho_{i,g}$, $w_{2} \times  w_{1}$: values given by. Edges are normalized within each layer, for each computation in isolation. The edge width do therefore not reflect importance between plots.
-    Multiple large edges, thus suggest similar magnitudes, while one large edge and many small edges suggest a more concentrated structure. Each middle column has subcomponents such that they determine 95\% of the total magnitude. The columns are not sorted by magnitude.}
-\end{figure}
-
-
 
 
 \subsubsection{Comparison of importance values across ranks at fixed minimality}
@@ -1197,14 +1187,7 @@ Rank does have a clearer effect in the second layer, where a single subcomponent
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=12cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_io_routing_chain_rank_1_to_5.png}
-\end{figure}
-
-%Softmax:
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e4_io_routing_chain_rank_1_to_5.png}
+    \includegraphics[width=\linewidth, height=18cm]{Io_routing_chain_combined_rank_3_and_5.png}
 \end{figure}
 
 
@@ -1337,36 +1320,59 @@ which were tuned against the known ground truth.
 \subsection{Toy Model of Geometry}
 This section contains full size images over the entire sweep of minimality coefficients,
 that didnt fit in the main text
+\newpage
 \subsubsection{SPD: Sweep over minimality coefficients}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=10cm]{SPD_minimality_sweep_full_1e1_to_1e-6.png}
+    \includegraphics[width=\linewidth, height=18cm]{SPD_minimality_sweep_full_1e1_to_1e-6.png}
     \label{appendix:SPD_minimality_sweep}
 \end{figure}
 
-
+\newpage
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=15cm]{SPD_minimality_io_sweep_full_1e1_to_1e-6.png}
+    \includegraphics[width=\linewidth, height=18cm]{SPD_minimality_io_sweep_full_1e1_to_1e-6.png}
 \end{figure}
 
-
+\newpage
 \subsubsection{SPD: Sweep over ranks for fixed minimality}
-
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=10cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_rank_1_to_8.png}
+    \includegraphics[width=\linewidth, height=18cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_rank_1_to_8.png}
 \end{figure}
-
+\newpage
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=15cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_io_routing_chain_rank_1_to_8.png}
+    \includegraphics[width=\linewidth, height=18cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_io_routing_chain_rank_1_to_8.png}
 \end{figure}
 
-
+\newpage
 \subsubsection{Softmax: Sweep over minimality coefficients}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=18cm]{Softmax_minimality_sweep_full_1e1_to_1e-6.png}
+\end{figure}
+
+\newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=18cm]{Softmax_minimality_io_sweep_full_1e1_to_1e-6.png}
+\end{figure}
+
+\newpage
 \subsubsection{Softmax: Sweep over ranks for fixed minimality}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=18cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e3_rank_1_to_8.png}
+\end{figure}
+
+\newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth, height=18cm]{Softmax_rank_io_sweep_full_rank_1_to_8.png}
+\end{figure}
 
 
 
