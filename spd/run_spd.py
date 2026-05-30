@@ -172,9 +172,7 @@ def optimize(
         As = {module_name: components[module_name].A for module_name in components}
 
         causal_importances, causal_importances_upper_leaky = calc_causal_importances(
-            pre_weight_acts=pre_weight_acts, As=As, gates=model.gates, detach_inputs=False,
-            temperature=config.temperature,
-        )
+            pre_weight_acts=pre_weight_acts, As=As, gates=model.gates, detach_inputs=False        )
 
         for layer_name, ci in causal_importances.items():
             alive_components[layer_name] = alive_components[layer_name] | (ci > 0.1).any(dim=(0, 1))
@@ -200,7 +198,6 @@ def optimize(
                 tqdm.write(f"--- Step {step} ---")
                 tqdm.write(f"LR: {step_lr:.6f}")
                 tqdm.write(f"Total Loss: {log_data['loss/total']:.7f}")
-                tqdm.write(f"Temperature: {log_data['temperature']:.7f}")
                 for name, value in loss_terms.items():
                     tqdm.write(f"{name}: {value:.7f}")
 
