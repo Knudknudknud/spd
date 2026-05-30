@@ -143,7 +143,7 @@ def calc_causal_importances(
 
         # Run this layer's attention only over its own components
         gate_key = param_name.replace(".", "-")
-        gate_out = gates[gate_key].forward(gate_feats).squeeze(-1) #Transformer returns (batch, C, 1)
+        gate_out = gates[gate_key].forward(gate_feats).squeeze(-1) #Transformer returns (batch, C)
       
         importance = torch.softmax(gate_out, dim=-1)
         causal_importances[param_name] = importance
