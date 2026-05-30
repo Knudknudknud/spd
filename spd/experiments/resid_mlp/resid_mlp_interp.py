@@ -698,12 +698,12 @@ def plot_subcomponent_norms(model, save_path=None):
             x = np.arange(len(ab_norms))
 
      
-            axes[0, i].bar(x, ab_norms, label="||UV||", alpha=0.6)
+            axes[0, i].bar(x, ab_norms, alpha=0.6)
             #axes[0, i].plot(x, a_norms, label="||V||", linewidth=2)
             #axes[0, i].plot(x, b_norms, label="||U||", linewidth=2)
 
             axes[0, i].set_title(name)
-            axes[0, i].set_xlabel("Subcomponent (sorted by ||UV||)")
+            axes[0, i].set_xlabel("Subcomponent index")
             axes[0, i].set_ylabel("Norm")
             axes[0, i].legend()
 
