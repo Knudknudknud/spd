@@ -428,90 +428,6 @@ def compute_spd_weight_neuron_contributions(
     return relu_conns_spd[:, :n_features, :, :]
 
 
-# def plot_spd_feature_contributions_truncated(
-#     components: dict[str, LinearComponent],
-#     target_model: ResidualMLP,
-#     n_features: int | None = 50,
-# ):
-#     n_layers = target_model.config.n_layers
-#     n_features = target_model.config.n_features if n_features is None else n_features
-#     d_mlp = target_model.config.d_mlp
-
-#     # Assert that there are no biases
-#     assert not target_model.config.in_bias and not target_model.config.out_bias, (
-#         "Biases are not supported for these plots"
-#     )
-
-#     # --- Compute neuron contribution tensors ---
-#     relu_conns: Float[Tensor, "n_layers n_features d_mlp"] = (
-#         compute_target_weight_neuron_contributions(
-#             target_model=target_model,
-#             n_features=n_features,
-#         )
-#     )
-
-#     relu_conns_spd: Float[Tensor, "n_layers n_features C d_mlp"] = (
-#         compute_spd_weight_neuron_contributions(
-#             components=components,
-#             target_model=target_model,
-#             n_features=n_features,
-#         )
-#     )
-
-#     max_component_indices = []
-#     for i in range(n_layers):
-#         # For each feature, find the C component with the largest max value over d_mlp
-#         max_component_indices.append(relu_conns_spd[i].max(dim=-1).values.argmax(dim=-1))
-#     # For each feature, use the C values based on the max_component_indices
-#     max_component_contributions: Float[Tensor, "n_layers n_features d_mlp"] = torch.stack(
-#         [
-#             relu_conns_spd[i, torch.arange(n_features), max_component_indices[i], :]
-#             for i in range(n_layers)
-#         ],
-#         dim=0,
-#     )
-
-#     n_rows = 2
-#     fig1, axes1 = plt.subplots(n_rows, 1, figsize=(30, 7), constrained_layout=True)
-#     axes1 = np.atleast_1d(axes1)  # type: ignore
-
-#     labelled_neurons = feature_contribution_plot(
-#         ax=axes1[0],
-#         relu_conns=relu_conns,
-#         n_layers=n_layers,
-#         n_features=n_features,
-#         d_mlp=d_mlp,
-#         legend=True,
-#     )
-#     axes1[0].set_ylabel("Neuron contribution")
-#     axes1[0].set_xlabel(f"Input feature index (first {n_features} shown)")
-#     axes1[0].set_title("Target model")
-#     axes1[0].set_xticks(range(n_features))  # Ensure all xticks have labels
-
-#     feature_contribution_plot(
-#         ax=axes1[1],
-#         relu_conns=max_component_contributions,
-#         n_layers=n_layers,
-#         n_features=n_features,
-#         d_mlp=d_mlp,
-#         pre_labelled_neurons=labelled_neurons,
-#         legend=False,
-#     )
-#     axes1[1].set_ylabel("Neuron contribution")
-#     axes1[1].set_xlabel("Subcomponent index")
-#     axes1[1].set_title("Individual Softmax subcomponents")
-#     axes1[1].set_xticks(range(n_features))
-
-#     # Set the same y-axis limits for both plots
-#     y_min = min(axes1[0].get_ylim()[0], axes1[1].get_ylim()[0])
-#     y_max = max(axes1[0].get_ylim()[1], axes1[1].get_ylim()[1])
-#     axes1[0].set_ylim(y_min, y_max)
-#     axes1[1].set_ylim(y_min, y_max)
-
-#     # Label the x axis with the subnets that have the largest neuron for each feature
-#     axes1[1].set_xticklabels(max_component_indices[0].tolist())  # Labels are the subnet indices
-
-#     return fig1
 
 def plot_spd_feature_contributions_truncated(
     components: dict[str, LinearComponent],
@@ -526,9 +442,6 @@ def plot_spd_feature_contributions_truncated(
         "Biases are not supported for these plots"
     )
 
-    # =========================================================
-    # ALWAYS COMPUTE ON FULL FEATURE SPACE
-    # =========================================================
     relu_conns: Float[Tensor, "n_layers N d_mlp"] = (
         compute_target_weight_neuron_contributions(
             target_model=target_model,
@@ -553,9 +466,6 @@ def plot_spd_feature_contributions_truncated(
 
     max_component_indices = torch.stack(max_component_indices, dim=0)  # [layers, N]
 
-    # =========================================================
-    # OPTIONAL: KEEP ONLY DUPLICATE COMPONENT FEATURES
-    # =========================================================
     if only_duplicate_pairs:
         comps = max_component_indices[0]  # reference layer
 
@@ -568,9 +478,7 @@ def plot_spd_feature_contributions_truncated(
         relu_conns_spd = relu_conns_spd[:, mask]
         max_component_indices = max_component_indices[:, mask]
 
-    # =========================================================
-    # CLEAN SORT: GROUP BY COMPONENT ID (NO MIXED KEYS)
-    # =========================================================
+
     comps = max_component_indices[0]
     perm = torch.argsort(comps, stable=True)
 
@@ -578,9 +486,7 @@ def plot_spd_feature_contributions_truncated(
     relu_conns_spd = relu_conns_spd[:, perm]
     max_component_indices = max_component_indices[:, perm]
 
-    # =========================================================
-    # FINAL: TRUNCATE ONLY FOR PLOTTING
-    # =========================================================
+
     N = relu_conns.shape[1]
     k = min(n_features, N)
 
@@ -588,9 +494,6 @@ def plot_spd_feature_contributions_truncated(
     relu_conns_spd = relu_conns_spd[:, :k]
     max_component_indices = max_component_indices[:, :k]
 
-    # =========================================================
-    # EXTRACT SPD CONTRIBUTIONS
-    # =========================================================
     idx = torch.arange(k, device=relu_conns.device)
 
     max_component_contributions: Float[Tensor, "n_layers k d_mlp"] = torch.stack(
@@ -601,9 +504,6 @@ def plot_spd_feature_contributions_truncated(
         dim=0,
     )
 
-    # =========================================================
-    # PLOTTING
-    # =========================================================
     fig1, axes1 = plt.subplots(2, 1, figsize=(10, 7), constrained_layout=True)
     axes1 = np.atleast_1d(axes1)
 
@@ -813,54 +713,6 @@ def plot_subcomponent_norms(model, save_path=None):
     if save_path:
         plt.savefig(save_path)
 
-def plot_subcomponent_cosine_similarities(model, top_k=100, save_path=None):
-    """Cosine similarity matrices for V (input side, = A) and U (output side, = B)
-    across the top_k highest-norm subcomponents.
-    """
-    components = {
-        k.removeprefix("components.").replace("-", "."): v
-        for k, v in model.components.items() if isinstance(v, LinearComponent)
-    }
-    layer_names = sorted(components.keys())
-    n_layers = len(layer_names)
-
-    fig, axes = plt.subplots(2, n_layers, figsize=(6 * n_layers, 11), squeeze=False)
-
-    with torch.no_grad():
-        for i, name in enumerate(layer_names):
-            A = components[name].A  # V (input side), [d_in, C, K]
-            B = components[name].B  # U (output side), [C, K, d_out]
-
-            W_full = einops.einsum(A, B, "d_in C K, C K d_out -> C d_in d_out")
-            norms = W_full.flatten(1).norm(dim=-1)
-            top_idx = norms.argsort(descending=True)[:top_k]
-
-            V = A.permute(1, 0, 2).reshape(A.shape[1], -1)[top_idx]  # [top_k, d_in * K]
-            U = B.reshape(B.shape[0], -1)[top_idx]                    # [top_k, K * d_out]
-
-            V_norm = V / (V.norm(dim=-1, keepdim=True) + 1e-12)
-            U_norm = U / (U.norm(dim=-1, keepdim=True) + 1e-12)
-
-            cos_V = (V_norm @ V_norm.T).cpu().numpy()
-            cos_U = (U_norm @ U_norm.T).cpu().numpy()
-
-            for ax, mat, label in [(axes[0, i], cos_V, "V"),
-                                   (axes[1, i], cos_U, "U")]:
-                im = ax.imshow(mat, cmap="RdBu_r", vmin=-1, vmax=1, aspect="auto")
-                ax.set_title(f"{name} - cos sim {label}")
-                ax.set_xlabel("Subcomponent")
-                ax.set_ylabel("Subcomponent")
-                plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-
-    plt.tight_layout()
-    if save_path:
-        fig.savefig(save_path, bbox_inches="tight", dpi=200)
-        print(f"Saved to {save_path}")
-    return fig
-
-
-
-
 def main():
     out_dir = REPO_ROOT / "spd/experiments/resid_mlp/out/figures/"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -869,7 +721,8 @@ def main():
 
     paths: list[str] = [
         #"wandb:spd-spd_experiments_resid_mlp/runs/i99i4r9r",  #atleast_zero
-        "wandb:spd-spd_experiments_resid_mlp/runs/p13u9kge",  #exactly_one active
+        #"wandb:spd-spd_experiments_resid_mlp/runs/p13u9kge",  #exactly_one active
+        "wandb:knsoe24-syddansk-universitetsforlag-university-press-of-/Thesis runs/runs/1x3kncu2"
         #"wandb:spd-spd_experiments_resid_mlp/runs/2q4sjh5q",
     ]
     for path in paths:
@@ -892,7 +745,7 @@ def main():
             components=components,
             target_model=target_model,
             n_features=10,
-            only_duplicate_pairs=True
+            only_duplicate_pairs=False
         )
         fig.savefig(
             out_dir / f"resid_mlp_weights_{n_layers}layers_{wandb_id}.png",
@@ -915,11 +768,6 @@ def main():
         print(
             f"Saved figure to {out_dir / f'neuron_contribution_pairs_{n_layers}layers_{wandb_id}.png'}"
         )
-
-        plot_subcomponent_cosine_similarities(
-        model,
-        save_path=str(out_dir / f"cosine_similarities_{n_layers}layers_{wandb_id}.png"),
-    )
 
         model = ComponentModel.from_pretrained(path)[0].to(device)
         plot_subcomponent_norms(

@@ -126,7 +126,6 @@ def calc_causal_importances(
     As: Mapping[str, Float[Tensor, "d_in C"]],
     gates: nn.ModuleDict,
     detach_inputs: bool = False,
-    temperature: float = 1.0,
 ) -> tuple[dict[str, Float[Tensor, "... C"]], dict[str, Float[Tensor, "... C"]]]:
 
     causal_importances = {}
@@ -140,16 +139,15 @@ def calc_causal_importances(
             A = As[param_name]
             component_act_k = einops.einsum(acts, A, "... d_in, d_in C k -> ... C k")
 
-        gate_feats = component_act_k.detach() if detach_inputs else component_act_k
-        # gate_feats has shape (batch, C, k)
+        gate_feats = component_act_k.detach() if detach_inputs else component_act_k # gate_feats has shape (batch, C, k)
 
         # Run this layer's attention only over its own components
         gate_key = param_name.replace(".", "-")
-        layer_out = gates[gate_key].forward(gate_feats).squeeze(-1)
-        # layer_out has shape (batch, C)
+        gate_out = gates[gate_key].forward(gate_feats).squeeze(-1) #Transformer returns (batch, C, 1)
       
-        causal_importances[param_name] = torch.softmax(layer_out / temperature, dim=-1)
-        causal_importances_upper_leaky[param_name] = torch.softmax(layer_out / temperature, dim=-1)
+        importance = torch.softmax(gate_out, dim=-1)
+        causal_importances[param_name] = importance
+        causal_importances_upper_leaky[param_name] = importance
  
     return causal_importances, causal_importances_upper_leaky
 

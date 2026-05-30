@@ -2,14 +2,7 @@ import einops
 import torch
 from jaxtyping import Float
 from torch import Tensor, nn
-from torch.nn import functional as F
 from spd.module_utils import init_param_
-
-
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 
 class Transformer(nn.Module):
@@ -34,7 +27,6 @@ class Transformer(nn.Module):
             nn.Linear(hidden_channels * 4, hidden_channels),
         )
 
-        # Project to output dim
         self.out_proj = nn.Linear(hidden_channels, out_channels)
 
     def forward(self, x):

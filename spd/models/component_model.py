@@ -283,7 +283,6 @@ def init_As_and_Bs_(
         # Make A and B have unit norm in the d_in and d_out dimensions
         A.data[:] = torch.randn_like(A.data)
         B.data[:] = torch.randn_like(B.data)
-        #Changed from -2, -1 to 0,1 when i added k
         A.data[:] = A.data / A.data.norm(dim=0, keepdim=True)
         B.data[:] = B.data / B.data.norm(dim=-1, keepdim=True)
 
