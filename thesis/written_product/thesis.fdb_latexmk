@@ -1,12 +1,12 @@
 # Fdb version 4
-["biber thesis"] 1780094460.2729 "thesis.bcf" "thesis.bbl" "thesis" 1780095358.98115 0
+["biber thesis"] 1780146359.74214 "thesis.bcf" "thesis.bbl" "thesis" 1780154822.95829 0
   "references.bib" 1779956677 13468 a2467d0bfef641926e7be2273ae0496f ""
-  "thesis.bcf" 1780095358 113107 c44d415c8886f6aa2722d3f02cb9de34 "pdflatex"
+  "thesis.bcf" 1780154821 113370 f1d218364a36c8676fc84b04c2ebddc6 "pdflatex"
   (generated)
   "thesis.bbl"
   "thesis.blg"
   (rewritten before read)
-["pdflatex"] 1780095317.04401 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1780095358.98257 0
+["pdflatex"] 1780154789.60768 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1780154822.96063 0
   "Images/CC_norms_softmax.jpg" 1778744962 54995 bcfda71b538b6e5dec1e026e506bc627 ""
   "Images/CC_norms_spd.jpg" 1778744956 50138 353815ddcedc856f0c3a1eb019e59efe ""
   "Images/CCmodel.png" 1778734121 33210 151b177e5897e27061d084ad80eae905 ""
@@ -32,10 +32,9 @@
   "Images/softmax_CC.jpg" 1778744825 82601 3221f6ccd552c50309fd35bf7adb177c ""
   "Images/spd_40_10_paired.jpg" 1778479598 76176 cd213b72bc8c0bbbcb73511cc4dde23e ""
   "Images/tms_5_2_plot.png" 1778408312 220208 8eb8bfffcd8d81e33154ada66bde3578 ""
-  "Images/tms_5_2_plot_causal_importances.jpg" 1778432865 71074 45046c561a9f28803408da941dbe2b93 ""
   "Images/w1_w2_input_hidden_output_translation.png" 1780091498 73361 758c6daf96e5fdb3a866f455082c138c ""
   "arxiv.sty" 1774611555 7902 f2cb9d6386c38cb1ddd8d4504a6292a3 ""
-  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1780095281 103550 114b0765d234a54cc91c27c5675cf5bc ""
+  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1780154751 101976 ae45cd03c42122ae72d062d55fd7170d ""
   "c:/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc" 1722946599 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "c:/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1722947038 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "c:/texlive/2024/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1722957685 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -166,12 +165,12 @@
   "c:/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1722958775 5437080 ed7bddc74a2a640cd859bad2f86a3c86 ""
   "c:/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1722959163 6879081 fdeace8d7504e29902b33a8915f1b7e1 ""
   "c:/texlive/2024/texmf.cnf" 1722958746 713 e69b156964470283e0530f5060668171 ""
-  "thesis.aux" 1780095358 42171 d32b340ea3057abd56377e3dc230001e "pdflatex"
-  "thesis.bbl" 1780094463 65069 9f41566e658e5dde66c7ecb0ccc422f6 "biber thesis"
-  "thesis.out" 1780095358 7309 93d4e548902b6bdaaa460a6385ba4bfd "pdflatex"
-  "thesis.run.xml" 1780095358 2319 feea68f5df4df9d84b38864f03f3a104 "pdflatex"
-  "thesis.tex" 1780095281 103550 114b0765d234a54cc91c27c5675cf5bc ""
-  "thesis.toc" 1780095358 3452 192db0431b2b3b238cce83db241a3b84 "pdflatex"
+  "thesis.aux" 1780154821 44608 580e2c0929b52db964499d560fdb5092 "pdflatex"
+  "thesis.bbl" 1780146364 65069 9f41566e658e5dde66c7ecb0ccc422f6 "biber thesis"
+  "thesis.out" 1780154821 7309 93d4e548902b6bdaaa460a6385ba4bfd "pdflatex"
+  "thesis.run.xml" 1780154821 2319 feea68f5df4df9d84b38864f03f3a104 "pdflatex"
+  "thesis.tex" 1780154751 101976 ae45cd03c42122ae72d062d55fd7170d ""
+  "thesis.toc" 1780154821 3451 57b97dd605c6d2f5afea74f34ee451ac "pdflatex"
   (generated)
   "thesis.aux"
   "thesis.bcf"
