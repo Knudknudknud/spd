@@ -171,7 +171,6 @@ def optimize(
         )
         As = {module_name: components[module_name].A for module_name in components}
 
-        #T = get_temperature(step, config.steps, t_start=1.5, t_end=0.3)
         causal_importances, causal_importances_upper_leaky = calc_causal_importances(
             pre_weight_acts=pre_weight_acts, As=As, gates=model.gates, detach_inputs=False        )
 

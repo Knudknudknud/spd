@@ -684,11 +684,10 @@ def plot_subcomponent_norms(model, save_path=None):
                 "d_in C K, C K d_out -> C d_in d_out"
             )
             #https://docs.pytorch.org/docs/2.12/generated/torch.norm.html 
-            ab_norms = W.norm(dim=(1, 2)).cpu().numpy()
-            a_norms = comp.A.norm(dim=(0, 2)).cpu().numpy()
-            b_norms = comp.B.norm(dim=(1, 2)).cpu().numpy()
-
-            W_total = W.sum(dim=0).cpu().numpy()    # (d_in, d_out)
+            #k=1, generally so the latter 2 are just l2 norms.
+            ab_norms = torch.linalg.matrix_norm(W,dim=(1, 2)).cpu().numpy()
+            a_norms = torch.linalg.matrix_norm(comp.A,dim=(0, 2)).cpu().numpy()
+            b_norms = torch.linalg.matrix_norm(comp.B,dim=(1, 2)).cpu().numpy()
 
             # sort by AB importance
             order = np.argsort(ab_norms)[::-1]
