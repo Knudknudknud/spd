@@ -193,60 +193,6 @@
       \verb https://arxiv.org/abs/2501.16496
       \endverb
     \endentry
-    \entry{engels2025languagemodelfeaturesonedimensionally}{misc}{}{}
-      \name{author}{5}{}{%
-        {{hash=1a6d01521ceae1f4e3fc57489f884843}{%
-           family={Engels},
-           familyi={E\bibinitperiod},
-           given={Joshua},
-           giveni={J\bibinitperiod}}}%
-        {{hash=bbf57cfa1f493055918636e3950123a9}{%
-           family={Michaud},
-           familyi={M\bibinitperiod},
-           given={Eric\bibnamedelima J.},
-           giveni={E\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
-        {{hash=09d9dbb77f762978e1c3017dfc0b0d6e}{%
-           family={Liao},
-           familyi={L\bibinitperiod},
-           given={Isaac},
-           giveni={I\bibinitperiod}}}%
-        {{hash=d44aef2cee00b838542975ad9627cc01}{%
-           family={Gurnee},
-           familyi={G\bibinitperiod},
-           given={Wes},
-           giveni={W\bibinitperiod}}}%
-        {{hash=b9b3c445e1013a97fc6318e06799b37b}{%
-           family={Tegmark},
-           familyi={T\bibinitperiod},
-           given={Max},
-           giveni={M\bibinitperiod}}}%
-      }
-      \strng{namehash}{ca3bb68d8f3ad74b9668790840d1f735}
-      \strng{fullhash}{900376e2c83c940f2055ad10dfac4bd5}
-      \strng{fullhashraw}{900376e2c83c940f2055ad10dfac4bd5}
-      \strng{bibnamehash}{ca3bb68d8f3ad74b9668790840d1f735}
-      \strng{authorbibnamehash}{ca3bb68d8f3ad74b9668790840d1f735}
-      \strng{authornamehash}{ca3bb68d8f3ad74b9668790840d1f735}
-      \strng{authorfullhash}{900376e2c83c940f2055ad10dfac4bd5}
-      \strng{authorfullhashraw}{900376e2c83c940f2055ad10dfac4bd5}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{eprintclass}{cs.LG}
-      \field{eprinttype}{arXiv}
-      \field{title}{Not All Language Model Features Are One-Dimensionally Linear}
-      \field{year}{2025}
-      \verb{eprint}
-      \verb 2405.14860
-      \endverb
-      \verb{urlraw}
-      \verb https://arxiv.org/abs/2405.14860
-      \endverb
-      \verb{url}
-      \verb https://arxiv.org/abs/2405.14860
-      \endverb
-    \endentry
     \entry{stochasticparameterdecomposition}{misc}{}{}
       \name{author}{3}{}{%
         {{hash=9c1f60ef07d490aed136933c65e14aa4}{%
@@ -273,8 +219,8 @@
       \strng{authornamehash}{24c2f3d1b406bf4db61bd01103dd5547}
       \strng{authorfullhash}{24c2f3d1b406bf4db61bd01103dd5547}
       \strng{authorfullhashraw}{24c2f3d1b406bf4db61bd01103dd5547}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.LG}
@@ -317,8 +263,8 @@
       \strng{authornamehash}{a1f79c3c79aa5e2aad2b25ee3d7e8670}
       \strng{authorfullhash}{a1f79c3c79aa5e2aad2b25ee3d7e8670}
       \strng{authorfullhashraw}{a1f79c3c79aa5e2aad2b25ee3d7e8670}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.CL}
@@ -426,8 +372,8 @@
       \strng{authornamehash}{61579b5b16e1bfa48390e215a6b71526}
       \strng{authorfullhash}{e46b54b96590ff9e09c9f81fdca69bf7}
       \strng{authorfullhashraw}{e46b54b96590ff9e09c9f81fdca69bf7}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.LG}
@@ -460,8 +406,8 @@
       \strng{authornamehash}{b1e9d3be8a9b8d964a385d6870f89c73}
       \strng{authorfullhash}{b1e9d3be8a9b8d964a385d6870f89c73}
       \strng{authorfullhashraw}{b1e9d3be8a9b8d964a385d6870f89c73}
-      \field{sortinit}{7}
-      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{month}{6}
@@ -491,8 +437,8 @@
       \strng{authornamehash}{901f01ae77fb6a76c3f1ce5dfb3de257}
       \strng{authorfullhash}{901f01ae77fb6a76c3f1ce5dfb3de257}
       \strng{authorfullhashraw}{901f01ae77fb6a76c3f1ce5dfb3de257}
-      \field{sortinit}{7}
-      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{LessWrong}
@@ -538,8 +484,8 @@
       \strng{authornamehash}{fa67f9e3ef8b214350e4e2470178dbae}
       \strng{authorfullhash}{7d3a1175335fbb7718fb8da06cf7d65c}
       \strng{authorfullhashraw}{7d3a1175335fbb7718fb8da06cf7d65c}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.LG}
@@ -554,6 +500,60 @@
       \endverb
       \verb{url}
       \verb https://arxiv.org/abs/2408.10920
+      \endverb
+    \endentry
+    \entry{engels2025languagemodelfeaturesonedimensionally}{misc}{}{}
+      \name{author}{5}{}{%
+        {{hash=1a6d01521ceae1f4e3fc57489f884843}{%
+           family={Engels},
+           familyi={E\bibinitperiod},
+           given={Joshua},
+           giveni={J\bibinitperiod}}}%
+        {{hash=bbf57cfa1f493055918636e3950123a9}{%
+           family={Michaud},
+           familyi={M\bibinitperiod},
+           given={Eric\bibnamedelima J.},
+           giveni={E\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=09d9dbb77f762978e1c3017dfc0b0d6e}{%
+           family={Liao},
+           familyi={L\bibinitperiod},
+           given={Isaac},
+           giveni={I\bibinitperiod}}}%
+        {{hash=d44aef2cee00b838542975ad9627cc01}{%
+           family={Gurnee},
+           familyi={G\bibinitperiod},
+           given={Wes},
+           giveni={W\bibinitperiod}}}%
+        {{hash=b9b3c445e1013a97fc6318e06799b37b}{%
+           family={Tegmark},
+           familyi={T\bibinitperiod},
+           given={Max},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{ca3bb68d8f3ad74b9668790840d1f735}
+      \strng{fullhash}{900376e2c83c940f2055ad10dfac4bd5}
+      \strng{fullhashraw}{900376e2c83c940f2055ad10dfac4bd5}
+      \strng{bibnamehash}{ca3bb68d8f3ad74b9668790840d1f735}
+      \strng{authorbibnamehash}{ca3bb68d8f3ad74b9668790840d1f735}
+      \strng{authornamehash}{ca3bb68d8f3ad74b9668790840d1f735}
+      \strng{authorfullhash}{900376e2c83c940f2055ad10dfac4bd5}
+      \strng{authorfullhashraw}{900376e2c83c940f2055ad10dfac4bd5}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.LG}
+      \field{eprinttype}{arXiv}
+      \field{title}{Not All Language Model Features Are One-Dimensionally Linear}
+      \field{year}{2025}
+      \verb{eprint}
+      \verb 2405.14860
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2405.14860
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2405.14860
       \endverb
     \endentry
     \entry{nanda2023progressmeasuresgrokkingmechanistic}{misc}{}{}
@@ -592,8 +592,8 @@
       \strng{authornamehash}{17416b474b680d3d76c582e2248551c2}
       \strng{authorfullhash}{de62432f40d141140b04262d2f3ce01b}
       \strng{authorfullhashraw}{de62432f40d141140b04262d2f3ce01b}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.LG}
@@ -647,8 +647,8 @@
       \strng{authorfullhash}{71542c9b3d8bb54096acc4edb13b192c}
       \strng{authorfullhashraw}{71542c9b3d8bb54096acc4edb13b192c}
       \field{extraname}{1}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.LG}
@@ -801,8 +801,8 @@
       \strng{authornamehash}{8cee1bca37043bb81df0ee2bf2415e70}
       \strng{authorfullhash}{7e39f89e630d15b5177d6962d238219b}
       \strng{authorfullhashraw}{7e39f89e630d15b5177d6962d238219b}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Transformer Circuits Thread}
@@ -1353,8 +1353,8 @@
       \strng{authornamehash}{461546f6b6016fb96b7bb4cfd4b3e44c}
       \strng{authorfullhash}{9ff0973acec9bc47b01a06a0ca05f8b8}
       \strng{authorfullhashraw}{9ff0973acec9bc47b01a06a0ca05f8b8}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Technical Report}
@@ -1443,8 +1443,8 @@
       \strng{authornamehash}{ee273ab30cfb889666f8c4d806eb9ce7}
       \strng{authorfullhash}{f82970bbd2bdd7a002d2af62b743d5cc}
       \strng{authorfullhashraw}{f82970bbd2bdd7a002d2af62b743d5cc}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.CL}
@@ -1492,8 +1492,8 @@
       \strng{authornamehash}{704b9f995eec298e9ab5d7da00ac63c7}
       \strng{authorfullhash}{12b921780ec324afc69f2d124629f239}
       \strng{authorfullhashraw}{12b921780ec324afc69f2d124629f239}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://www.lesswrong.com/posts/ZxFchCFJFcgysYsT9/compressed-computation-is-probably-not-computation-in}}
