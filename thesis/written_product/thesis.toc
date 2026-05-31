@@ -24,12 +24,9 @@
 \contentsline {section}{\numberline {6}Limitations and future work}{23}{section.6}%
 \contentsline {section}{\numberline {7}References}{24}{section.7}%
 \contentsline {section}{\numberline {8}Appendix}{24}{section.8}%
-\contentsline {subsection}{\numberline {8.1}Toy Model of Superposition}{24}{subsection.8.1}%
-\contentsline {subsubsection}{\numberline {8.1.1}Model training result}{24}{subsubsection.8.1.1}%
-\contentsline {subsection}{\numberline {8.2}Toy Model of Compressed Computation}{24}{subsection.8.2}%
-\contentsline {subsubsection}{\numberline {8.2.1}Model training}{24}{subsubsection.8.2.1}%
-\contentsline {subsection}{\numberline {8.3}Toy Model of Geometry}{24}{subsection.8.3}%
-\contentsline {subsubsection}{\numberline {8.3.1}SPD: Sweep over minimality coefficients}{25}{subsubsection.8.3.1}%
-\contentsline {subsubsection}{\numberline {8.3.2}SPD: Sweep over ranks for fixed minimality}{27}{subsubsection.8.3.2}%
-\contentsline {subsubsection}{\numberline {8.3.3}RSPD: Sweep over minimality coefficients}{29}{subsubsection.8.3.3}%
-\contentsline {subsubsection}{\numberline {8.3.4}RSPD: Sweep over ranks for fixed minimality}{31}{subsubsection.8.3.4}%
+\contentsline {subsection}{\numberline {8.1}Model training}{24}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Toy Model of Geometry}{24}{subsection.8.2}%
+\contentsline {subsubsection}{\numberline {8.2.1}SPD: Sweep over minimality coefficients}{25}{subsubsection.8.2.1}%
+\contentsline {subsubsection}{\numberline {8.2.2}SPD: Sweep over ranks for fixed minimality}{27}{subsubsection.8.2.2}%
+\contentsline {subsubsection}{\numberline {8.2.3}RSPD: Sweep over minimality coefficients}{29}{subsubsection.8.2.3}%
+\contentsline {subsubsection}{\numberline {8.2.4}RSPD: Sweep over ranks for fixed minimality}{31}{subsubsection.8.2.4}%
