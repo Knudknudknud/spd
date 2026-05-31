@@ -686,22 +686,12 @@ def plot_subcomponent_norms(model, save_path=None):
             #https://docs.pytorch.org/docs/2.12/generated/torch.norm.html 
             #k=1, generally so the latter 2 are just l2 norms.
             ab_norms = torch.linalg.matrix_norm(W,dim=(1, 2)).cpu().numpy()
-            a_norms = torch.linalg.matrix_norm(comp.A,dim=(0, 2)).cpu().numpy()
-            b_norms = torch.linalg.matrix_norm(comp.B,dim=(1, 2)).cpu().numpy()
-
-            # sort by AB importance
             order = np.argsort(ab_norms)[::-1]
             ab_norms = ab_norms[order]
-            a_norms = a_norms[order]
-            b_norms = b_norms[order]
-
             x = np.arange(len(ab_norms))
 
      
             axes[0, i].bar(x, ab_norms, alpha=0.6)
-            #axes[0, i].plot(x, a_norms, label="||V||", linewidth=2)
-            #axes[0, i].plot(x, b_norms, label="||U||", linewidth=2)
-
             axes[0, i].set_title(name)
             axes[0, i].set_xlabel("Subcomponent index")
             axes[0, i].set_ylabel("Norm")
