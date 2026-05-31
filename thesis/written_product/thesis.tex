@@ -69,20 +69,20 @@
 \thispagestyle{empty}
 \newpage
 \begin{abstract}
-Parameter decomposition methods aim to express a trained network as a sum of simpler components that
-are faithful to the model's weights, with each component corresponding to a distinct mechanism.
-Stochastic Parameter Decomposition (SPD) does so by constraining each component to its simplest,
-rank-one form and learning an importance assignment that decides which components are responsible for
-a given input. Since the components are constrained to be rank-one, higher dimensional
+Parameter decomposition methods aim to express a trained network as a sum of simpler subcomponents that
+are faithful to the model's weights, with each subcomponent corresponding to a distinct mechanism.
+Stochastic Parameter Decomposition (SPD) does so by constraining each subcomponent to its simplest,
+rank-one form and learning an importance assignment that decides which subcomponents are responsible for
+a given input. Since the subcomponents are constrained to be rank-one, higher dimensional
 features can not be captured during training and must instead be reassembled by clustering
-multiple lower rank components together post training.
+multiple lower rank subcomponents together post training.
 
 To explore whether this grouping can instead be done during training, the SPD architecture is adapted
 to use rank-$k$ subcomponents together with a relational importance assignment that computes importance across subcomponents rather than independently.
 
 This reformulation while producing sparser importance assignments, appears to be a poor
 guide to the decomposition underneath. In this setting a one-hot importance assignment does not imply complete ownership,
-since the components it marks as unimportant still carry relevant magnitude that contribute to the
+since the subcomponents it marks as unimportant still carry relevant magnitude that contribute to the
 output. It is concluded that, under this reformulation, the importance values can not be taken
 as literal measures of feature ownership, and that other approaches should be considered if higher-dimensional features are to
 be captured during training.
@@ -110,8 +110,8 @@ Decompositions that split features across multiple atoms, risk losing the struct
 while decompositions that group multiple features into a single atom, risk losing granularity by collapsing distinct features into a single unit.
 
 For example, a network computing the volume of a cube can be
-decomposed into components corresponding to individual side
-lengths, or into a single component computing the volume directly.
+decomposed into subcomponents corresponding to individual side
+lengths, or into a single subcomponent computing the volume directly.
 The former corresponds to a feature-level decomposition,
 with one atom per input direction, exposing internal
 structure but leaving grouping implicit, only recoverable
@@ -129,12 +129,12 @@ computation, exposing the grouping directly but collapsing per side-length infor
 
 Beyond what the atoms should be, the decomposition procedure itself remains open.
 Recent work focuses on decomposing parameters, as opposed to the activations.
-These methods aim to recover components that are faithful to the original weights, sparse per input, and individually simple. 
-One such approach, Stochastic Parameter Decomposition (SPD) \autocite{stochasticparameterdecomposition}, factorizes networks into rank-one components with a learned per component importance
+These methods aim to recover subcomponents that are faithful to the original weights, sparse per input, and individually simple. 
+One such approach, Stochastic Parameter Decomposition (SPD) \autocite{stochasticparameterdecomposition}, factorizes networks into rank-one subcomponents with a learned per subcomponent importance
 function.
 
 This work examines SPD in settings with multi-dimensional
-features that can not be captured by a single rank-one component,
+features that can not be captured by a single rank-one subcomponent,
 to see whether they can be recovered during training rather than
 through post-hoc clustering.
 To
@@ -144,11 +144,10 @@ Lastly, a new toy model, the Toy
 Model of Geometry, is introduced to evaluate both SPD and the modification in a higher-dimensional setting.
 
 Across the toy models studied, the relational importance function, implemented as a transformer
-block with softmax over subcomponents, recovers sparser, near one-hot causal importance
-assignments. These sparse
-assignments are misleading, however, since they do not correspond to an equally sparse parameter
-decomposition, and the underlying representation stays distributed across multiple subcomponents even
-when the importance values suggest a monosemantic split.
+block with Softmax over subcomponents, recovers sparse, one-hot causal importance
+assignments. These sparse assignments should correspond to full ownership, but the marked
+subcomponents, despite directional alignment, only partially reconstruct the feature magnitude
+themselves, with inactive subcomponents driving the remainder.
 
 Secondly, in the Toy Model of Superposition it is found
 that constraining a subcomponent to rank one does not restrict
@@ -220,7 +219,7 @@ recently been explored in small transformer models
 \autocite{christensen2025decompositionsmalltransformermodels}
 and cross-layer clustering \autocite{seshadri2026crosslayer}.
 While APD decomposes a network into multidimensional
-components,
+subcomponents,
 the method is sensitive to hyperparameters, and does not scale beyond toy settings due
 to computational complexity. SPD addresses this
 by decomposing each weight matrix into rank-one
@@ -274,19 +273,19 @@ APD scales poorly: its memory cost grows with the number of components,
 as each component has the same dimensionality as the original network,
 and its top-$k$ attribution is sensitive to hyperparameter choice.
 
-SPD \autocite{stochasticparameterdecomposition} addresses these limitations by enforcing a rank-one structure on each component, and replacing top-$k$ attribution with a learned causal importance function. Formally, each weight matrix $W^l$ is decomposed into a sum of $C$ rank-one subcomponents:
+SPD \autocite{stochasticparameterdecomposition} addresses these limitations by enforcing a rank-one structure on each component, and replacing top-$k$ attribution with a learned causal importance function. Formally, each weight matrix $W^l$ is decomposed into a sum of $|C|$ rank-one subcomponents:
 \begin{equation}
-W^{l}_{i,j} \approx \sum_{c=1}^{C} U^{l}_{i,c} V^{l}_{c,j}, 
-\quad \text{where} \quad U^l \in \mathbb{R}^{d_{\text{out}} \times C}, \, V^l \in \mathbb{R}^{C \times d_{\text{in}}}
+W^{l}_{i,j} \approx \sum_{c=1}^{|C|} U^{l}_{i,c} V^{l}_{c,j}, 
+\quad \text{where} \quad U^l \in \mathbb{R}^{d_{\text{out}} \times |C|}, \, V^l \in \mathbb{R}^{|C| \times d_{\text{in}}}
 \end{equation}
-where C is a hyperparameter, for the number of components for each layer, $l$ indexes the layer and $i,j$ are the hidden indices.
-The subcomponent count, C, may be chosen to be larger than both $d_{in}$ and $d_{out}$, enabling the method to learn features in superposition \autocite{stochasticparameterdecomposition}.
+where $|C|$is a hyperparameter, for the number of components for each layer, $l$ indexes the layer and $i,j$ are the hidden indices.
+The subcomponent count, $|C|$, may be chosen to be larger than both $d_{in}$ and $d_{out}$, enabling the method to learn features in superposition \autocite{stochasticparameterdecomposition}.
 
 To enforce the properties above, three losses are introduced, which are optimised jointly.
 Faithfulness is enforced thorugh a mean squared error loss between the original network's weights and the sum of subcomponents:
 
 \begin{equation}
-    \mathcal{L}_{\text{faithfulness}} = \frac{1}{N} \sum_{l=1}^{L}\sum_{i,j} \left( W_{i,j}^{l} - \sum_{c=1}^{C} U^{l}_{i,c}V^{l}_{c,j} \right)^{2}  
+    \mathcal{L}_{\text{faithfulness}} = \frac{1}{N} \sum_{l=1}^{L}\sum_{i,j} \left( W_{i,j}^{l} - \sum_{c=1}^{|C|} U^{l}_{i,c}V^{l}_{c,j} \right)^{2}  
 \end{equation}
 where $N$ is the total parameter count in the target model.
 
@@ -294,7 +293,7 @@ Optimization for simplicity and minimality is achieved through a
 stochastic masking procedure. Intuitively, if a subcomponent is not
 necessary for reconstruction, it can be sampled to zero without loss
 of faithfulness. A causal importance function
-$\Gamma: \mathcal{X} \to [0,1]^{C \times L}$ is trained to learn the
+$\Gamma: \mathcal{X} \to [0,1]^{|C| \times L}$ is trained to learn the
 lower bound of the ablation. In SPD, $\Gamma$ is a set
 of independent MLPs $\gamma^l_c$ that each take a layer's activation
 and output a scalar importance for the corresponding subcomponent:
@@ -306,7 +305,7 @@ activation vector of layer $l$. $g_c^{l}(x)$ serves as the lower bound for how m
 \begin{equation}
 \begin{aligned}
     m_{c}^l(x, r) &= g^{l}_{c}(x) + \bigl(1 - g^{l}_{c}(x)\bigr)\, r^l_{c}, \\
-    W'^{l}_{i,j}(x, r)  &= \sum_{c=1}^{C} \vec{U}_{i,c}^{l}\, m_{c}^l(x, r)\, \vec{V}_{c,j}^{l},
+    W'^{l}_{i,j}(x, r)  &= \sum_{c=1}^{|C|} \vec{U}_{i,c}^{l}\, m_{c}^l(x, r)\, \vec{V}_{c,j}^{l},
 \end{aligned}
 \end{equation}
 These masked matrices are trained to reconstruct the original network's output.
@@ -339,7 +338,7 @@ active subcomponents, creating a tradeoff between
 faithfulness and minimality.
 \begin{equation}
     \mathcal{L}_{\text{minimality}}
-      = \sum_{l=1}^{L} \sum_{c=1}^{C} \bigl(g^{l}_{c}(x)\bigr)^{p},
+      = \sum_{l=1}^{L} \sum_{c=1}^{|C|} \bigl(g^{l}_{c}(x)\bigr)^{p},
       \qquad p > 0.
 \end{equation}
 \label{spd_minimality}
@@ -407,12 +406,12 @@ subcomponents and can not express the multi-dimensional features
 these definitions require.
 This gap is what motivates adapting SPD to higher rank.
 Rather than clustering rank-one subcomponents post-hoc,
-the rank-one subcomponents are replaced with rank-k
+the rank-one subcomponents are replaced with rank-$k$
 subcomponents, so that multi-dimensional features can be represented
 directly during training. This restructured formulation
 is introduced in Section~\ref{sec:rank-k-attention}.
 
-\subsection{Rank-$k$ subcomponents and relational importance}
+\subsection{Relational SPD (RSPD)}
 \label{sec:rank-k-attention}
 In the original SPD paper, the subcomponents are constructed as rank-one matrices,
 through an outer product of two vectors. As motivated in
@@ -422,8 +421,8 @@ represent an irreducible multi-dimensional feature, forcing it to either
 the cost of reconstruction. To allow such features to be captured during training,
 the pairs of vectors are replaced with pairs of matrices.
 \begin{equation}
-W^{l}_{i,j} \approx \sum_{c=1}^{C} \sum_{r=1}^{k} U^{l}_{c,i,r} V^{l}_{c,r,j},
-\quad \text{where} \quad U^l \in \mathbb{R}^{C \times d_{\text{out}} \times k}, \, V^l \in \mathbb{R}^{C \times k \times  d_{\text{in}}}
+W^{l}_{i,j} \approx \sum_{c=1}^{|C|} \sum_{r=1}^{k} U^{l}_{c,i,r} V^{l}_{c,r,j},
+\quad \text{where} \quad U^l \in \mathbb{R}^{|C| \times d_{\text{out}} \times k}, \, V^l \in \mathbb{R}^{|C| \times k \times  d_{\text{in}}}
 \end{equation}
 Each subcomponent $U^l_c {V^l_c} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
 has rank at most $k$, recovering the original SPD definition when $k=1$.
@@ -432,30 +431,33 @@ each subcomponent's representational capacity; the effective rank may be lower.
 
 In SPD, each subcomponent's importance is computed independently through an MLP followed by a sigmoid nonlinearity,
 allowing multiple subcomponents to be active for a given input and thus distribute a
-feature across them, even when it is irreducible. Likewise, the minimality loss does not translate to the rank-k setting, where each subcomponent can represent multiple feature directions:
+feature across them, even when it is irreducible. Likewise, the minimality loss does not translate to the rank-$k$ setting, where each subcomponent can represent multiple feature directions:
 it imposes little penalty for distributing a feature across multiple subcomponents,
 nor for a single subcomponent to encode parts of multiple features. (Section \ref{spd_minimality})
 
-To address this, the causal importance function is redefined to maximize the conditional probability, that a given subcomponent $W_{c}^{l}$, is responsible for a given feature, conditioned on the activations of all other subcomponents in the same layer.
+To address this, the causal importance function is redefined to maximize the conditional probability, that a given subcomponent $W_{(c)}^{l}$, is responsible for a given feature, conditioned on the activations of all subcomponents in the same layer.
 \begin{equation}
-    g^l_{c}(x) = p\!\left(W^l_c \mid \{h^l_{c'}(x)\}^{C}_{c'=1}\right), \quad h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
+    g^l_{c}(x) = p\!\left(W^l_c \mid \{h^l_{c'}(x)\}^{|C|}_{c'=1}\right), \quad h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
 \end{equation}
-here $\vec{a}^l(x)$ is the activation vector of layer $l$ and C is the set of subcomponents in layer $l$, $g^{l}_{c}(x)$ the causal importance value and $h_{c}^l$ the input to the causal importance function.
+here $\vec{a}^l(x)$ is the activation vector of layer $l$ and C is the set of subcomponents in layer $l$, $g^{l}_{(c)}(x)$ the causal importance value and $h_{(c)}^l$ the input to the causal importance function.
 
-The conditional importance is computed using a standard transformer block following the architecture of \autocite{vaswani2023attentionneed}. For each layer l,
-the read activations \(h_c^l(x) \in \mathbb{R}^k\) of the \(C\) subcomponents are concatenated into a matrix \(H^l(x) \in \mathbb{R}^{C \times k}\),
+The conditional importance is computed using a standard transformer block following the architecture of \autocite{vaswani2023attentionneed}. For each layer $l$,
+the read activations \(h_c^l(x) \in \mathbb{R}^k\) of the \(|C|\) subcomponents are concatenated into a matrix \(H^l(x) \in \mathbb{R}^{|C| \times k}\),
 with no positional encoding.
 These activations are projected into the transformer residual stream through a learned linear projection. The resulting representations are then processed by a standard transformer block consisting of a single attention head,
 a feed-forward network, residual connections, and layer normalization.
 
-Finally, each subcomponent representation is projected down to a single scalar, and a softmax over all C subcomponents is computed.
-This produces a normalized assignment over subcomponents, $\sum_{c=1}^{C}g^l_c(x) = 1$,
+Finally, each subcomponent representation is projected down to a single scalar, and a Softmax over all subcomponents is computed.
+This produces a normalized assignment over subcomponents, $\sum_{c=1}^{|C|}g^l_c(x) = 1$,
 causing the original minimality loss to become degenerate, as each layer contributes a constant value independent of the model state.
 Instead, it is replaced
 with entropy, to pressure the assignment to concentrate on as few subcomponents as possible. 
 \begin{equation}
-    \mathcal{L}_{\text{minimality}} = - \frac{1}{|L|} \sum_{l=1}^{L} \sum_{c=1}^{C} g^l_c(x) \log g^l_c(x)
+    \mathcal{L}_{\text{minimality}} = - \frac{1}{|L|} \sum_{l=1}^{L} \sum_{c=1}^{|C|} g^l_c(x) \log g^l_c(x)
 \end{equation}
+
+For the sake of clarity, this reformulation is referred to as Relational Stochastic Parameter Decomposition (RSPD), to distinguish it from the original formulation.
+
 
 An unfortunate limitation of this formulation is its computational cost. Computing
 relational importance via a transformer over subcomponents scales
@@ -478,9 +480,9 @@ where the toy model assigns both features to a single direction, allowing a
 single rank 1 subcomponent to capture both inputs.
 
 The third experiment is done through the Toy Model of
-Compressed Computation, where 100 ReLu functions
+Compressed Computation, where 100 ReLU functions
 are learnt to be approximated through a 50-dimensional bottleneck,
-forcing the model to learn an approximation instead of an exact reconstruction.\autocite{bhagat2025compressed}. 
+forcing the model to learn an approximation instead of an exact reconstruction \autocite{bhagat2025compressed}. 
 
 The fourth experiment generalizes the paired setting to a
 k-dimensional case by computing the volume of a simplex
@@ -536,7 +538,7 @@ $2$
 $1$
 &$n(n+1)$
 \\
-Component rank required
+subcomponent rank required
 &
 $1$
 &
@@ -577,7 +579,7 @@ The Toy Model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition}
 \begin{equation}
     \hat{x} = \mathrm{ReLU}(W^{\top}Wx + b), \qquad W \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{in}}}, \quad d_{\text{in}} \gg d_{\text{hidden}}.
 \end{equation}
-TMS is studied in two regimes: one with independent inputs, reproducing the original SPD setup, and one with paired inputs that introduces statistical dependence. For both regimes, the rank of each subcomponent is kept at $1$, both because this is the ground-truth structure and to isolate the effect of softmax and attention.
+TMS is studied in two regimes: one with independent inputs, reproducing the original SPD setup, and one with paired inputs that introduces statistical dependence. For both regimes, the rank of each subcomponent is kept at $1$, both because this is the ground-truth structure and to isolate the effect of RSPD.
 
 To quantify how well the learned subcomponents recover the target model, two metrics are computed across both regimes. The mean max cosine similarity (MMCS) \autocite{cunningham2023takingfeatures} measures directional alignment between each target feature and its best-matching learned subcomponent:
 \begin{equation}
@@ -585,7 +587,7 @@ To quantify how well the learned subcomponents recover the target model, two met
 =
 \frac{1}{d_{\text{in}}}
 \sum_{j=1}^{d_{\text{in}}}
-\max_{c}
+\max_{c \in |C|}
 \left(
 \frac{
 \vec{U}_{:,c} V_{c,j} \cdot W_{:,j}
@@ -595,7 +597,7 @@ To quantify how well the learned subcomponents recover the target model, two met
 }
 \right).
 \end{equation}
-where $c \in C$ is the parameter component index and $j \in \{1, \ldots, d_{\text{in}}\}$ is the input index. A value of $1$ indicates that every target feature has a perfectly aligned subcomponent.
+where $c \in |C|$ is the parameter component index and $j \in \{1, \ldots, d_{\text{in}}\}$ is the input index. A value of $1$ indicates that every target feature has a perfectly aligned subcomponent.
 
 Apart from directional alignment, the strength of the alignment is also measured, to detect feature shrinkage, a problem apparent in both Sparse Autoencoders and Attribution-Based Parameter Decomposition \autocite{jermyn2024tanhPenaltyDictionaryLearning,wright2024featureSuppressionSAEs,AttributionBasedParameterDecomposition}. The mean $L_{2}$ ratio (ML2R) compares the euclidean norm of the best-aligned subcomponent to the target feature \autocite{stochasticparameterdecomposition}:
 \begin{equation}
@@ -612,21 +614,21 @@ Apart from directional alignment, the strength of the alignment is also measured
 where $\mathrm{mcs}(j)$ is the index of the most aligned subcomponent for feature $j$. A ratio near $1$ indicates the feature is fully captured by its best-aligned subcomponent.
 
 \subsubsection{Independent features}
-In this setting, each input $\mathbf{x} \in \mathbb{R}^{d_{\text{in}}}$ has components $x_j {\sim} \mathcal{U}([0,1])$ for $j = 1, \dots, d_{\text{in}}$.
+In this setting, each input $\mathbf{x} \in \mathbb{R}^{d_{\text{in}}}$ has components $x_j {\sim} \mathcal{U}(0,1)$ for $j = 1, \dots, d_{\text{in}}$.
 Under this setup, the ground-truth decomposition is a set of $d_{\text{in}}$ rank-one matrices, each non-zero only along the $c$-th column $W_{:,c}$.
 Like in the original SPD paper, two TMS models are trained: $\mathrm{TMS}_{5\text{-}2}$ with $d_{\text{in}}=5$ and $d_{\text{hidden}}=2$, and $\mathrm{TMS}_{40\text{-}10}$ with $d_{\text{in}}=40$ and $d_{\text{hidden}}=10$.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\linewidth]{tms_5_2_plot.png}
-    \caption{Decomposition of $\mathrm{TMS}_{5\text{-}2}$ using Softmax. The first two panels show the target model's weight columns and the sum of learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ carry large norm and contribute predominantly to the reconstruction. Each active subcomponent recovers primarily one feature direction. with minor leakage across components.}
+    \caption{Decomposition of $\mathrm{TMS}_{5\text{-}2}$ using RSPD. The first two panels show the target model's weight columns and the sum of learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ carry large norm and contribute predominantly to the reconstruction. Each active subcomponent recovers primarily one feature direction. with minor leakage across components.}
     \label{fig:tms_5_2}
 \end{figure}
 Here SPD perfectly recovers the target model's geometry, with both MMCS and ML2R equal to $1$
 across both TMS models. Each subcomponent aligns
 with a single feature direction, and the entire feature magnitude is captured
-within that subcomponent. The softmax variant, while achieving near-zero losses,
-does not manage to perfectly align its components with the target model nor
+within that subcomponent.RSPD, while achieving near-zero losses,
+does not manage to perfectly align its components with the target model, or
 concentrate the entire feature magnitude within a single subcomponent,
 resulting in a lower ML2R with high variance. For the larger model this skews the geometry further.
 (Table \ref{tab:tms_results_single}).
@@ -638,37 +640,37 @@ resulting in a lower ML2R with high variance. For the larger model this skews th
 \toprule
 & \multicolumn{2}{c}{$\mathrm{TMS}_{5\text{-}2}$} & \multicolumn{2}{c}{$\mathrm{TMS}_{40\text{-}10}$} \\
 \cmidrule(lr){2-3} \cmidrule(lr){4-5}
-& SPD & Softmax & SPD & Softmax \\
+& SPD & RSPD & SPD & RSPD \\
 \midrule
 MMCS  & $1.00$ & $ 0.973 \pm 0.032$ & $1.00$ & $0.812 \pm 0.105$ \\
 ML2R  & $1.00$ & $ 0.853 \pm 0.130$ & $1.055 \pm 0.045$ & $0.623 \pm 0.360$ \\
 \bottomrule
 \end{tabular}
-\caption{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite{stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
+\caption{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite{stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
 \label{tab:tms_results_single}
 \end{table}
-
-While the softmax variant does not recover the exact geometry, it correctly concentrates the entire
+\footnote{Correct values.}
+While RSPD does not recover the exact geometry, it correctly concentrates the entire
 magnitude on the right number of subcomponents, pruning the rest to near-zero
 (Figure~\ref{fig:tms_5_2}). Despite 
 these differences, the causal importance values match the original SPD method on
 $\mathrm{TMS}_{5\text{-}2}$, with both assigning a single subcomponent to each of the five inputs.
-This breaks down on the larger $\mathrm{TMS}_{40\text{-}10}$, where softmax no longer achieves a
-one-hot assignment and some subcomponents become important for several inputs at once.
+This breaks down on the larger $\mathrm{TMS}_{40\text{-}10}$, where RSPD no longer achieves a
+one-hot assignment and some subcomponents become important for several inputs at once. \footnote{double check after running sweep}
 
-\subsubsection{Paired features}
+\subsubsection{Toy Model of Dependent Superposition}
 \label{sec:tms-tied-experiment}
 
 To introduce the simplest form of statistical dependence, inputs are
 sampled in pairs. The $d_{\text{in}} = 40$ inputs are partitioned into
-$20$ pairs $\{f_{2i-1}, f_{2i}\}_{i=1}^{20}$, with $d_{\text{hidden}} = 10$.
+$20$ pairs $\{x_{2i-1}, x_{2i}\}_{i=1}^{20}$, with $d_{\text{hidden}} = 10$.
 Each pair is jointly inactive with probability $1-p$, and otherwise both
 members are drawn independently from $\mathcal{U}(\epsilon, 1)$, with zero
 reserved to denote the off state. The two members of a pair therefore
 co-occur, switching on and off together, while their magnitudes remain
 independent when active.
 
-In this setting, each input is 2-dimensional at construction,
+In this setting, each pair is 2-dimensional at construction,
 but the trained model learns a feature mapping that aligns both pair
 members along a single direction
 (Table~\ref{tab:tms-paired-cosine-similarity}),
@@ -676,8 +678,7 @@ with within-group cosine similarity averaging $0.999$ and across-group
 similarity averaging $0.053$. The pair's hidden representation therefore
 collapses to a 1D subspace. As each
 pair is represented along a single direction, it can be captured by a single
-rank-one subcomponent, without being split across several or requiring a
-higher rank.
+rank-one subcomponent.
 
 \begin{table}[h]
 \centering
@@ -689,23 +690,23 @@ Within-group & $0.999$ & $0.010$ & $[0.997, 1.000]$ \\
 Across-group & $0.053$ & $0.223$ & $[-1.000, 0.038]$ \\
 \hline
 \end{tabular}
-\caption{Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$,
-where $i$ and $j$ are group indices, partitioned into within-group
-($i = j$) and across-group ($i \neq j$) pairs.}\label{tab:tms-paired-cosine-similarity}
+\caption{Cosine similarity between encoder columns $W_{:,i}$ and $W_{:,j}$, where
+$i$ and $j$ index inputs. Within-group reports the similarity between the two
+columns of the same pair, and across-group the similarity between columns of
+different pairs.}\label{tab:tms-paired-cosine-similarity}
 \end{table}
-\footnote{recompute this too}
 
 This makes the ground-truth decomposition ambiguous. If the pair's
 projection is taken as a single feature, it is reducible into a mixture of
-mutually exclusive cases. This reducibility, however, is directed at the
+mutually exclusive features. This reducibility, however, is directed at the
 encoder mapping $f$: it establishes only that the feature can be projected onto an axis-aligned direction. It does not clarify whether the
 two members should be separated laterally into distinct subcomponents, or
-kept together.
+kept together. \footnote{indent this down}
 
-Empirically, both SPD and Softmax with attention both
+Empirically, both SPD and RSPD
 find a decomposition of
 twenty subcomponents, each entirely
-causally important for one pair $\{f_{2i-1}, f_{2i}\}$, so each subcomponent
+causally important for one pair $\{x_{2i-1}, x_{2i}\}$, so each subcomponent
 represents the two collapsed features of a pair as a single direction. This
 tendency to group collinear features is also reported for VPD
 \autocite{bushnaq2026interpreting_new_spd}, where the importance objective is
@@ -718,18 +719,18 @@ concepts in the underlying model.
     \includegraphics[width=0.48\linewidth,height=10cm]{spd_40_10_paired.png}
     \hfill
     \includegraphics[width=0.48\linewidth,height=10cm]{softmax_40_10_paired.png}
-    \caption{Left: SPD decomposition of the paired TMS model. Right: Softmax decomposition of the paired TMS model.
+    \caption{Left: SPD decomposition of the paired TMS model. Right: RSPD decomposition of the paired TMS model.
     Each input value is
-    activated in isolation at magnitude 0.75. the top heatmap is the first layer W1 and the bottom heatmap is the second
-    layer W2, with rows corresponding to the subcompoent index and columns corresponding to the causal importance
+    activated in isolation at magnitude 0.75. the top heatmap is the first layer $W_{1}$ and the bottom heatmap is the second
+    layer $W_{2}$, with rows corresponding to the subcompoent index and columns corresponding to the causal importance
     value. The subcomponents are permuted within each panel to make the block structure visible.
-    SPD finds the correct structure of pairing features together but does not attribute one feature pair per subcomponent. Softmax achieves the desired importance decomposition, with the exception of one feature pair. SPD was trained with $200$ subcomponents and Softmax with $100$, as these yielded the best results for each method.}
+     SPD was trained with $200$ subcomponents and RSPD with $100$, as these yielded the best results for each method.}
     \label{fig:both}
 \end{figure}
-\footnote{update image}
-In terms of MMCS, both methods achieve near-perfect alignment, with values
-around $0.99$. They still differ, however, in how well they capture the full
-magnitude of the projection: as already seen with independent features
+\footnote{update left image, i accidentally trained RSPD twice i think}
+In terms of MMCS, both methods achieve perfect alignment, with values
+equal to 1. \footnote{double check SPD value} They still differ, however, in how well they capture the full
+magnitude of the projection: as already seen with independent inputs
 (Table~\ref{tab:tms_results_single}), the modified architecture again shows a
 lower ML2R with higher variance, indicating that the best-aligned subcomponent,
 does not always carry the full feature magnitude
@@ -741,13 +742,13 @@ does not always carry the full feature magnitude
 \toprule
 & \multicolumn{2}{c}{$\mathrm{TMS}_{\text{Paired}40\text{-}10}$} \\
 \cmidrule(lr){2-3}
-& SPD & Softmax \\
+& SPD & RSPD \\
 \midrule
 MMCS & $1.00 \pm 0.016$ & $0.999$ \\
 ML2R & $1.00 \pm 0.205$ & $0.720 \pm 0.465$ \\
 \bottomrule
 \end{tabular}
-\caption{Decomposition quality in the paired TMS setting. SPD refers to the original method \autocite{stochasticparameterdecomposition}; Softmax refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
+\caption{Decomposition quality in the paired TMS setting. SPD refers to the original method \autocite{stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
 \label{tab:tms_results_paired}
 \end{table}
 \footnote{add correct values!!!}
@@ -759,9 +760,9 @@ but the adapted architecture seems to not always
 concentrate its most well aligned feature with the
 one that carries the bulk of the feature magnitude, resulting in a lower ML2R with higher variance.
 Referring back to the $\mathrm{TMS}_{5\text{-}2}$ decomposition shown
-in Figure~\ref{fig:tms_5_2}, the softmax method appears to recover a
+in Figure~\ref{fig:tms_5_2}, the RSPD method appears to recover a
 slightly rotated geometry, with residual feature magnitude distributed
-across adjacent features. The geometric offset may arise as a compensatory
+across adjacent subcomponents. The geometric offset may arise as a compensatory
 mechanism for this residual leakage, allowing the combined subcomponents
 to maintain accurate reconstruction despite imperfect feature isolation.
 
@@ -776,86 +777,52 @@ hidden representation.
 
 The architecture consists of an embedding matrix $W_E$, an unembedding matrix
 $W_U = W_E^\top$, and a residual MLP with input projection
-$W_{\text{in}} \in \mathbb{R}^{50 \times d_{\text{emb}}}$ and output projection
-$W_{\text{out}} \in \mathbb{R}^{d_{\text{emb}} \times 50}$. The input vectors are
+$W_{\text{in}} \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{emb}}}$ and output projection
+$W_{\text{out}} \in \mathbb{R}^{d_{\text{emb}} \times d_{\text{hidden}}}$. The input vectors are
 sparse activations sampled uniformly over $[-1, 1]$, and the model is trained to
-minimise the MSE between its output and the target function:
+minimize the MSE between its output and the target function.
+The full architecture can be expressed as:
 \[
     y = W_U \big( W_E x + W_{\text{out}}(\mathrm{ReLU}(W_{\text{in}} W_E x)) \big).
 \]
-For comparability with previous work, the experiment uses $d_{\text{features}} = 100$,
-$d_{\text{MLP}} = 50$, rank $k=1$ matrices, $C = 200$ subcomponents, and an
+For comparability with previous work, this experiment uses an input vector $\vec{v} \in \mathbb{R}^{100}$,
+$d_{\text{hidden}} = 50$, rank $k=1$ matrices, $|C| = 200$ subcomponents, and an
 embedding dimension $d_{\text{emb}} = 1000$.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=15cm, height=5cm]{CCmodel.png}
-    \caption{Architecture of the Toy Model of Compressed Computation. Picture taken from \autocite{bhagat2025compressed}}
+    \caption{Architecture of the Toy Model of Compressed Computation. Picture taken from \autocite{bhagat2025compressed}}.
 \end{figure}
-
-A naive optimization would assign each hidden neuron to one of the $100$ ReLU
-functions, but this would perform poorly on the remaining features. Instead, to
+A naive solution would assign each hidden neuron to one of the $100$ ReLU
+functions, but this would perform poorly on the remaining computations. Instead, to
 minimize the loss, the model approximates all $100$ computations jointly
 \autocite{bhagat2025compressed}.
 
 The ground truth for $W_{\text{in}}$ follows directly, where one subcomponent should be
-causally important for one input feature, matching the independent
+causally important for one input, matching the independent
 one-dimensional structure of the inputs. For $W_{\text{out}}$ it is less clear.
 APD \autocite{AttributionBasedParameterDecomposition} initially expected a
-monosemantic decomposition, with each subcomponent responsible for one of the
+monosemantic assignment, with each subcomponent responsible for one of the
 $100$ ReLU computations, while SPD \autocite{stochasticparameterdecomposition}
-reports a polysemantic one, in which $50$ subcomponents each contribute to
-multiple features and the rest are pruned to near-zero norm,
+reports a polysemantic one, in which $50$ subcomponents jointly contribute to
+all computations and the rest are pruned to near-zero norm,
 which is most in line with the result of \autocite{bhagat2025compressed},
 and is most likely the correct interpretation.
 
-\subsubsection{Sampling effect on loss}
-Before analyzing the causal importance values, this experiment will also be used to compare the effect of different sampling distributions on the loss
-and decomposition quality. Here the two methods SPD and Softmax with attention are compared across two sampling regimes: one-hot sampling, where only one feature is active at a time, and independent sampling, where each input is independently sampled with low probability.
-
-Softmax generally produces lower losses when sampling is done with one-hot inputs rather than sampling every feature independently.
-Most noticeably, the minimality loss, does not converge to zero under 
-independent sampling, where multiple features
-must be computed jointly.
-This is likely a direct consequence of how importance was defined,
-where entropy attempts to concentrate the joint signal on a single subcomponent,
-even when it originally stems from multiple input features.
-Sigmoid-based importance on the other hand,
-does not exhibit a significant difference between
-the two sampling methods.  \footnote{todo caption text}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{lcccc}
-\toprule
-& \multicolumn{2}{c}{SPD} & \multicolumn{2}{c}{Softmax} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
-Metric & One-hot & At-least-zero & One-hot & At-least-zero \\
-\midrule
-Faithfulness & $1.5 \times 10^{-6}$ & $1.4 \times 10^{-6}$ & $3 \times 10^{-5}$ & $5 \times 10^{-5}$ \\
-Stochastic reconstruction &$1.8 \times 10^{-4}$ & $1 \times 10^{-5}$ & $9 \times 10^{-5}$ & $1 \times 10^{-4}$ \\
-Layerwise stochastic reconstruction & $1 \times 10^{-5}$ & $1 \times 10^{-5}$ & $7 \times 10^{-5}$ & $9 \times 10^{-5}$ \\
-Output reconstruction & $3 \times 10^{-6}$ & $4 \times 10^{-6}$ & $8 \times 10^{-5}$ & $1.6 \times 10^{-4}$ \\
-Minimality & $3.83$ & $3.95$ & $8 \times 10^{-5}$ & $4.06$ \\
-\bottomrule
-\end{tabular}
-\caption{Reconstruction quality across sampling regimes for the Residual MLP.}
-\label{tab:resid_mlp_sampling}
-\end{table}
-
 \subsubsection{Causal importance}
-In its causal importance assignment, softmax with attention finds a middle ground between SPD and
+In its causal importance assignment, RSPD finds a middle ground between SPD and
 APD. In $W_{\text{in}}$ it produces a one-hot assignment, matching the ground truth.
 In  $W_{\text{out}}$ it
 diverges from SPD, rather than assigning 50 subcomponents to
-all features at once, the importance is concentrated with some 
-subcomponents being important for several features at once.
+all computations at once, the importance is concentrated with some 
+subcomponents being important for several at once.
 The assignment therefore appears sparser than the computation
 underneath it actually is. (Figure \ref{fig:cc_importance})
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{softmax_CC.png}
-    \caption{Causal importance values for Softmax on the Toy Model of Compressed Computation,
+    \caption{Causal importance values for RSPD on the Toy Model of Compressed Computation,
     with each input activated in isolation at magnitude $0.75$.
     The top heatmap is the first layer $W_1$ and the bottom
     heatmap is the second layer $W_2$, with rows corresponding to the subcomponent index and
@@ -869,74 +836,72 @@ neuron-level contributions of the subcomponents are compared to those of the
 target model \autocite{stochasticparameterdecomposition}.
 
 \begin{align}
-    \text{NeuronContribution}_{\text{model}}(i) &= \left( W_{U[i,:]}W_{\text{out}} \right) \odot \left( W_{\text{in}}W_{E}[:,i] \right) \label{eq:neuroncontribution} \\
-    \text{NeuronContribution}_{\text{subcomponent}}(i) &= \max_{c \in C} \left[\left( W_{U[i,:]} U_{\text{out}} V_{\text{out}}^{T} \right) \odot \left(U_{\text{in}[:,c]}V^{T}_{\text{in}}[c,:] W_{E}[:,i] \right) \right] \label{eq:subcomponentcontribution}
+    \text{NeuronContribution}_{\text{model}}(i) &= \left( W_{U[i,:]}W_{\text{out}} \right) \odot \left( W_{\text{in}}W_{E[:,i]} \right) \label{eq:neuroncontribution} \\
+    \text{NeuronContribution}_{\text{subcomponent}}(i) &= \max_{c \in C} \left[\left( W_{U[i,:]} U_{\text{out}} V_{\text{out}}^{T} \right) \odot \left(U_{\text{in}[:,c]}V^{T}_{\text{in}[c,:]} W_{E[:,i]} \right) \right] \label{eq:subcomponentcontribution}
 \end{align}
 where $W_{E[:,i]}$ and $W_{U[i,:]}$ are the $i$-th column and row of the embedding
 and unembedding matrices, and $\odot$ denotes element wise multiplication. The term
 $W_{U[i,:]}W_{\text{out}}$ measures how strongly the neurons contribute to the
-output, and $W_{\text{in}}W_{E}[:,i]$ how strongly they are activated by input
-$i$. A neuron contributes to feature $i$'s computation only when both are large;
+output, and $W_{\text{in}}W_{E}[:,i]$ how strongly they are activated by an column i.
+A neuron contributes to $i$'s computation only when both signals are strong;
 if either is small, its contribution is negligible.
 
-Despite the concentrated importance, the decomposition
-decomposed subcomponents attribute one subcomponent
-to each feature and the same neurons are involved in computing each feature as in the target model,
- but the contribution strength is misaligned, with some hidden neurons being underrepresented and others overrepresented. 
- (Figure~\ref{fig:cc_contribution}).
-This is consistent with the lower ML2R seen in TMS and paired TMS, and occurs even
-though the faithfulness and reconstruction losses are near-zero.
+In this case, RSPD replicates the target model's structure. For
+every input there is a subcomponent that projects through the same hidden neurons
+as in the target model. This is accompanied, however, by some misalignment in
+contribution strength. Despite the correct hidden-neuron assignment, the magnitudes
+are over- or under-represented (Figure~\ref{fig:cc_contribution}). This is consistent
+with the lower ML2R seen in TMS and paired TMS, and occurs even though the
+faithfulness and reconstruction losses are near-zero.
 
-\begin{figure}[H]
+\begin{figure}[h!]
     \centering
     \includegraphics[width=\linewidth, height=8cm]{cc_softmax_attention.png}
      \caption{Neuron-level contributions for the Toy Model of Compressed Computation, shown for the
-    first ten input features. The top row is computed from Equation~\eqref{eq:neuroncontribution},
+    first ten input columns of $W_{in}$. The top row is computed from Equation~\eqref{eq:neuroncontribution},
     and the bottom row from Equation~\eqref{eq:subcomponentcontribution}.}
     \label{fig:cc_contribution}
 \end{figure}
 
 \subsubsection{Subcomponent norm distributions}
-Apart from the feature shrinkage,
-the softmax decomposition also shows a more gradual norm distribution across subcomponents compared to SPD.
-While the first $100$ and $50$ subcomponents in $W_{\text{in}}$ and $W_{\text{out}}$
-respectively carry the bulk of the norm, there remains a longer
+Apart from the neuron contribution misalignment,
+the RSPD decomposition also shows a more gradual norm distribution across subcomponents compared to SPD.
+While the $100$ and $50$ causally important subcomponents of $W_{\text{in}}$ and $W_{\text{out}}$
+carry the bulk of the norm, there remains a longer
 tail of subcomponents with non-negligible norms in the first layer compared to SPD.
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_softmax.png}
     \hfill
     \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_spd.png}
-    \caption{Left: Softmax. Right: SPD. Subcomponent norms, sorted by decreasing matrix norm.}
+    \caption{Left: RSPD. Right: SPD. Subcomponent norms, sorted by decreasing matrix norm.}
     \label{fig:CC_norms}
 \end{figure}
 
-SPD, by contrast, shows a \footnote{Remember to rerun with better layer names.}
-sharp drop in norm after the causally important subcomponents,
+SPD, by contrast, shows a sharp drop in norm after the causally important subcomponents,
 with the inactive components pruned to near-zero norm in $W_{in}$ and a trailing tail of small but non-negligible norms in $W_{out}$.
 
-An initial hypothesis for why the softmax formulation fails to produce hard-zero norms in
-$W_{\text{in}}$, was that unlike the hard-sigmoid gating used in SPD, the softmax distribution does produce exact zeros. However,
+An initial hypothesis for why the RSPD architechture fails to produce hard-zero norms in
+$W_{\text{in}}$, was that unlike the hard-sigmoid gating used in SPD, the Softmax distribution does produce exact zeros. However,
 the causal importance value frequencies rule out this explanation.
 The learned importance assignments are bimodal, with all
 concentrated at either $0$ or $1$. (Figure \ref{fig:CC_causal_importance_hist})
 The absence of hard-zero norms therefore seems
 not to arise from the gating distribution itself, but rather from how
-reconstruction mass is distributed across subcomponents during optimisation. \footnote{Caption text}
+reconstruction mass is distributed across subcomponents during optimisation.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.48\linewidth,height=5cm]{cc_softmax_causal_importance_hist.png}
     \hfill
-    \caption{Histograms of the causal importance values for the softmax decomposition, taken over a
+    \caption{Histograms of the causal importance values for the RSPD decomposition, taken over a
     single batch at the end of training, for $W_{\text{in}}$. Shown in logarithmic scale.
     Training was done with with batch size $2048$ and $200$ sampling resulting in $409600$ total values shown.}
     \label{fig:CC_causal_importance_hist}
 \end{figure}
 
-More generally, \footnote{Remember to rerun with different layer names for better naming} this behaviour is likely related to the feature
-shrinkage phenomenon previously observed in both TMS and this toy model.
+More generally, this behaviour is likely related to the feature
+shrinkage phenomenon previously observed in TMS.
 The faithfulness objective is computed additively as the MSE between
 the summed subcomponent reconstruction and the target weight matrix,
 making it indifferent to how reconstruction mass is allocated
@@ -944,25 +909,29 @@ across subcomponents. Consequently, if the importance regularisation only weakly
 penalises low-magnitude subcomponents, optimisation may converge
 to solutions in which a small set of dominant subcomponents carry
 most of the semantic structure, while a long tail of weakly but relevantly active
-components absorb the difference.
+subcomponents absorb the difference.
 
 \subsection{Toy Model of Geometry}
 
-In the paired TMS regime, even though input features were nominally two-dimensional, the model collapsed them onto a single direction, so a rank-1 decomposition per feature was sufficient. To test the rank-$k$ extension of Section~\ref{sec:rank-k-attention}, a setting is needed where features can not collapse to a single direction.
+In the paired TMS regime, even though input pairs were nominally two-dimensional, the model collapsed them onto a single direction,
+so a rank-1 decomposition per feature was sufficient. To test the rank-$k$ extension of Section~\ref{sec:rank-k-attention},
+a setting is needed where features can not collapse to a single direction.
 This experiment generalizes the cube example from the introduction, where a model is trained to compute the volume of an $n$-dimensional simplex from its $n+1$ vertices in $\mathbb{R}^n$:
 \begin{equation}
     \text{Vol}(v_1, \ldots, v_{n+1}) = \frac{1}{n!} \left| \det\!\left( \begin{bmatrix} v_2 - v_1 & v_3 - v_1 & \cdots & v_{n+1} - v_1 \end{bmatrix} \right) \right|.
 \end{equation}
 
 
-To mirror the paired-feature setup of Section~\ref{sec:tms-tied-experiment}, the model receives $K$ simplices as input, each sampled with probability $p$ and otherwise set to zero across all of its coordinates:
+To mirror the paired setup of Section~\ref{sec:tms-tied-experiment},
+the model receives $K$ simplices as input, each sampled with probability $p$ and otherwise set to zero across all of its coordinates:
 \begin{equation}
     f(x) = W_2 \text{ReLU}(W_1 x), \quad W_1 \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_2 \in \mathbb{R}^{K \times d_{\text{hidden}}},
 \end{equation}
 here $n(n+1)$ is the total number of coordinates of a simplex in $\mathbb{R}^n$ and $K$ is the number of simplices.
 Concretely, for this experiment the simplices are triangles in $\mathbb{R}^2$, with $K = 3$ and $d_{\text{hidden}} = 150$.
 
-Unlike TMS, $d_{\text{hidden}}$ is chosen to be much greater than the input dimension (here $d_{in}= 18$), so that the model does not need to compress features through superposition.
+Unlike TMS, $d_{\text{hidden}}$ is chosen to be much greater than the input dimension (here $d_{in}= 18$),
+so that the model does not need to express features in superposition.
 The intention being that the model assigns each simplex to a
 separate subset of neurons, allowing the routing of information
 from input to output to be studied in isolation, as the minimality
@@ -986,8 +955,9 @@ Let the input vector be partitioned \footnote{input vector good word, but we sho
 where group $g$ contains the column indices for the $n(n+1)$ coordinates of simplex $g$ denoted
 by $\mathcal{C}_g$, with the groups jointly covering all input columns.
 
+
 Let $W_g^{l}$ denote $W^{l}$ restricted to the columns in $\mathcal{C}_g$
-and zero elsewhere, such  that $W^{l} = \sum_{g=1}^{K} W^{l}_{g}$.
+and zero elsewhere, such  that $W^{l} = \sum_{g=1}^{K} W^{l}_{g}$. \footnote{Say we write Wgl instead of UV, to simplicy notation when the subcomponents have a k dimension}
 
 \footnote{Note we define both $W^g$ and $W^{c}$, technically they canco occur. Perhaps define a seperate notation? }.
 The preactivation of hidden neuron $i$ then decomposes additively
@@ -1001,14 +971,8 @@ On the output side, the strength with which hidden neuron
 $i$ contributes to the volume computation of simplex $k$
 is given directly by
 \begin{equation}
-    \pi_{l+1,[k,i]} := W_{l+1[k,i]}
+    \pi^{l}_{+1,[k,i]} := W^{l+1}_{[k,i]}
 \end{equation}
-% Finally, the strength of the path from simplex $g$ to output $k$ through neuron $i$ is given by the product of these two factors. 
-% Let $s_{i}$ denote the strongest of such paths for neuron $i$ across all simplices and outputs. A large value indicates a strong path, while a small value is
-% less influential. \footnote{Double check value for figure with cutoff also consider deleting this equation, not so important afterall.}
-% \begin{equation}
-%     s_{i} = \max_{g,k} \rho_{l,[i,g]} \pi_{l+1,[k,i]}. \footnote{Make sure i compute max} \footnote{Consider not taking absolute values here or verify that the code doesnt. Also the plot caps at zero, there must be a max somewhere.}
-% \end{equation}
 
 \begin{figure}[H]
     \centering
@@ -1038,7 +1002,7 @@ computes the volume for all three simplices, or that each simplex
 is assigned its own. The decomposition points to the latter,
 with each simplex's computation captured by a separate set
 of subcomponents across both layers.
-Unlike the paired TMS feature, a simplex's computation
+Unlike the paired TMS inputs, a simplex's computation
 is spread across a higher dimensional space,
 and is not collapsible into a single direction, that
 a single rank-1 subcomponent could capture. 
@@ -1072,7 +1036,7 @@ how the decomposition realises this, the same quantities are redefined over the 
 measuring how strongly they route into one another across all hidden neurons.
 
 Let $W^{l}_{(c)}$ be a subcomponent of layer $l$, defined in the same manner as in Section $\ref{sec:rank-k-attention}$,
-such that $\sum_{c=1}^{C} W^{(l)}_{(c)} \approx W^{l}$.
+such that $\sum_{c=1}^{|C|} W^{(l)}_{(c)} \approx W^{l}$.
 Then, analogous to the definitions above, the additive contribution of simplex \(g\) to hidden neuron \(i\), and the contribution of hidden neuron \(i\) to output \(k\), through subcomponent \(c\), are given by
 \begin{equation}
 \begin{aligned}
@@ -1080,12 +1044,12 @@ Then, analogous to the definitions above, the additive contribution of simplex \
     &:= \sum_{j \in \mathcal{C}_g} W^{(l)}_{(c),[i,j]},
     &\qquad
     \rho^{\,l}_{[i,g]}
-    &= \sum_{c=1}^{C} \rho^{\,l}_{(c),[i,g]}, \\
-    \pi^{(c)}_{l+1,[k,i]}
+    &= \sum_{c=1}^{|C|} \rho^{\,l}_{(c),[i,g]}, \\
+    \pi^{l+1}_{(c),[k,i]}
     &:= W^{(l+1)}_{(c),[k,i]},
     &\qquad
-    \pi_{l+1,[k,i]}
-    &= \sum_{c=1}^{C} \pi^{(c)}_{l+1,[k,i]} .
+    \pi^{l+1}_{[k,i]}
+    &= \sum_{c=1}^{|C|} \pi^{l+1}_{(c),[k,i]} .
 \end{aligned}
 \end{equation}
 Finally, since the subcomponents can be linked through multiple hidden neurons, their total routing
@@ -1105,15 +1069,15 @@ and $\Psi_{c',c}$ is the sum of its entries. The ReLU makes this approximate, so
 as a linearised measure of routing from $c$ into $c'$.
 
 These three quantities together describe the routing through the decomposition. The input
-contribution $\rho^{(c)}_{l,[i,g]}$ shows how each simplex group contributes to subcomponent $c$,
-the output contribution $\pi^{(c)}_{l+1,[k,i]}$ shows how subcomponent $c$ contribute to each output,
+contribution $\rho^{l}_{(c),[i,g]}$ shows how each simplex group contributes to subcomponent $c$,
+the output contribution $\pi^{l+1}_{(c),[k,i]}$ shows how subcomponent $c$ contribute to each output,
 and the routing matrix $\Psi_{c',c}$ composes the two, measuring how strongly a subcomponent that
 reads from the input ($c$) connects to one that writes to the output ($c'$) through shared
 hidden neurons.
 
 \subsubsection{Comparison of importance values across different minimality coefficients}
 With the rank fixed at $k=1$, the minimality coefficient $\beta_3$ is
-varied in order to compare how SPD and the softmax variant distribute importance
+varied in order to compare how SPD and RSPD distribute importance
 under different levels of pressure toward sparsity.
 Since a rank-1 subcomponent
 can not represent a full simplex, the focus lies in
@@ -1136,7 +1100,7 @@ independent computations. For the second layer, when $\beta_{3}$ is set to $10^{
 one subcomponent become causally important for each simplex, recovering the hypothesized
 decomposition. (Figure \ref{fig:spd_minimality_sweep_condensed}).
 
-For Softmax, the same sweep yields very different results. At $\beta_3 = 10^{-3}$ the decomposition finds
+For RSPD, the same sweep yields very different results. At $\beta_3 = 10^{-3}$ the decomposition finds
 a near-diagonal representation, with each subcomponent causally important for a single coordinate
 of one simplex. Lowering $\beta_3$ towards $\beta_{3}=10^{-5}$ makes subcomponents causally important for multiple coordinates of the same simplex,
 with some becoming causally important for different simplices, most notable in simplex 2 and 3. The pattern starts to break down at $\beta_3 = 10^{-6}$,
@@ -1164,7 +1128,7 @@ in which a single subcomponent is causally important for all three simplices. (F
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{Softmax_minimality_sweep_condensed_1e-3_to_1e-6.png}
-    \caption{Causal importance values for Softmax with attention across the minimality sweep, with each input activated
+    \caption{Causal importance values for RSPD across the minimality sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to $\beta_3$ values in $[10^{-3}, 10^{-5}, 10^{-6}]$, all at rank 1.
     Within each panel
@@ -1184,7 +1148,7 @@ more evenly across them. Finally, when $\beta_3 = 10^{-5}$ the structure is much
 routing the majority of the signal and the magnitude is concentrated on much fewer subcomponents.
 In the second layer, each simplex is routed through a single subcomponent, with negligible routing through the others, recovering the expected decomposition. (Figure \ref{fig:spd_minimality_sweep_condensed}).
 
-With Softmax and attention, when the minimality loss is large, the input layer representation
+With RSPD, when the minimality loss is large, the input layer representation
 spreads the magnitude diffusely over multiple subcomponents, with the majority of the routing being distributed through one 
 subcomponent in the second layer, despite the importances suggesting monosemanticity. As $\beta_3$ is relaxed,
 the importance values suggest that one subcomponent becomes causally important for all simplices, however
@@ -1195,7 +1159,7 @@ the routing suggests that it instead gradually becomes split into multiple simpl
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{Io_routing_chain_for_spd_and_softmax_combined_minimality_1e-3_and_1e-5.png}
-    \caption{Overview of routing patterns for SPD and softmax with attention, with the rank fixed at $k=1$ and the minimality
+    \caption{Overview of routing patterns for SPD and RSPD, with the rank fixed at $k=1$ and the minimality
     coefficient fixed varied over [$10^{-3},10^{-5},10^{-6}$] (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
@@ -1218,12 +1182,12 @@ Increasing the rank raises each subcomponent's representational capacity
 absorb an entire simplex. Capacity alone, however, does not enforce this: SPD's independent sigmoid
 gating imposes little pressure for a feature to be carried by one subcomponent rather than spread across
 several, so the added rank can instead be used to represent parts of multiple simplices at once.
-Softmax is instead conditioned to capture the entire input feature and should have sufficient 
+RSPD is instead conditioned to capture the entire feature and should have sufficient 
 structural pressure to achieve this.
 
 From the previous section, a minimality coefficient of $10^{-5}$ is selected for SPD, as it
 minimises the global loss while producing the clustering that
-best resembles the expected decomposition. For Softmax it is set to $10^{-3}$,
+best resembles the expected decomposition. For RSPD it is set to $10^{-3}$,
 as it minimized the loss.
 
 Structurally the causal importance values for SPD, do not show this desired behaviour as the rank is increased,
@@ -1231,7 +1195,7 @@ instead as each subcomponent becomes more expressive, the total number of active
 decreases, with each now being causally important for multiple simplices. This however does not entangle 
 the importance of the second layer, where one subcomponent remains active for each simplex.
 
-For softmax, the causal importance assignment does show the desired trend,
+For RSPD, the causal importance assignment does show the desired trend,
 as the rank increases one subcomponent gradually becomes causally important for one simplex
 in the input layer, while in the output layer, the same behaviour is seen as with the minimality sweep,
 where one subcomponent becomes causally important for all three simplices, with the remaining subcomponents being inactive.
@@ -1255,7 +1219,7 @@ where one subcomponent becomes causally important for all three simplices, with 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e3_rank_1_3_5.png}
-    \caption{Causal importance values for Softmax with attention across the rank sweep, with each input activated
+    \caption{Causal importance values for RSPD across the rank sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to the rank set to [1, 3, and 5], with the minimiality coefficient fixed at $10^{-3}$.
     Within each panel
@@ -1269,14 +1233,14 @@ where one subcomponent becomes causally important for all three simplices, with 
 As in previous observations, the routing patterns indicate that the importance values reflect subcomponent behavior in SPD. Increasing the rank does not concentrate importance onto a single subcomponent per simplex. Instead, input-layer subcomponents are able to activate across multiple simplices.
 In contrast, the second layer appears largely insensitive to rank in terms of this effect: each subcomponent remains causally tied to a single simplex.
 
-For Softmax with attention, however, the observed changes in importance are not reflected in the learned routing structure. Although higher rank suggests that input-layer routing should become more distinct, the connections remain entangled, with many subcomponents still receiving inputs from multiple simplices.
+For RSPD, however, the observed changes in importance are not reflected in the learned routing structure. Although higher rank suggests that input-layer routing should become more distinct, the connections remain entangled, with many subcomponents still receiving inputs from multiple simplices.
 Rank does have a clearer effect in the second layer, where a single subcomponent comes to dominate the output magnitude and effectively carries most of the routing to the output.
 
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Io_routing_chain_combined_rank_3_and_5.png}
-        \caption{Overview of routing patterns for SPD and softmax with attention, with SPD's minimality coefficient fixed at $10^{-5}$ and softmax's at $10^{-3}$,
+        \caption{Overview of routing patterns for SPD and RSPD, with SPD's minimality coefficient fixed at $10^{-5}$ and RSPD's at $10^{-3}$,
     and the rank varied over [1,3,5] (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
@@ -1294,22 +1258,22 @@ Rank does have a clearer effect in the second layer, where a single subcomponent
 
 \section{Discussion}
 
-In every experiment, both SPD and the Softmax variant reached near-zero faithfulness loss and
+In every experiment, both SPD and RSPD reached near-zero faithfulness loss and
 reconstructed the layer outputs accurately. The two methods nonetheless have very different
 internal structures, and the central finding of this work is that a sparse causal importance
-assignment does not imply a sparse underlying representation with the modified softmax and attention structure.
+assignment does not imply a sparse underlying representation with the modified RSPD structure.
 
-The softmax variant repeatedly produced concentrated, near one-hot importance values that did not
+RSPD repeatedly produced concentrated, near one-hot importance values that did not
 correspond to an equally concentrated representation. In the Toy Model of Compressed Computation,
-the one-hot assignment suggested a monosemantic decomposition, yet at the neuron level each
+the one-hot assignment suggested a monosemantic assignment, yet at the neuron level each
 subcomponent contributed to several of the ReLU computations, including ones for which it carried no
 causal importance.\footnote{Again remember to double check with a fully trained model.} In the
 geometric experiment the importance values likewise suggested a clean per-simplex assignment, but
 the routing analysis showed subcomponents reading from multiple simplices and, in the second layer,
 writing to several simplex outputs at once, mirroring the compressed-computation result. Even in the
-independent Toy Model of Superposition, where SPD and softmax produced the same one-hot importance
-assignment, softmax diverged on both MMCS and ML2R, recovering a slightly rotated geometry with
-residual magnitude spread across neighbouring features.
+independent Toy Model of Superposition, where SPD and RSPD produced the same one-hot importance
+assignment, RSPD diverged on both MMCS and ML2R, recovering a slightly rotated geometry with
+residual magnitude spread across neighbouring subcomponents.
 
 It was initially hypothesised that normalising the importance distribution would tie it directly to
 the magnitude of each subcomponent, so that a subcomponent's predicted importance and its share of
@@ -1322,9 +1286,7 @@ and that subcomponents should not jus be causally important,
 when all other weights are ablated, but should be causally important
 in every subset that includes them. \footnote{added something here}
 
-
-
-A natural explanation would be that the softmax can not emit hard zeros, but the
+A natural explanation would be that Softmax can not emit hard zeros, but the
 near-bimodal distribution of importance values rules this out: the importance values themselves do
 reach zero, while the norms of the corresponding subcomponents retain a tail of meaningful
 magnitude. The cause therefore seems not to be attributed to how the importance is distributed,
@@ -1334,50 +1296,43 @@ objective is indifferent. This came as a bigger surprise, as SPD also only penal
 the norm distribution indirectly through the minimisation of the total
 importance, yet it does drive the norms of inactive subcomponents to near-zero.
 
-Taken together, the softmax formulation does not appear to be the right tool for parameter
+Taken together, RSPD does not appear to be the right tool for parameter
 decomposition in its current form. This is clearest in the compressed-computation model, where the
 target feature is an approximation of many computations at once and can not be attributed to a single
 direction in superposition; forcing a one-hot assignment is then 
-counterproductive. The
-sampling comparison points the same way: softmax converged far better, 
-under one-hot sampling, where a single subcomponent could plausibly own each active
-feature. Entropy with softmax, is therefore better suited to settings where
-there is a binary measure of importance,  whereas the right target is more
-likely a continuum between the two \autocite{bushnaq2026interpreting_new_spd}.
+counterproductive. Softmax with entropy is instead better suited
+to settings where there is a binary measure of importance,
+where a feature is either important or not, 
+and not where the right target is more likely a continuum between the two.
+\autocite{bushnaq2026interpreting_new_spd}.
 
 
 
-In the Toy Model of Geometry,
-SPD recovered a clustered representation that
-matched the per-simplex grouping of the ground truth,
-but increasing the subcomponent rank did not
-let it absorb a whole simplex into one subcomponent.
-Instead the added capacity was spent sharing
-simplices across a smaller set of subcomponents,
-since neither the sigmoid gating nor the minimality
-loss exerted sufficient pressure for a feature to
-be owned by one subcomponent rather than spread across
-several subcomponents. Therefore if SPD
-is supposed to recover these features and work with a 
-higher representational capacity, future work
-should investigate alternative designs, that could enforce this structural pressure.
+In the Toy Model of Geometry, SPD recovered a clustered representation that
+matched the per-simplex grouping of the ground truth, but increasing the
+subcomponent rank did not let it absorb a whole simplex into one subcomponent.
+Instead the added capacity was spent sharing simplices across a smaller set of
+subcomponents, since neither the sigmoid gating nor the minimality loss exerted
+sufficient pressure for a feature to be owned by one subcomponent rather than
+spread across several. If SPD is to recover these features at a higher
+representational capacity, future work should investigate alternative designs
+that enforce this structural pressure.
 
-The rank constraint connects to a different ambiguity
+The rank constraint connects to a broader ambiguity
 about what structure parameter decomposition is meant to
 recover. In the SPD formulation the rank-one constraint
 is intended to enforce the simplicity of a
 mechanism, but rank-one is not the smallest possible unit.
-Two otherwise independent features can be
-aligned along a common direction
-and captured by a single rank-one subcomponent, if they happen to correlate, \footnote{Wording here, independent and correlate are somewhat contradicting}
-which is exactly what was observed in the paired TMS setting, where one rank-one subcomponent
-captures a feature pair just as it would a single feature. In that sense one decomposition is
+TTwo functionally distinct features can be aligned
+along a common direction and captured by a single rank-one subcomponent when
+their activations are correlated, which is exactly what was observed in the
+paired TMS setting, where a single rank-one subcomponent captures an input pair
+just as it would a single input. In that sense one decomposition is
 strictly coarser than the other, yet both are rank-one and both reconstruct the model, so rank alone
-does not determine simplicity. While it did align with the behaviour specified by the irreducibility condition in this case,
-the concept is not unique to TMS. The same pattern appears in VPD, where a toy model implements multiple 
-mechanisms with disjoint support that sum to a single rank-one matrix. 
-\autocite{bushnaq2026interpreting_new_spd}.
-Therefore, choosing whether to increase the rank is not a trivial decision, as each option entails distinct trade-offs in expressivity and interpretability
+does not determine simplicity.The concept is not unique to TMS. The same pattern appears in VPD, where a toy model implements multiple 
+circuits, that are all collinear and sum to a rank 1 subcomponent, that is causally important for all of them,
+which doesn't incentivise the model to split them further\autocite{bushnaq2026interpreting_new_spd}.
+Therefore, choosing whether to increase the rank is not a trivial decision, as each option entails distinct trade-offs in expressivity and interpretability.
 
 
 
@@ -1390,13 +1345,13 @@ The original method computes each subcomponent's
 importance independently with a small MLP, whereas
 the architecture used here computes importance
 relationally, through a transformer block with
-a softmax over subcomponent activations. It is
+Softmax over subcomponent activations. It is
 therefore not possible to attribute the observed
 differences to either change in isolation.
 In concurrent work, the change to implement a transformer
 to compute relational importance has been implemented
 with good success, so it is likely that the observed
-differences can be attributed to softmax.
+differences can be attributed to Softmax.
 \autocite{bushnaq2026interpreting_new_spd} 
 
 From the perspective of irreducibility, the experiments
@@ -1501,12 +1456,12 @@ add the losses of trianing
 \end{figure}
 
 \newpage
-\subsubsection{Softmax: Sweep over minimality coefficients}
+\subsubsection{RSPD: Sweep over minimality coefficients}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_minimality_sweep_full_1e1_to_1e-6.png}
-    \caption{Causal importance values for Softmax with attention across the minimality sweep, with each input activated
+    \caption{Causal importance values for RSPD with attention across the minimality sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to $\beta_3$ values from $10^{-1}$ to $10^{-6}$. Within each panel
     the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
@@ -1519,7 +1474,7 @@ add the losses of trianing
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_minimality_io_sweep_full_1e1_to_1e-6.png}
-    \caption{Overview of routing patterns for Softmax with attention at rank 1, with the minimality
+    \caption{Overview of routing patterns for RSPD at rank 1, with the minimality
     coefficient varied over $10^{-1}$ to $10^{-6}$ (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
@@ -1533,12 +1488,12 @@ add the losses of trianing
 \end{figure}
 
 \newpage
-\subsubsection{Softmax: Sweep over ranks for fixed minimality}
+\subsubsection{RSPD: Sweep over ranks for fixed minimality}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e3_rank_1_to_8.png}
-    \caption{Causal importance values for Softmax with attention across the rank sweep, with minimality coefficient $\beta_{3} = 10^{-3}$. Each input activated
+    \caption{Causal importance values for RSPD with attention across the rank sweep, with minimality coefficient $\beta_{3} = 10^{-3}$. Each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to the rank values from $1$ to $6$. Within each panel
     the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
@@ -1552,7 +1507,7 @@ add the losses of trianing
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_rank_io_sweep_full_rank_1_to_8.png}
-    \caption{Overview of routing patterns for Softmax with attention across ranks 1 to 6, with the minimality
+    \caption{Overview of routing patterns for RSPD across ranks 1 to 6, with the minimality
     coefficient fixed at $10^{-3}$ (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
