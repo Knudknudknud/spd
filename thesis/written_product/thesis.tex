@@ -208,7 +208,7 @@ where the functional behaviour can be attributed to multiple distinct but functi
 \subsection{Parameter-space decomposition}
 
 Recently a newer line of work aims to decompose the network's parameters directly, instead of the activations.
-Transcoders \autocite{dunefsky2024transcodersinterpretablellmfeature} represent an intermediate step that learns a sparse approximation of an MLP layer. Parameter decomposition methods go further, factorising the network's weights directly, with the goal of recovering the network's computational primitives.
+Transcoders \autocite{dunefsky2024transcodersinterpretablellmfeature} represent an intermediate step that learns a sparse approximation of an MLP layer. Parameter decomposition methods go further, factorizing the network's weights directly, with the goal of recovering the network's computational primitives.
 
 Most directly relevant to this work is the description-length-driven
 line of Attribution-based Parameter Decomposition
@@ -252,7 +252,7 @@ a network's parameters into a set of components that are faithful
 to the original weights, minimal in the number required per input,
 and individually as simple as possible.
 
-To formalise this, consider a neural network $f(x, W)$ with weight matrices $W = \{W^1, \dots, W^L\}$.
+To formalize this, consider a neural network $f(x, W)$ with weight matrices $W = \{W_{1}, \dots, W^L\}$.
 A set of parameter components are said to comprise the network's mechanisms if they satisfy the following properties:
 \renewcommand\labelitemi{\tiny$\bullet$}
 \begin{itemize}
@@ -273,19 +273,19 @@ APD scales poorly: its memory cost grows with the number of components,
 as each component has the same dimensionality as the original network,
 and its top-$k$ attribution is sensitive to hyperparameter choice.
 
-SPD \autocite{stochasticparameterdecomposition} addresses these limitations by enforcing a rank-one structure on each component, and replacing top-$k$ attribution with a learned causal importance function. Formally, each weight matrix $W^l$ is decomposed into a sum of $|C|$ rank-one subcomponents:
+SPD \autocite{stochasticparameterdecomposition} addresses these limitations by enforcing a rank-one structure on each component, and replacing top-$k$ attribution with a learned causal importance function. Formally, each weight matrix $W^l$ is decomposed into a sum of $C$ rank-one subcomponents:
 \begin{equation}
-W^{l}_{i,j} \approx \sum_{c=1}^{|C|} U^{l}_{i,c} V^{l}_{c,j}, 
-\quad \text{where} \quad U^l \in \mathbb{R}^{d_{\text{out}} \times |C|}, \, V^l \in \mathbb{R}^{|C| \times d_{\text{in}}}
+W^{l}_{i,j} \approx \sum_{c=1}^{C} U^{l}_{i,c} V^{l}_{c,j}, 
+\quad \text{where} \quad U^l \in \mathbb{R}^{d_{\text{out}} \times C}, \, V^l \in \mathbb{R}^{C \times d_{\text{in}}}
 \end{equation}
-where $|C|$is a hyperparameter, for the number of components for each layer, $l$ indexes the layer and $i,j$ are the hidden indices.
-The subcomponent count, $|C|$, may be chosen to be larger than both $d_{in}$ and $d_{out}$, enabling the method to learn features in superposition \autocite{stochasticparameterdecomposition}.
+where $C$is a hyperparameter, for the number of components for each layer, $l$ indexes the layer and $i,j$ are the hidden indices.
+The subcomponent count, $C$, may be chosen to be larger than both $d_{in}$ and $d_{out}$, enabling the method to learn features in superposition \autocite{stochasticparameterdecomposition}.
 
-To enforce the properties above, three losses are introduced, which are optimised jointly.
-Faithfulness is enforced thorugh a mean squared error loss between the original network's weights and the sum of subcomponents:
+To enforce the properties above, three losses are introduced, which are optimized jointly.
+Faithfulness is enforced through a mean squared error loss between the original network's weights and the sum of subcomponents:
 
 \begin{equation}
-    \mathcal{L}_{\text{faithfulness}} = \frac{1}{N} \sum_{l=1}^{L}\sum_{i,j} \left( W_{i,j}^{l} - \sum_{c=1}^{|C|} U^{l}_{i,c}V^{l}_{c,j} \right)^{2}  
+    \mathcal{L}_{\text{faithfulness}} = \frac{1}{N} \sum_{l=1}^{L}\sum_{i,j} \left( W_{i,j}^{l} - \sum_{c=1}^{C} U^{l}_{i,c}V^{l}_{c,j} \right)^{2}  
 \end{equation}
 where $N$ is the total parameter count in the target model.
 
@@ -293,7 +293,7 @@ Optimization for simplicity and minimality is achieved through a
 stochastic masking procedure. Intuitively, if a subcomponent is not
 necessary for reconstruction, it can be sampled to zero without loss
 of faithfulness. A causal importance function
-$\Gamma: \mathcal{X} \to [0,1]^{|C| \times L}$ is trained to learn the
+$\Gamma: \mathcal{X} \to [0,1]^{C \times L}$ is trained to learn the
 lower bound of the ablation. In SPD, $\Gamma$ is a set
 of independent MLPs $\gamma^l_c$ that each take a layer's activation
 and output a scalar importance for the corresponding subcomponent:
@@ -305,7 +305,7 @@ activation vector of layer $l$. $g_c^{l}(x)$ serves as the lower bound for how m
 \begin{equation}
 \begin{aligned}
     m_{c}^l(x, r) &= g^{l}_{c}(x) + \bigl(1 - g^{l}_{c}(x)\bigr)\, r^l_{c}, \\
-    W'^{l}_{i,j}(x, r)  &= \sum_{c=1}^{|C|} \vec{U}_{i,c}^{l}\, m_{c}^l(x, r)\, \vec{V}_{c,j}^{l},
+    W'^{l}_{i,j}(x, r)  &= \sum_{c=1}^{C} \vec{U}_{i,c}^{l}\, m_{c}^l(x, r)\, \vec{V}_{c,j}^{l},
 \end{aligned}
 \end{equation}
 These masked matrices are trained to reconstruct the original network's output.
@@ -338,7 +338,7 @@ active subcomponents, creating a tradeoff between
 faithfulness and minimality.
 \begin{equation}
     \mathcal{L}_{\text{minimality}}
-      = \sum_{l=1}^{L} \sum_{c=1}^{|C|} \bigl(g^{l}_{c}(x)\bigr)^{p},
+      = \sum_{l=1}^{L} \sum_{c=1}^{C} \bigl(g^{l}_{c}(x)\bigr)^{p},
       \qquad p > 0.
 \end{equation}
 \label{spd_minimality}
@@ -376,7 +376,7 @@ where each $f_j(t) \in \mathbb{R}^{d_{f_j}}$ is an irreducible feature with
 internal dimensionality $d_{f_j} \geq 1$, each $V_j \in \mathbb{R}^{d \times d_{f_j}}$,
 and $\| V_k^\top V_r \| < \delta$ for $k \neq r$.
 
-Here an irreducibile feature is one that can not be decomposed into two independent or mutually exclusive features, as defined below.
+Here an irreducible feature is one that can not be decomposed into two independent or mutually exclusive features, as defined below.
 The original mixture case is self-contradicting, so it is restated as in \autocite{busch2025}.
 
 \textbf{Definition: Reducibility} \\
@@ -421,13 +421,14 @@ represent an irreducible multi-dimensional feature, forcing it to either
 the cost of reconstruction. To allow such features to be captured during training,
 the pairs of vectors are replaced with pairs of matrices.
 \begin{equation}
-W^{l}_{i,j} \approx \sum_{c=1}^{|C|} \sum_{r=1}^{k} U^{l}_{c,i,r} V^{l}_{c,r,j},
-\quad \text{where} \quad U^l \in \mathbb{R}^{|C| \times d_{\text{out}} \times k}, \, V^l \in \mathbb{R}^{|C| \times k \times  d_{\text{in}}}
+W^{l}_{i,j} \approx \sum_{c=1}^{C} \sum_{r=1}^{k} U^{l}_{c,i,r} V^{l}_{c,r,j},
+\quad \text{where} \quad U^l \in \mathbb{R}^{C \times d_{\text{out}} \times k}, \, V^l \in \mathbb{R}^{C \times k \times  d_{\text{in}}}
 \end{equation}
-Each subcomponent $U^l_c {V^l_c} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
-has rank at most $k$, recovering the original SPD definition when $k=1$.
-As in the multi-dimensional superposition hypothesis, $k$ is an upper bound on
-each subcomponent's representational capacity; the effective rank may be lower.
+Each subcomponent, denoted $W^{l}_{c} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
+with entries $W^{l}_{c,[i,j]} = \sum_{r=1}^{k} U^{l}_{c,i,r} V^{l}_{c,r,j}$, has rank
+at most $k$, recovering the original SPD definition when $k=1$. As in the
+multi-dimensional superposition hypothesis, $k$ is an upper bound on each
+subcomponent's representational capacity; the effective rank may be lower.
 
 In SPD, each subcomponent's importance is computed independently through an MLP followed by a sigmoid nonlinearity,
 allowing multiple subcomponents to be active for a given input and thus distribute a
@@ -435,25 +436,25 @@ feature across them, even when it is irreducible. Likewise, the minimality loss 
 it imposes little penalty for distributing a feature across multiple subcomponents,
 nor for a single subcomponent to encode parts of multiple features. (Section \ref{spd_minimality})
 
-To address this, the causal importance function is redefined to maximize the conditional probability, that a given subcomponent $W_{(c)}^{l}$, is responsible for a given feature, conditioned on the activations of all subcomponents in the same layer.
+To address this, the causal importance function is redefined to maximize the conditional probability, that a given subcomponent $U_{c}^{l}V^{l}_{c}$, is responsible for a given feature, conditioned on the activations of all subcomponents in the same layer.
 \begin{equation}
-    g^l_{c}(x) = p\!\left(W^l_c \mid \{h^l_{c'}(x)\}^{|C|}_{c'=1}\right), \quad h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
+    g^l_{c}(x) = p\!\left(W^l_c \mid \{h^l_{c'}(x)\}^{C}_{c'=1}\right), \quad h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
 \end{equation}
-here $\vec{a}^l(x)$ is the activation vector of layer $l$ and C is the set of subcomponents in layer $l$, $g^{l}_{(c)}(x)$ the causal importance value and $h_{(c)}^l$ the input to the causal importance function.
+here $\vec{a}^l(x)$ is the activation vector of layer $l$ and C is the set of subcomponents in layer $l$, $g^{l}_{c}(x)$ the causal importance value and $h_{c}^l$ the input to the causal importance function.
 
 The conditional importance is computed using a standard transformer block following the architecture of \autocite{vaswani2023attentionneed}. For each layer $l$,
-the read activations \(h_c^l(x) \in \mathbb{R}^k\) of the \(|C|\) subcomponents are concatenated into a matrix \(H^l(x) \in \mathbb{R}^{|C| \times k}\),
+the read activations \(h_c^l(x) \in \mathbb{R}^k\) of the \(C\) subcomponents are concatenated into a matrix \(H^l(x) \in \mathbb{R}^{C \times k}\),
 with no positional encoding.
 These activations are projected into the transformer residual stream through a learned linear projection. The resulting representations are then processed by a standard transformer block consisting of a single attention head,
 a feed-forward network, residual connections, and layer normalization.
 
 Finally, each subcomponent representation is projected down to a single scalar, and a Softmax over all subcomponents is computed.
-This produces a normalized assignment over subcomponents, $\sum_{c=1}^{|C|}g^l_c(x) = 1$,
+This produces a normalized assignment over subcomponents, $\sum_{c=1}^{C}g^l_c(x) = 1$,
 causing the original minimality loss to become degenerate, as each layer contributes a constant value independent of the model state.
 Instead, it is replaced
 with entropy, to pressure the assignment to concentrate on as few subcomponents as possible. 
 \begin{equation}
-    \mathcal{L}_{\text{minimality}} = - \frac{1}{|L|} \sum_{l=1}^{L} \sum_{c=1}^{|C|} g^l_c(x) \log g^l_c(x)
+    \mathcal{L}_{\text{minimality}} = - \frac{1}{|L|} \sum_{l=1}^{L} \sum_{c=1}^{C} g^l_c(x) \log g^l_c(x)
 \end{equation}
 
 For the sake of clarity, this reformulation is referred to as Relational Stochastic Parameter Decomposition (RSPD), to distinguish it from the original formulation.
@@ -582,40 +583,40 @@ The Toy Model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition}
 TMS is studied in two regimes: one with independent inputs, reproducing the original SPD setup, and one with paired inputs that introduces statistical dependence. For both regimes, the rank of each subcomponent is kept at $1$, both because this is the ground-truth structure and to isolate the effect of RSPD.
 
 To quantify how well the learned subcomponents recover the target model, two metrics are computed across both regimes. The mean max cosine similarity (MMCS) \autocite{cunningham2023takingfeatures} measures directional alignment between each target feature and its best-matching learned subcomponent:
+
 \begin{equation}
 \text{MMCS}
 =
 \frac{1}{d_{\text{in}}}
 \sum_{j=1}^{d_{\text{in}}}
-\max_{c \in |C|}
-\left(
+\max_{c}
 \frac{
-\vec{U}_{:,c} V_{c,j} \cdot W_{:,j}
+W_{c,[:,j]} \cdot W_{:,j}
 }{
-\left\| \vec{U}_{:,c} V_{c,j} \right\|_2
-\left\| W_{:,j} \right\|_2
+\left\| W_{c,[:,j]} \right\|_2 \, \left\| W_{:,j} \right\|_2
 }
-\right).
 \end{equation}
-where $c \in |C|$ is the parameter component index and $j \in \{1, \ldots, d_{\text{in}}\}$ is the input index. A value of $1$ indicates that every target feature has a perfectly aligned subcomponent.
+
+where $c  \in {1,\dots, C}$ is the parameter component index and $j \in \{1, \ldots, d_{\text{in}}\}$ is the input index. A value of $1$ indicates that every target feature has a perfectly aligned subcomponent.
 
 Apart from directional alignment, the strength of the alignment is also measured, to detect feature shrinkage, a problem apparent in both Sparse Autoencoders and Attribution-Based Parameter Decomposition \autocite{jermyn2024tanhPenaltyDictionaryLearning,wright2024featureSuppressionSAEs,AttributionBasedParameterDecomposition}. The mean $L_{2}$ ratio (ML2R) compares the euclidean norm of the best-aligned subcomponent to the target feature \autocite{stochasticparameterdecomposition}:
 \begin{equation}
-\text{ML2R}
+    \text{ML2R}
 =
 \frac{1}{d_{\text{in}}}
 \sum_{j=1}^{d_{\text{in}}}
 \frac{
-\left\| \vec{U}_{:,\mathrm{mcs}(j)} \vec{V}_{\mathrm{mcs}(j),j} \right\|_2
+\left\| W_{\mathrm{mcs}(j),[:,j]} \right\|_2
 }{
 \left\| W_{:,j} \right\|_2
 }
 \end{equation}
-where $\mathrm{mcs}(j)$ is the index of the most aligned subcomponent for feature $j$. A ratio near $1$ indicates the feature is fully captured by its best-aligned subcomponent.
+where $mcs(j) = \arg \max_{c}$ of the MMCS expression for column $j$.
+A ratio near $1$ indicates the target column $W_{:,j}$ is fully captured by its best-aligned subcomponent.
 
 \subsubsection{Independent features}
 In this setting, each input $\mathbf{x} \in \mathbb{R}^{d_{\text{in}}}$ has components $x_j {\sim} \mathcal{U}(0,1)$ for $j = 1, \dots, d_{\text{in}}$.
-Under this setup, the ground-truth decomposition is a set of $d_{\text{in}}$ rank-one matrices, each non-zero only along the $c$-th column $W_{:,c}$.
+Under this setup, the ground-truth decomposition is a set of $d_{\text{in}}$ rank-one matrices, each non-zero only along the $k$-th column $W_{:,k}$.
 Like in the original SPD paper, two TMS models are trained: $\mathrm{TMS}_{5\text{-}2}$ with $d_{\text{in}}=5$ and $d_{\text{hidden}}=2$, and $\mathrm{TMS}_{40\text{-}10}$ with $d_{\text{in}}=40$ and $d_{\text{hidden}}=10$.
 
 \begin{figure}[h!]
@@ -721,8 +722,10 @@ concepts in the underlying model.
     \includegraphics[width=0.48\linewidth,height=10cm]{softmax_40_10_paired.png}
     \caption{Left: SPD decomposition of the paired TMS model. Right: RSPD decomposition of the paired TMS model.
     Each input value is
-    activated in isolation at magnitude 0.75. the top heatmap is the first layer $W_{1}$ and the bottom heatmap is the second
-    layer $W_{2}$, with rows corresponding to the subcompoent index and columns corresponding to the causal importance
+    activated in isolation at magnitude 0.75.
+    Despite the model learning $W=W^{T}$, two sets of subcomponents are learnt, one for 
+    each layer.The top heatmap is the first layer and the bottom heatmap is the second
+    layer , with rows corresponding to the subcomponent index and columns corresponding to the causal importance
     value. The subcomponents are permuted within each panel to make the block structure visible.
      SPD was trained with $200$ subcomponents and RSPD with $100$, as these yielded the best results for each method.}
     \label{fig:both}
@@ -735,23 +738,23 @@ magnitude of the projection: as already seen with independent inputs
 lower ML2R with higher variance, indicating that the best-aligned subcomponent,
 does not always carry the full feature magnitude
 (Table~\ref{tab:tms_results_paired}).
+row:
+
 \begin{table}[h!]
 \centering
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{lcc}
 \toprule
-& \multicolumn{2}{c}{$\mathrm{TMS}_{\text{Paired}40\text{-}10}$} \\
-\cmidrule(lr){2-3}
 & SPD & RSPD \\
 \midrule
 MMCS & $1.00 \pm 0.016$ & $0.999$ \\
 ML2R & $1.00 \pm 0.205$ & $0.720 \pm 0.465$ \\
 \bottomrule
 \end{tabular}
-\caption{Decomposition quality in the paired TMS setting. SPD refers to the original method \autocite{stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
+\caption{Decomposition quality in the paired $\mathrm{TMS-Paired}_{40\text{-}10}$ setting. SPD refers to the original method \autocite{stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
 \label{tab:tms_results_paired}
 \end{table}
-\footnote{add correct values!!!}
+\footnote{correct values}
 
 Overall across all three settings,
 SPD produces stronger results both in MMCS
@@ -786,7 +789,7 @@ The full architecture can be expressed as:
     y = W_U \big( W_E x + W_{\text{out}}(\mathrm{ReLU}(W_{\text{in}} W_E x)) \big).
 \]
 For comparability with previous work, this experiment uses an input vector $\vec{v} \in \mathbb{R}^{100}$,
-$d_{\text{hidden}} = 50$, rank $k=1$ matrices, $|C| = 200$ subcomponents, and an
+$d_{\text{hidden}} = 50$, rank $k=1$ matrices, $C = 200$ subcomponents, and an
 embedding dimension $d_{\text{emb}} = 1000$.
 
 \begin{figure}[H]
@@ -824,8 +827,8 @@ underneath it actually is. (Figure \ref{fig:cc_importance})
     \includegraphics[width=\linewidth, height=18cm]{softmax_CC.png}
     \caption{Causal importance values for RSPD on the Toy Model of Compressed Computation,
     with each input activated in isolation at magnitude $0.75$.
-    The top heatmap is the first layer $W_1$ and the bottom
-    heatmap is the second layer $W_2$, with rows corresponding to the subcomponent index and
+    The top heatmap is the first layer $W_{1}$ and the bottom
+    heatmap is the second layer $W_{2}$, with rows corresponding to the subcomponent index and
     columns to the causal importance value. The subcomponents are permuted within each panel to make the
     block structure visible. The model is trained using one-hot sampling.}
     \label{fig:cc_importance}
@@ -839,6 +842,12 @@ target model \autocite{stochasticparameterdecomposition}.
     \text{NeuronContribution}_{\text{model}}(i) &= \left( W_{U[i,:]}W_{\text{out}} \right) \odot \left( W_{\text{in}}W_{E[:,i]} \right) \label{eq:neuroncontribution} \\
     \text{NeuronContribution}_{\text{subcomponent}}(i) &= \max_{c \in C} \left[\left( W_{U[i,:]} U_{\text{out}} V_{\text{out}}^{T} \right) \odot \left(U_{\text{in}[:,c]}V^{T}_{\text{in}[c,:]} W_{E[:,i]} \right) \right] \label{eq:subcomponentcontribution}
 \end{align}
+
+\[
+    \text{NeuronContribution}_{\text{subcomponent}}(i) = \max_{c}
+\left[ \left( W_{U[i,:]} \sum_{c'} W_{\text{out},c'} \right)
+\odot \left( W_{\text{in},c}\, W_{E[:,i]} \right) \right]
+\]
 where $W_{E[:,i]}$ and $W_{U[i,:]}$ are the $i$-th column and row of the embedding
 and unembedding matrices, and $\odot$ denotes element wise multiplication. The term
 $W_{U[i,:]}W_{\text{out}}$ measures how strongly the neurons contribute to the
@@ -881,14 +890,14 @@ tail of subcomponents with non-negligible norms in the first layer compared to S
 SPD, by contrast, shows a sharp drop in norm after the causally important subcomponents,
 with the inactive components pruned to near-zero norm in $W_{in}$ and a trailing tail of small but non-negligible norms in $W_{out}$.
 
-An initial hypothesis for why the RSPD architechture fails to produce hard-zero norms in
+An initial hypothesis for why the RSPD architecture fails to produce hard-zero norms in
 $W_{\text{in}}$, was that unlike the hard-sigmoid gating used in SPD, the Softmax distribution does produce exact zeros. However,
 the causal importance value frequencies rule out this explanation.
 The learned importance assignments are bimodal, with all
 concentrated at either $0$ or $1$. (Figure \ref{fig:CC_causal_importance_hist})
 The absence of hard-zero norms therefore seems
 not to arise from the gating distribution itself, but rather from how
-reconstruction mass is distributed across subcomponents during optimisation.
+reconstruction mass is distributed across subcomponents during optimization.
 
 \begin{figure}[H]
     \centering
@@ -905,8 +914,8 @@ shrinkage phenomenon previously observed in TMS.
 The faithfulness objective is computed additively as the MSE between
 the summed subcomponent reconstruction and the target weight matrix,
 making it indifferent to how reconstruction mass is allocated
-across subcomponents. Consequently, if the importance regularisation only weakly
-penalises low-magnitude subcomponents, optimisation may converge
+across subcomponents. Consequently, if the importance regularization only weakly
+penalizes low-magnitude subcomponents, optimization may converge
 to solutions in which a small set of dominant subcomponents carry
 most of the semantic structure, while a long tail of weakly but relevantly active
 subcomponents absorb the difference.
@@ -925,7 +934,7 @@ This experiment generalizes the cube example from the introduction, where a mode
 To mirror the paired setup of Section~\ref{sec:tms-tied-experiment},
 the model receives $K$ simplices as input, each sampled with probability $p$ and otherwise set to zero across all of its coordinates:
 \begin{equation}
-    f(x) = W_2 \text{ReLU}(W_1 x), \quad W_1 \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_2 \in \mathbb{R}^{K \times d_{\text{hidden}}},
+    f(x) = W_{2} \text{ReLU}(W_{1} x), \quad W_{1} \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_{2} \in \mathbb{R}^{K \times d_{\text{hidden}}},
 \end{equation}
 here $n(n+1)$ is the total number of coordinates of a simplex in $\mathbb{R}^n$ and $K$ is the number of simplices.
 Concretely, for this experiment the simplices are triangles in $\mathbb{R}^2$, with $K = 3$ and $d_{\text{hidden}} = 150$.
@@ -955,17 +964,12 @@ Let the input vector be partitioned \footnote{input vector good word, but we sho
 where group $g$ contains the column indices for the $n(n+1)$ coordinates of simplex $g$ denoted
 by $\mathcal{C}_g$, with the groups jointly covering all input columns.
 
-
-Let $W_g^{l}$ denote $W^{l}$ restricted to the columns in $\mathcal{C}_g$
-and zero elsewhere, such  that $W^{l} = \sum_{g=1}^{K} W^{l}_{g}$. \footnote{Say we write Wgl instead of UV, to simplicy notation when the subcomponents have a k dimension}
-
-\footnote{Note we define both $W^g$ and $W^{c}$, technically they canco occur. Perhaps define a seperate notation? }.
 The preactivation of hidden neuron $i$ then decomposes additively
 over the groups:
 \begin{equation}
-    \sum_{c} W^{l}_{[i,c]} = \sum_{g=1}^{K} \rho^{l}_{[i,g]}, \qquad \rho^{l}_{[i,g]} := \sum_{c \in \mathcal{C}_{g}} W^{(l)}_{g,[i,c]},
+    \sum_{c} W^{l}_{[i,c]} = \sum_{g=1}^{K} \rho^{l}_{[i,g]}, \qquad \rho^{l}_{[i,g]} := \sum_{j \in \mathcal{C}_{g}} W^{l}_{[i,j]},
 \end{equation}
-Another way of stating this is that $\rho ^{l}_{[i,g]}$ is the total
+Another way of stating this is that $\rho^{l}_{[i,g]}$ is the total
 signal from simplex $g$ to hidden neuron $i$ before the nonlinearity.
 On the output side, the strength with which hidden neuron
 $i$ contributes to the volume computation of simplex $k$
@@ -989,7 +993,7 @@ is shown in Figure~\ref{fig:simplex_group_output}.
     \centering
     \includegraphics[width=\linewidth, height=9cm]{group_output_matrix_simplex.png}
     \caption{Group-to-output response of the trained network. Each entry
-    $P_{g,k} = \tfrac{1}{N}\sum_{n} \big[\, W_2\,\mathrm{ReLU}(W_1 x^{(g)}_n)\,\big]_k$ is the mean
+    $P_{g,k} = \tfrac{1}{N}\sum_{n} \big[\, W_{2}\,\mathrm{ReLU}(W_{1} x^{(g)}_n)\,\big]_k$ is the mean
     activation to output $k$ when only simplex $g$ is active in the input, averaged over 200 samples.}
     \label{fig:simplex_group_output}
 \end{figure}
@@ -1035,42 +1039,42 @@ To examine the structure of the target model, the hidden neurons were the unit o
 how the decomposition realises this, the same quantities are redefined over the subcomponents,
 measuring how strongly they route into one another across all hidden neurons.
 
-Let $W^{l}_{(c)}$ be a subcomponent of layer $l$, defined in the same manner as in Section $\ref{sec:rank-k-attention}$,
-such that $\sum_{c=1}^{|C|} W^{(l)}_{(c)} \approx W^{l}$.
-Then, analogous to the definitions above, the additive contribution of simplex \(g\) to hidden neuron \(i\), and the contribution of hidden neuron \(i\) to output \(k\), through subcomponent \(c\), are given by
+Analogous to the definitions above, the additive contribution of simplex \(g\) to hidden neuron \(i\), and the contribution of hidden neuron \(i\) to output \(k\), through subcomponent \(c\), are given by
 \begin{equation}
 \begin{aligned}
-    \rho^{\,l}_{(c),[i,g]}
-    &:= \sum_{j \in \mathcal{C}_g} W^{(l)}_{(c),[i,j]},
+    \rho^{\,l}_{c,[i,g]}
+    &:= \sum_{j \in \mathcal{C}_g} W^{l}_{c,[i,j]},
     &\qquad
     \rho^{\,l}_{[i,g]}
-    &= \sum_{c=1}^{|C|} \rho^{\,l}_{(c),[i,g]}, \\
-    \pi^{l+1}_{(c),[k,i]}
-    &:= W^{(l+1)}_{(c),[k,i]},
+    &= \sum_{c=1}^{C} \rho^{\,l}_{c,[i,g]}, \\
+    \pi^{l+1}_{c,[k,i]}
+    &:= W^{l+1}_{c,[k,i]},
     &\qquad
     \pi^{l+1}_{[k,i]}
-    &= \sum_{c=1}^{|C|} \pi^{l+1}_{(c),[k,i]} .
+    &= \sum_{c=1}^{C} \pi^{l+1}_{c,[k,i]} .
 \end{aligned}
 \end{equation}
+here, $W^{l}_{c}$ is a subcomponent of layer $l$, i,j are indices, $\mathcal{C}_{g}$ the column indices of simplex $g$,
+and $k$ the output index.
 Finally, since the subcomponents can be linked through multiple hidden neurons, their total routing
-across all hidden neurons is measured. The routing matrix $\Psi \in \mathbb{R}^{|C|\times|C|}$ is
+across all hidden neurons is measured. The routing matrix $\Psi \in \mathbb{R}^{C \times C}$ is
 defined as the inner product over the hidden neurons between the total input read by $c$ and the total
 output written by $c'$ at each neuron.
 \begin{equation}
     \Psi_{c',c} := \sum_{i=1}^{d_{\text{hidden}}}
-    \left( \sum_{k=1}^{d_{\text{out}}} W^{(l+1)}_{(c'),[k,i]} \right)
-    \left( \sum_{j=1}^{d_{\text{in}}} W^{(l)}_{(c),[i,j]} \right),
+    \left( \sum_{k=1}^{d_{\text{out}}} W^{l+1}_{(c'),[k,i]} \right)
+    \left( \sum_{j=1}^{d_{\text{in}}} W^{l}_{c,[i,j]} \right),
 \end{equation}
 It is large when the neurons $c$ activates from the input
 are the ones $c'$ uses to write the output, indicating a shared hidden representation.
 The form follows from the linear composition of the two subcomponents: ignoring the ReLU, the
-path through $c$ at layer $l$ and then $c'$ at layer $l+1$ is $W^{(l+1)}_{(c')} W^{(l)}_{(c)}$,
+path through $c$ at layer $l$ and then $c'$ at layer $l+1$ is $W^{l+1}_{(c')} W^{l}_{c}$,
 and $\Psi_{c',c}$ is the sum of its entries. The ReLU makes this approximate, so $\Psi$ is read
 as a linearised measure of routing from $c$ into $c'$.
 
 These three quantities together describe the routing through the decomposition. The input
-contribution $\rho^{l}_{(c),[i,g]}$ shows how each simplex group contributes to subcomponent $c$,
-the output contribution $\pi^{l+1}_{(c),[k,i]}$ shows how subcomponent $c$ contribute to each output,
+contribution $\rho^{l}_{c,[i,g]}$ shows how each simplex group contributes to subcomponent $c$,
+the output contribution $\pi^{l+1}_{c,[k,i]}$ shows how subcomponent $c$ contribute to each output,
 and the routing matrix $\Psi_{c',c}$ composes the two, measuring how strongly a subcomponent that
 reads from the input ($c$) connects to one that writes to the output ($c'$) through shared
 hidden neurons.
@@ -1104,8 +1108,8 @@ For RSPD, the same sweep yields very different results. At $\beta_3 = 10^{-3}$ t
 a near-diagonal representation, with each subcomponent causally important for a single coordinate
 of one simplex. Lowering $\beta_3$ towards $\beta_{3}=10^{-5}$ makes subcomponents causally important for multiple coordinates of the same simplex,
 with some becoming causally important for different simplices, most notable in simplex 2 and 3. The pattern starts to break down at $\beta_3 = 10^{-6}$,
-where the minimality loss no longer penalises spreading importance across subcomponents strongly
-enough. In the second layer the model recovers the alternative decomposition hypothesised earlier,
+where the minimality loss no longer penalizes spreading importance across subcomponents strongly
+enough. In the second layer the model recovers the alternative decomposition hypothesized earlier,
 in which a single subcomponent is causally important for all three simplices. (Figure \ref{fig:softmax_minimality_sweep_condensed}).
 
 
@@ -1116,8 +1120,8 @@ in which a single subcomponent is causally important for all three simplices. (F
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to $\beta_3$ values in $[10^{-3}, 10^{-5}, 10^{-6}]$, all at rank 1. 
     Within each panel
-    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
-    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
     block structure visible, so the column index is not comparable across panels.
     The full sweep over $10^{-1}$ to $10^{-6}$ can be found in the appendix.}
@@ -1132,8 +1136,8 @@ in which a single subcomponent is causally important for all three simplices. (F
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to $\beta_3$ values in $[10^{-3}, 10^{-5}, 10^{-6}]$, all at rank 1.
     Within each panel
-    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
-    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
     block structure visible, so the column index is not comparable across panels.
     The full sweep over $10^{-1}$ to $10^{-6}$ can be found in the appendix.}
@@ -1150,7 +1154,7 @@ In the second layer, each simplex is routed through a single subcomponent, with 
 
 With RSPD, when the minimality loss is large, the input layer representation
 spreads the magnitude diffusely over multiple subcomponents, with the majority of the routing being distributed through one 
-subcomponent in the second layer, despite the importances suggesting monosemanticity. As $\beta_3$ is relaxed,
+subcomponent in the second layer, despite the importance values suggesting monosemanticity. As $\beta_3$ is relaxed,
 the importance values suggest that one subcomponent becomes causally important for all simplices, however
 the routing suggests that it instead gradually becomes split into multiple simplices.
 \footnote{this needs a bit of work still.}
@@ -1163,11 +1167,11 @@ the routing suggests that it instead gradually becomes split into multiple simpl
     coefficient fixed varied over [$10^{-3},10^{-5},10^{-6}$] (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
     subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
     to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.
     The full sweep over $10^{-1}$ to $10^{-6}$ for both methods can be found in the appendix.}
@@ -1186,7 +1190,7 @@ RSPD is instead conditioned to capture the entire feature and should have suffic
 structural pressure to achieve this.
 
 From the previous section, a minimality coefficient of $10^{-5}$ is selected for SPD, as it
-minimises the global loss while producing the clustering that
+minimizes the global loss while producing the clustering that
 best resembles the expected decomposition. For RSPD it is set to $10^{-3}$,
 as it minimized the loss.
 
@@ -1206,10 +1210,10 @@ where one subcomponent becomes causally important for all three simplices, with 
     \includegraphics[width=\linewidth, height=12cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_rank_1_to_5.png}
     \caption{Causal importance values for SPD across the rank sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
-    The panels correspond to the rank set to [1, 3, and 5], with the minimiality coefficient fixed at $10^{-5}$.
+    The panels correspond to the rank set to [1, 3, and 5], with the minimality coefficient fixed at $10^{-5}$.
     Within each panel
-    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
-    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
     block structure visible, so the column index is not comparable across panels.
     The full sweep over ranks 1 to 6 can be found in the appendix.}
@@ -1221,10 +1225,10 @@ where one subcomponent becomes causally important for all three simplices, with 
     \includegraphics[width=\linewidth, height=12cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e3_rank_1_3_5.png}
     \caption{Causal importance values for RSPD across the rank sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
-    The panels correspond to the rank set to [1, 3, and 5], with the minimiality coefficient fixed at $10^{-3}$.
+    The panels correspond to the rank set to [1, 3, and 5], with the minimality coefficient fixed at $10^{-3}$.
     Within each panel
-    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
-    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
     block structure visible, so the column index is not comparable across panels.
     The full sweep over ranks 1 to 6 can be found in the appendix.}
@@ -1244,11 +1248,11 @@ Rank does have a clearer effect in the second layer, where a single subcomponent
     and the rank varied over [1,3,5] (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
     subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
     to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.
     The full sweep over ranks 1 to 6 for both methods can be found in the appendix.}
@@ -1273,9 +1277,9 @@ the routing analysis showed subcomponents reading from multiple simplices and, i
 writing to several simplex outputs at once, mirroring the compressed-computation result. Even in the
 independent Toy Model of Superposition, where SPD and RSPD produced the same one-hot importance
 assignment, RSPD diverged on both MMCS and ML2R, recovering a slightly rotated geometry with
-residual magnitude spread across neighbouring subcomponents.
+residual magnitude spread across neighboring subcomponents.
 
-It was initially hypothesised that normalising the importance distribution would tie it directly to
+It was initially hypothesized that normalizing the importance distribution would tie it directly to
 the magnitude of each subcomponent, so that a subcomponent's predicted importance and its share of
 the reconstruction would correlate. This did not hold. The entropy term does not drive the norm of
 inactive subcomponents to zero; they remain residually active and continue to contribute to the
@@ -1291,9 +1295,9 @@ near-bimodal distribution of importance values rules this out: the importance va
 reach zero, while the norms of the corresponding subcomponents retain a tail of meaningful
 magnitude. The cause therefore seems not to be attributed to how the importance is distributed,
 but rather in how reconstruction
-mass is allocated across subcomponents during optimisation, to which the additive faithfulness
-objective is indifferent. This came as a bigger surprise, as SPD also only penalises
-the norm distribution indirectly through the minimisation of the total
+mass is allocated across subcomponents during optimization, to which the additive faithfulness
+objective is indifferent. This came as a bigger surprise, as SPD also only penalizes
+the norm distribution indirectly through the minimization of the total
 importance, yet it does drive the norms of inactive subcomponents to near-zero.
 
 Taken together, RSPD does not appear to be the right tool for parameter
@@ -1331,7 +1335,7 @@ just as it would a single input. In that sense one decomposition is
 strictly coarser than the other, yet both are rank-one and both reconstruct the model, so rank alone
 does not determine simplicity.The concept is not unique to TMS. The same pattern appears in VPD, where a toy model implements multiple 
 circuits, that are all collinear and sum to a rank 1 subcomponent, that is causally important for all of them,
-which doesn't incentivise the model to split them further\autocite{bushnaq2026interpreting_new_spd}.
+which doesn't incentivize the model to split them further\autocite{bushnaq2026interpreting_new_spd}.
 Therefore, choosing whether to increase the rank is not a trivial decision, as each option entails distinct trade-offs in expressivity and interpretability.
 
 
@@ -1390,8 +1394,8 @@ add the losses here
 
 \subsection{Toy Model of Geometry}
 This section contains full size images over the entire sweep of minimality coefficients,
-that didnt fit in the main text
-add the losses of trianing
+that didn't fit in the main text
+\footnote{add the losses of training}
 \newpage
 \subsubsection{SPD: Sweep over minimality coefficients}
 \begin{figure}[H]
@@ -1400,8 +1404,8 @@ add the losses of trianing
     \caption{Causal importance values for SPD across the minimality sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to $\beta_3$ values from $10^{-1}$ to $10^{-6}$. Within each panel
-    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
-    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
     block structure visible, so the column index is not comparable across panels.}
     \label{appendix:SPD_minimality_sweep}
@@ -1416,11 +1420,11 @@ add the losses of trianing
     coefficient fixed varied over $10^{-1}$ to $10^{-6}$ (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
     subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
     to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
@@ -1433,8 +1437,8 @@ add the losses of trianing
     \caption{Causal importance values for SPD across the rank sweep, with minimality coefficient $\beta_{3} = 10^{-5}$. Each with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to the rank values from $1$ to $6$. Within each panel
-    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
-    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
     block structure visible, so the column index is not comparable across panels.}
 \end{figure}
@@ -1446,11 +1450,11 @@ add the losses of trianing
     coefficient fixed at $10^{-5}$ (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
     subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
     to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
@@ -1464,8 +1468,8 @@ add the losses of trianing
     \caption{Causal importance values for RSPD with attention across the minimality sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to $\beta_3$ values from $10^{-1}$ to $10^{-6}$. Within each panel
-    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
-    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
     block structure visible, so the column index is not comparable across panels.}
 \end{figure}
@@ -1478,11 +1482,11 @@ add the losses of trianing
     coefficient varied over $10^{-1}$ to $10^{-6}$ (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
     subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
     to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
@@ -1496,8 +1500,8 @@ add the losses of trianing
     \caption{Causal importance values for RSPD with attention across the rank sweep, with minimality coefficient $\beta_{3} = 10^{-3}$. Each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
     The panels correspond to the rank values from $1$ to $6$. Within each panel
-    the top heatmap is the first layer $W_1$ (labelled linear1) and the bottom
-    heatmap is the second layer $W_2$ (linear2), with rows corresponding to the subcompoent index and
+    the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
+    heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel to make the
     block structure visible, so the column index is not comparable across panels.}
     \label{appendix:SPD_rank_sweep}
@@ -1511,11 +1515,11 @@ add the losses of trianing
     coefficient fixed at $10^{-3}$ (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{(c),[i,g]}$, the total contribution of group $g$ to
+    $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
     subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{(c),[k,i]}$, the total contribution of subcomponent $c$
+    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
     to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
@@ -1602,7 +1606,7 @@ add the losses of trianing
 
 
 % my notation is a bit mixed up
-% in methods i do $g^{l}_{c}$ and in experiments i do $W^{(c)}_{l}$, 
+% in methods i do $g^{l}_{c}$ and in experiments i do $W^{c}_{l}$, 
 % should be consistent.
 
 
@@ -1617,12 +1621,12 @@ add the losses of trianing
 
 
 % Because the simplices are reducible across groups but irreducible within, the ground-truth
-% decomposition can be reasoned out layer by layer. In the first layer, $W_1$ should split into $K$
+% decomposition can be reasoned out layer by layer. In the first layer, $W_{1}$ should split into $K$
 % subcomponents, one per simplex, where subcomponent $g$ reads only the $n(n+1)$ coordinates of simplex
 % $g$ and writes to the hidden neurons dedicated to it. As these coordinates are irreducible they
 % should not be split further, so each simplex occupies a single first-layer subcomponent, and this
 % subcomponent must have rank greater than one, since the volume can not be computed along a single
-% direction. In the second layer, $W_2$ should likewise split into $K$ subcomponents, where
+% direction. In the second layer, $W_{2}$ should likewise split into $K$ subcomponents, where
 % subcomponent $g$ reads simplex $g$'s hidden neurons and writes its volume to output $g$. Each simplex
 % is therefore realised as a matched pair, the first-layer subcomponent that reads its coordinates
 % feeding the second-layer subcomponent that writes its volume, so the routing matrix $\Psi$ should be
