@@ -1097,30 +1097,30 @@ can not represent a full simplex, the focus lies on
 how each method allocates importance across subcomponents, when
 the capacity is insufficient.
 
+In SPD, when the minimality coefficient is set to $\beta_3 = 10^{-3}$, the
+minimality loss dominates and almost all importance is suppressed, so no usable
+decomposition is recovered. As $\beta_3$ is relaxed the expected structure
+emerges, clearest around $\beta_3 = 10^{-5}$. The coordinates of each simplex
+become important for a distinct block of subcomponents. The recovered grouping
+reproduces the hypothesized ground-truth decomposition at the level of
+simplices. Within each group, however, importance over individual coordinates is
+spread across multiple simplices.
+For $\beta_3 = 10^{-6}$ and below, this grouping dissolves and individual
+subcomponents become important for several simplices at once, mixing the
+otherwise independent computations (Figure~\ref{fig:spd_minimality_sweep_condensed}).
 
+For RSPD, the same sweep yields very different results. At $\beta_3 = 10^{-3}$
+the decomposition finds a near-diagonal representation, with each subcomponent
+causally important for a single coordinate of one simplex. Lowering $\beta_3$
+gradually makes subcomponents causally important for multiple
+coordinates of the same simplex, with some cross simplex importance.
+(Figure~\ref{fig:softmax_minimality_sweep_condensed}).
 
-In SPD, when the minimality coefficient is set to $\beta_3 = 10^{-3}$, the minimality loss dominates and
-almost all importance is suppressed, so no usable decomposition is recovered. As $\beta_3$ is
-relaxed the expected structure emerges, clearest around $\beta_3 = 10^{-5}$. The
-coordinates of each simplex become important for a distinct block of subcomponents, with
-negligible importance on the subcomponents of the other simplices. The recovered grouping
-reproduces the hypothesized ground-truth decomposition at the level of simplices.
-Within each group, however, importance over individual coordinates is spread across multiple simplices,
-as expected at $k=1$, where a rank-one subcomponent can not on its own represent a
-simplex's volume. For $\beta_3 = 10^{-6}$ and below, this grouping dissolves and
-individual subcomponents become important for several simplices at once, mixing the otherwise
-independent computations. For the second layer, when $\beta_{3}$ is set to $10^{-5}$,
-one subcomponent become causally important for each simplex, recovering the hypothesized
-decomposition. (Figure \ref{fig:spd_minimality_sweep_condensed}).
-
-For RSPD, the same sweep yields very different results. At $\beta_3 = 10^{-3}$ the decomposition finds
-a near-diagonal representation, with each subcomponent causally important for a single coordinate
-of one simplex. Lowering $\beta_3$ towards $\beta_{3}=10^{-5}$ makes subcomponents causally important for multiple coordinates of the same simplex,
-with some becoming causally important for different simplices, most notable in simplex 2 and 3. The pattern starts to break down at $\beta_3 = 10^{-6}$,
-where the minimality loss no longer penalizes spreading importance across subcomponents strongly
-enough. In the second layer the model recovers the alternative decomposition hypothesized earlier,
-in which a single subcomponent is causally important for all three simplices. (Figure \ref{fig:softmax_minimality_sweep_condensed}).
-
+In the second layer, the two methods diverge. For SPD at $\beta_3 = 10^{-5}$,
+one subcomponent becomes causally important for each simplex, recovering the
+hypothesized decomposition. For RSPD, the model instead recovers the alternative
+decomposition hypothesized earlier, in which a single subcomponent is causally
+important for all three simplices.
 
 \begin{figure}[H]
     \centering
@@ -1153,30 +1153,21 @@ in which a single subcomponent is causally important for all three simplices. (F
     \label{fig:softmax_minimality_sweep_condensed}
 \end{figure}
 
-In SPD, the routing structure is consistent with these observations,
-with the minimality coefficient set to $\beta_3 = 10^{-3}$ the subcomponents
-are poorly differentiated,
-at $10^{-6}$ the subcomponents remain entangled, but the norm is distributed
-more evenly across them. Finally, when $\beta_3 = 10^{-5}$ the structure is much clearer, with a small number of subcomponents
-routing the majority of the signal and the magnitude is concentrated on much fewer subcomponents.
-In the second layer, each simplex is routed through a single subcomponent, with negligible routing through the others, recovering the expected decomposition.
-(Figure \ref{fig:softmax_spd_minimality_sweep_condensed}).
+In SPD, the routing structure is consistent with these observations. At both
+$\beta_3 = 10^{-3}$ and $\beta_3 = 10^{-6}$ the subcomponents are
+largely unorganized, with many subcomponents becoming important for multiple simplices.
+The structure however is only clearly interpretable
+at the intermediate $\beta_3 = 10^{-5}$, where a small number of
+subcomponents route the majority of the signal in an organized manner.
+(Figure~\ref{fig:softmax_spd_minimality_sweep_condensed}).
 
-In RSPD,
-when the minimality loss is large, the input layer representation
-spreads the magnitude diffusely over multiple subcomponents, 
-that activate from multiple simplices, despite the importance
-values suggesting a more monosemantic assignment. As it is relaxed,
-the routing becomes less focused, with subcomponent routing,
-being more distributed across multiple subcomponents.
-In the second layer, the inverse of the 
-importance values is seen, with one subcomponent
-initially active for all three outputs,
-but as it is relaxed, the routing is less focused.
-
-
-
-\footnote{this needs a bit of work still.}
+In RSPD, the routing and the importance values disagree. Based on the
+monosemantic importance values, each input group was expected to project to a
+disjoint set of subcomponents, but the underlying routing appears much more
+distributed. The main change as the minimality coefficient is relaxed appears
+in $\Psi$. At $\beta_3 = 10^{-3}$ every subcomponent is strongly coupled to a
+single second-layer subcomponent, and as the coefficient is relaxed this
+coupling gradually spreads across several. (Figure~\ref{fig:softmax_spd_minimality_sweep_condensed}).
 
 
 \begin{figure}[H]
@@ -1189,9 +1180,9 @@ but as it is relaxed, the routing is less focused.
     $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
-    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
-    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, are given by
+    $\sum_{i=1}^{d_{\text{hidden}}} W_{\text{out},c,[k,i]}$.
+    Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.
     The full sweep over $10^{-1}$ to $10^{-6}$ for both methods can be found in the appendix.}
     \label{fig:softmax_spd_minimality_sweep_condensed}
@@ -1199,24 +1190,20 @@ but as it is relaxed, the routing is less focused.
 
 
 \subsubsection{Comparison of importance values across ranks at fixed minimality}
-
 Increasing the rank raises each subcomponent's representational capacity
-(Section~\ref{sec:rank-k-attention}), so a single higher-rank subcomponent could in principle
-absorb an entire simplex. Capacity alone, however, does not enforce this: SPD's independent sigmoid
-gating imposes little pressure for a feature to be carried by one subcomponent rather than spread across
-several, so the added rank can instead be used to represent parts of multiple simplices at once.
-RSPD is instead conditioned to capture the entire feature and should have sufficient 
-structural pressure to achieve this.
+(Section~\ref{sec:rank-k-attention}), so a single higher-rank subcomponent could
+in principle absorb an entire simplex. To isolate the effect of capacity, the
+rank is swept with the minimality coefficient held fixed. Following the previous section, the minimality coefficient is fixed at $10^{-5}$
+for SPD, where it minimizes the global loss, and similarly for RSPD at at $10^{-3}$.
 
-From the previous section, a minimality coefficient of $10^{-5}$ is selected for SPD, as it
-minimizes the global loss while producing the clustering that
-best resembles the expected decomposition. For RSPD it is set to $10^{-3}$,
-as it minimized the loss.
+In SPD, the causal importance values do not consolidate each simplex into a
+single subcomponent as the rank increases. Instead, as each subcomponent becomes
+more expressive, the number of active subcomponents falls, and each becomes
+causally important for multiple simplices in the first layer,
+while in the second layer, the loss rewards an indifferent behaviour, with one
+subcomponent responsible for one simplx each.
+(Figure~\ref{fig:spd_rank_minimality_sweep}).
 
-Structurally the causal importance values for SPD, do not show this desired behaviour as the rank is increased,
-instead as each subcomponent becomes more expressive, the total number of active subcomponents
-decreases, with each now being causally important for multiple simplices. This however does not entangle 
-the importance of the second layer, where one subcomponent remains active for each simplex. (Figure \ref{fig:spd_rank_minimality_sweep})
 
 For RSPD, the causal importance assignment does show the desired trend,
 as the rank increases one subcomponent gradually becomes causally important for one simplex
@@ -1272,9 +1259,8 @@ Rank does have a clearer effect in the second layer, where a single subcomponent
     $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
-    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
-    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, are given by
+    $\sum_{i=1}^{d_{\text{hidden}}} W_{\text{out},c,[k,i]}$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.
     The full sweep over ranks 1 to 6 for both methods can be found in the appendix.}
     \label{fig:softmax_spd_rank_sweep_condensed}
@@ -1444,9 +1430,9 @@ that didn't fit in the main text
     $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
-    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
-    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, are given by
+    $\sum_{i=1}^{d_{\text{hidden}}} W_{\text{out},c,[k,i]}$.
+    Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
 
@@ -1474,9 +1460,8 @@ that didn't fit in the main text
     $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
-    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
-    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, are given by
+    $\sum_{i=1}^{d_{\text{hidden}}} W_{\text{out},c,[k,i]}$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
 
@@ -1506,9 +1491,8 @@ that didn't fit in the main text
     $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
-    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
-    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, are given by
+    $\sum_{i=1}^{d_{\text{hidden}}} W_{\text{out},c,[k,i]}$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
 
@@ -1539,9 +1523,8 @@ that didn't fit in the main text
     $\sum_{i=1}^{d_{\text{hidden}}} \rho^{l}_{c,[i,g]}$, the total contribution of group $g$ to
     subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix
     $\Psi_{c',c}$, how strongly each first-layer subcomponent routes into each second-layer
-    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, give
-    $\sum_{i=1}^{d_{\text{hidden}}} \pi^{l+1}_{c,[k,i]}$, the total contribution of subcomponent $c$
-    to output $k$. Within each panel, edge widths are scaled to the largest edge in each of the three
+    subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, are given by
+    $\sum_{i=1}^{d_{\text{hidden}}} W_{\text{out},c,[k,i]}$. Within each panel, edge widths are scaled to the largest edge in each of the three
     edge sets, so they are comparable within a set but not across sets or panels.}
 \end{figure}
 
