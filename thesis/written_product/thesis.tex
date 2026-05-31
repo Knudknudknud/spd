@@ -1159,13 +1159,23 @@ are poorly differentiated,
 at $10^{-6}$ the subcomponents remain entangled, but the norm is distributed
 more evenly across them. Finally, when $\beta_3 = 10^{-5}$ the structure is much clearer, with a small number of subcomponents
 routing the majority of the signal and the magnitude is concentrated on much fewer subcomponents.
-In the second layer, each simplex is routed through a single subcomponent, with negligible routing through the others, recovering the expected decomposition. (Figure \ref{fig:spd_minimality_sweep_condensed}).
+In the second layer, each simplex is routed through a single subcomponent, with negligible routing through the others, recovering the expected decomposition.
+(Figure \ref{fig:softmax_spd_minimality_sweep_condensed}).
 
-With RSPD, when the minimality loss is large, the input layer representation
-spreads the magnitude diffusely over multiple subcomponents, with the majority of the routing being distributed through one 
-subcomponent in the second layer, despite the importance values suggesting monosemanticity. As $\beta_3$ is relaxed,
-the importance values suggest that one subcomponent becomes causally important for all simplices, however
-the routing suggests that it instead gradually becomes split into multiple simplices.
+In RSPD,
+when the minimality loss is large, the input layer representation
+spreads the magnitude diffusely over multiple subcomponents, 
+that activate from multiple simplices, despite the importance
+values suggesting a more monosemantic assignment. As it is relaxed,
+the routing becomes less focused, with subcomponent routing,
+being more distributed across multiple subcomponents.
+In the second layer, the inverse of the 
+importance values is seen, with one subcomponent
+initially active for all three outputs,
+but as it is relaxed, the routing is less focused.
+
+
+
 \footnote{this needs a bit of work still.}
 
 
