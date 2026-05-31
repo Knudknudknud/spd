@@ -963,83 +963,122 @@ is increased.
 
 
 \subsubsection{Target model structure}
-To examine, how the model learns to compute the volume,
-a similar approach to that of Section \ref{sec:tcc-experiment} is adopted.
-The routing strength from each simplex to each output is measured by
-decomposing the preactivations of the hidden neurons into contributions
-from each simplex, and then measuring how strongly those neurons contribute
-to the output.
+To examine how the model computes the volume, its computation is split into
+an input side and an output side, following Section~\ref{sec:tcc-experiment}.
 
-Concretely, two quantities are defined over the hidden neurons.
-Firstly, how strongly each simplex influences a hidden neurons state,
-secondly how strongly each hidden neuron contributes to the volume output of each simplex,
+The input vector $\vec{x} \in \mathbb{R}^{18}$ is divided into $K$ disjoint
+groups, where $\mathcal{C}_g$ is the set of column indices belonging to simplex
+$g$ and the groups jointly cover all input columns.
 
-Let the input vector be partitioned \footnote{input vector good word, but we should write a vector notation too} into $K$ disjoint groups,
-where group $g$ contains the column indices for the $n(n+1)$ coordinates of simplex $g$ denoted
-by $\mathcal{C}_g$, with the groups jointly covering all input columns.
-
-The preactivation of hidden neuron $i$ then decomposes additively
-over the groups:
+On the input side, the influence of simplex $g$ on hidden neuron $i$ is the
+total weight from that simplex's columns into the neuron,
 \begin{equation}
-    \sum_{j} W^{l}_{[i,j]} = \sum_{g=1}^{K} \rho^{l}_{[i,g]}, \qquad \rho^{l}_{[i,g]} := \sum_{j \in \mathcal{C}_{g}} W^{l}_{[i,j]},
+    \rho_{[i,g]} := \sum_{j \in \mathcal{C}_g} W_{\text{in},[i,j]}.
 \end{equation}
-Another way of stating this is that $\rho^{l}_{[i,g]}$ is the total
-signal from simplex $g$ to hidden neuron $i$ before the nonlinearity.
-On the output side, the strength with which hidden neuron
-$i$ contributes to the volume computation of simplex $k$
-is given directly by
-\begin{equation}
-    \pi^{l+1}_{[i,j]} := W^{l+1}_{[i,j]}
-\end{equation}
+Each $\rho_{[i,g]}$ is the portion of neuron $i$'s total input weight,
+$\sum_{j} W_{\text{in},[i,j]}$, contributed by simplex $g$.
+The contribution of neuron $i$ to output $o$ follows directly from its entry $W_{\text{out},[o,i]}$.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=5cm]{w1_w2_input_hidden_output_translation.png}
-    \caption{Top:$\rho^{l}_{[i,g]}$ from each input group to hidden neuron $i$. Bottom: contribution $\pi^{l+1}_{[i,i]}$ of each hidden neuron to each simplex's volume output.
-    Neurons are ordered by $\rho^l_{[i,g]}$, then by output strength. Only neurons with $\rho^l_{[i,g]} > 0.05 \& \pi^{l+1}_{[i,j]} > 0.05$ for any i,g are shown}
+    \caption{Routing structure of the trained network over the hidden neurons.
+    Top: the input-side contribution $\rho_{[i,g]}$ of each simplex group $g$ to each
+    hidden neuron $i$. Bottom: the output-side contribution $W_{\text{out},[k,i]}$ of each
+    hidden neuron to each simplex output $k$. Only neurons with $\rho_{[i,g]} > 0.05$ for
+    some group and $W_{\text{out},[o,i]} > 0.05$ for some output are shown. Neurons are
+    ordered first by the simplex that drives them and then by output strength.}
     \label{fig:simplex_target_structure}
 \end{figure}
-The model learns a predominantly modular structure, \footnote{caption text to do} in which each
-simplex is assigned a distinct set of neurons that are strongly influenced by that simplex and
-contribute strongly to its output, with negligible influence on the other outputs. A compacted view
-is shown in Figure~\ref{fig:simplex_group_output}.
+
+The target model learns a predominantly modular structure
+(Figure~\ref{fig:simplex_target_structure}). Each simplex activates a distinct
+subset of the hidden neurons, and those neurons,
+contribute to that simplex's output.
+Folding these responses into a simplex to output matrix, shows
+an almost diagonal structure, with each simplex contributing predominantly to its own output.
+(Figure~\ref{fig:simplex_group_output}).
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth, height=9cm]{group_output_matrix_simplex.png}
+    \includegraphics[width=0.5\linewidth, height=5cm]{group_output_matrix_simplex.png}
     \caption{Group-to-output response of the trained network. Each entry
-    $P_{g,k} = \tfrac{1}{N}\sum_{n} \big[\, W_{2}\,\mathrm{ReLU}(W_{1} x^{(g)}_n)\,\big]_k$ is the mean
-    activation to output $k$ when only simplex $g$ is active in the input, averaged over 200 samples.}
+    $P_{g,:} = \tfrac{1}{N}\sum_{n=1}^{N} \big[\, W_{\text{out}}\,\mathrm{ReLU}(W_{\text{in}}\, x^{(g)}_n)\,\big]$
+    is the mean output when only simplex $g$ is active, where each probe
+    $x^{(g)}_n$ has the coordinates $\mathcal{C}_g$ of simplex $g$ sampled and all other
+    coordinates set to zero, averaged over $N = 200$ samples.}
     \label{fig:simplex_group_output}
 \end{figure}
-Each simplex routes through its own disjoint
-set of hidden neurons, so the first layer decomposes
-into independent subcomponents, one per simplex.
-The grouping in the second layer was less obvious,
-as it seemed equally possible that a single set of subcomponents
-computes the volume for all three simplices, or that each simplex
-is assigned its own. The decomposition points to the latter,
-with each simplex's computation captured by a separate set
-of subcomponents across both layers.
-Unlike the paired TMS inputs, a simplex's computation
+The decomposition of the first layer, should therefore 
+be expected to recover a set of subcomponents that
+are only causally important for one simplex each.
+For the output, it was initially unclear, whether
+the model would learn to compute the volume of each simplex
+through a shared set of neurons,
+or whether it would assign each simplex its own set.
+The figures above suggest the latter.
+
+\subsubsection{Subcomponent structure}
+To examine how the decomposition realizes this,
+the same quantities are redefined over the subcomponents,
+measuring how strongly they couple to one another across all hidden neurons.
+
+Analogous to the definition above, the additive contribution of simplex $g$ to
+hidden neuron $i$ through subcomponent $c$ is given by
+\begin{equation}
+    \rho_{c,[i,g]} := \sum_{j \in \mathcal{C}_g} W_{\text{in},c,[i,j]},
+    \qquad
+    \rho_{[i,g]} \approx \sum_{c=1}^{C} \rho_{c,[i,g]}.
+\end{equation}
+here, i,j are hidden indices, $\mathcal{C}_{g}$ the column indices of simplex $g$, and $c$ the subcomponent index.
+
+The output side similarly to before is given directly. The contribution of subcomponent $c$ at
+neuron $i$ to output $o$ is the weight entry $W_{\text{out},c,[o,i]}$, with
+$\sum_{c=1}^{C} W_{\text{out},c,[o,i]} \approx W_{\text{out},[o,i]}$.
+
+Finally, because subcomponents connect through multiple hidden neurons,
+their total coupling across all of them is measured. The coupling matrix
+$\Psi \in \mathbb{R}^{C \times C}$ is the inner product, taken over the hidden
+neurons, between the total input read by $c$ and the total output written by
+$c'$ at each neuron.
+\begin{equation}
+    \Psi_{c',c} := \sum_{i=1}^{d_{\text{hidden}}}
+    \left( \sum_{j=1}^{d_{\text{in}}}  W_{\text{in},c,[i,j]}  \right)
+    \left( \sum_{k=1}^{d_{\text{out}}} W_{\text{out},c',[k,i]} \right).
+\end{equation}
+It is large when the hidden neurons that $c$ reads from the input are the same
+neurons that $c'$ writes to the output from.
+The form of $\Psi$ follows from composing the two subcomponents as a single
+linear map. Ignoring the ReLU, the entry $\Psi_{c',c}$ equals the sum over all
+entries of the matrix product $W_{\text{out},c'} W_{\text{in},c}$.
+
+These three quantities together describe the routing through the decomposition. The input
+contribution $\rho_{c,[i,g]}$ shows how each simplex group contributes to subcomponent $c$,
+the output contribution $W_{\text{out},c',[k,i]}$ shows how subcomponent $c'$ contribute to each output,
+and the coupling matrix $\Psi_{c',c}$ composes the two, measuring how
+strongly a subcomponent that
+reads from the input connects to one that writes to the output
+through shared hidden neurons.
+
+
+Unlike in the paired TMS model, a simplex's computation
 is spread across a higher dimensional space,
 and is not collapsible into a single direction, that
-a single rank-1 subcomponent could capture. 
-
-Whether the decomposition method
-recovers the ground-truth structure inside a set of rank one subcomponents,
-or a single higher dimensional subcomponent that captures the entire simplex,
+a single rank-1 subcomponent could capture.
+Whether the decomposition method recovers the 
+ground-truth structure inside a set of rank one subcomponents,
+or a single higher dimensional subcomponent
+that captures the entire simplex,
 should depend on two factors: the dimensionality each
 subcomponent is allowed to represent, and how strongly
-the minimality loss penalises spreading importance
+the minimality loss penalizes spreading importance
 across multiple subcomponents. As these parameters are
-varied, the recovered decomposition is expected to
+varied, the recovered decomposition should
 change gradually: a subcomponent may capture progressively
 larger fractions of a single simplex, converging towards
 the ground-truth decomposition. Alternatively, the additional
 capacity may be used to represent parts of multiple simplices
 simultaneously, resulting in a decomposition that mixes otherwise
 reducible computations.
-
 
 To isolate the effect of the subcomponent rank from that of the minimality coefficient,
 the two factors are varied one at a time. First, the rank is fixed at $k=1$, recovering the
@@ -1048,57 +1087,13 @@ influence on the decomposition. Second, $\beta_3$ is fixed at a value that produ
 decomposition at $k=1$, and the rank is increased to examine how higher $k$ allows different
 decompositions to be recovered.
 
-\subsubsection{Subcomponent structure}
-To examine the structure of the target model, the hidden neurons were the unit of analysis \footnote{unit of analysis sounds dumb as hell}. To see
-how the decomposition realizes this, the same quantities are redefined over the subcomponents,
-measuring how strongly they route into one another across all hidden neurons.
-
-Analogous to the definitions above, the additive contribution of simplex \(g\) to hidden neuron \(i\), and the contribution of hidden neuron \(i\) to output \(k\), through subcomponent \(c\), are given by
-\begin{equation}
-\begin{aligned}
-    \rho^{\,l}_{c,[i,g]}
-    &:= \sum_{j \in \mathcal{C}_g} W^{l}_{c,[i,g]},
-    &\qquad
-    \rho^{\,l}_{[i,g]}
-    &= \sum_{c=1}^{C} \rho^{\,l}_{c,[i,g]}, \\
-    \pi^{l+1}_{c,[i,j]}
-    &:= W^{l+1}_{c,[i,j]},
-    &\qquad
-    \pi^{l+1}_{[i,j]}
-    &= \sum_{c=1}^{C} \pi^{l+1}_{c,[i,j]} .
-\end{aligned}
-\end{equation}
-here, $W^{l}_{c}$ is a subcomponent of layer $l$, i,j are indices, $\mathcal{C}_{g}$ the column indices of simplex $g$,
-and $k$ the output index.
-Finally, since the subcomponents can be linked through multiple hidden neurons, their total routing
-across all hidden neurons is measured. The routing matrix $\Psi \in \mathbb{R}^{C \times C}$ is
-defined as the inner product over the hidden neurons between the total input read by $c$ and the total
-output written by $c'$ at each neuron.
-\begin{equation}
-    \Psi_{c',c} := \sum_{i=1}^{d_{\text{hidden}}}
-    \left( \sum_{k=1}^{d_{\text{out}}} W^{l+1}_{c',[k,j]} \right)
-    \left( \sum_{j=1}^{d_{\text{in}}} W^{l}_{c,[i,j]} \right),
-\end{equation}
-It is large when the neurons $c$ activates from the input
-are the ones $c'$ uses to write the output, indicating a shared hidden representation.
-The form follows from the linear composition of the two subcomponents: ignoring the ReLU, the
-path through $c$ at layer $l$ and then $c'$ at layer $l+1$ is $W^{l+1}_{c'} W^{l}_{c}$,
-and $\Psi_{c',c}$ is the sum of its entries. The ReLU makes this approximate, so $\Psi$ is read
-as a linearised measure of routing from $c$ into $c'$.
-
-These three quantities together describe the routing through the decomposition. The input
-contribution $\rho^{l}_{c,[i,g]}$ shows how each simplex group contributes to subcomponent $c$,
-the output contribution $\pi^{l+1}_{c,[k,i]}$ shows how subcomponent $c$ contribute to each output,
-and the routing matrix $\Psi_{c',c}$ composes the two, measuring how strongly a subcomponent that
-reads from the input $c$ connects to one that writes to the output $c'$ through shared
-hidden neurons.
 
 \subsubsection{Comparison of importance values across different minimality coefficients}
 With the rank fixed at $k=1$, the minimality coefficient $\beta_3$ is
 varied in order to compare how SPD and RSPD distribute importance
 under different levels of pressure toward sparsity.
 Since a rank-1 subcomponent
-can not represent a full simplex, the focus lies in
+can not represent a full simplex, the focus lies on
 how each method allocates importance across subcomponents, when
 the capacity is insufficient.
 
