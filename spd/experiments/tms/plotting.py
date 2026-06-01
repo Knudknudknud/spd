@@ -996,17 +996,16 @@ def main():
 
     # Define run configurations with custom PlotConfig for each
     run_configs = {
-        #"wandb:knsoe24-syddansk-universitetsforlag-university-press-of-/Thesis runs/runs/1x3kncu2": {"config": PlotConfig(), "name": "5-2"},
-        #softmax
+        "wandb:knsoe24-syddansk-universitetsforlag-university-press-of-/Thesis_softmax_minimality_sweep_tms_5_2/runs/rt5j0cr8": {"config": PlotConfig(), "name": "5-2"},
+        #RSPD 40-10
+        #"wandb:knsoe24-syddansk-universitetsforlag-university-press-of-/Thesis runs/runs/9dupk0iu":
         #"wandb:spd-spd_experiments_tms/runs/fbavwyuy":
         #softmax 40-10 paired
-        "wandb:knsoe24-syddansk-universitetsforlag-university-press-of-/Thesis_softmax_minimality_sweep_tms_40_10_paired/runs/ni06ea4m":
-        #40-10 softmax
-        #"wandb:spd-spd_experiments_tms/runs/tnh4vs0o":
-        {
-            "config": PlotConfig(subnet_norm_threshold=0.2, hidden_layer_threshold=0.03),
-            "name": "40-10 TMS",
-        },
+        #"wandb:knsoe24-syddansk-universitetsforlag-university-press-of-/Thesis_softmax_minimality_sweep_tms_40_10_paired/runs/ni06ea4m":
+        # {
+        #     "config": PlotConfig(subnet_norm_threshold=0.2, hidden_layer_threshold=0.03),
+        #     "name": "40-10 TMS",
+        # },
         # "wandb:spd-tms/runs/xq1ivc6b": {"config": PlotConfig(), "name": "40-10"},
         # "wandb:spd-tms/runs/xyq22lbc": {"config": PlotConfig(), "name": "40-10-identity"},
     }
