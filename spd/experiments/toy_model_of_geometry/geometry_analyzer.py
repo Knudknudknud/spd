@@ -82,20 +82,18 @@ def plot_input_hidden_output_translation(
 
     #As
     im_top = ax_top.imshow(A_sorted, aspect="auto", cmap="Blues")
-    ax_top.set_ylabel("Input group", fontsize=12)
     ax_top.set_title("Input group contribution to hidden neurons", fontsize=14)
     ax_top.set_yticks(range(n_groups))
-    ax_top.set_yticklabels([f"group {g+1}" for g in range(n_groups)])
+    ax_top.set_yticklabels([f"group {g+1}" for g in range(n_groups)], fontsize=12)
 
     cax_top = make_axes_locatable(ax_top).append_axes("right", size="2%", pad=0.1)
     plt.colorbar(im_top, cax=cax_top)
 
     # B
     im_bottom = ax_bottom.imshow(B_sorted, aspect="auto", cmap="Reds")
-    ax_bottom.set_ylabel("Output", fontsize=12)
     ax_bottom.set_xlabel("Hidden neurons", fontsize=12)
     ax_bottom.set_yticks(range(n_outputs))
-    ax_bottom.set_yticklabels([f"output {i+1}" for i in range(n_outputs)])
+    ax_bottom.set_yticklabels([f"output {i+1}" for i in range(n_outputs)], fontsize=12)
     ax_bottom.set_title("Hidden neuron contribution to outputs", fontsize=14)
 
     cax_bottom = make_axes_locatable(ax_bottom).append_axes("right", size="2%", pad=0.1)
