@@ -86,9 +86,9 @@ since the subcomponents it marks as unimportant still carry relevant magnitude t
 output. It is concluded that, under this reformulation, the importance values can not be taken
 as literal measures of feature ownership, and that other approaches should be considered if higher-dimensional features are to
 be captured during training.
-Github code can be found at \url{placeholder}.\footnote{todo} and training logs at \url{placeholder}.\footnote{todo, rename runs} \footnote{made appendix,}
+Github code can be found: \href{https://github.com/Knudknudknud/DS-Thesis}{[here]} and \footnote{move files} WanDB training logs: \href{https://wandb.ai/knsoe24-syddansk-universitetsforlag-university-press-of-/Thesis\%20runs?nw=nwuserknsoe24}{[here]}.\footnote{todo, rename runs}
 \footnote{check formatting} \footnote{check if feature is misused} \footnote{check for any falsely placed c's, l's, and check if every variable is defined.}
-\footnote{Check code} \footnote{delete image combiner from code}, \footnote{check all section titles} \footnote{check mors rettelser}, 
+\footnote{delete image combiner from code}, \footnote{check all section titles} \footnote{check mors rettelser}, 
 \footnote{lav diskussion og future work helt færdigt. den er der} 
 \end{abstract}
 \pagenumbering{arabic}
@@ -664,23 +664,22 @@ resulting in a lower ML2R with high variance. For the larger model this skews th
 \cmidrule(lr){2-3} \cmidrule(lr){4-5}
 & SPD & RSPD & SPD & RSPD \\
 \midrule
-MMCS  & $1.00$ & $ 0.973 \pm 0.032$ & $1.00$ & $0.812 \pm 0.105$ \\
-ML2R  & $1.00$ & $ 0.853 \pm 0.130$ & $1.055 \pm 0.045$ & $0.623 \pm 0.360$ \\
+MMCS  & $1.00$ & $ 0.970 \pm 0.028$ & $1.00$ & $0.824 \pm 0.09$ \\
+ML2R  & $1.00$ & $ 0.8290 \pm 0.130$ & $1.055 \pm 0.045$ & $0.566 \pm 0.489$ \\
 \bottomrule
 \end{tabular}
 \caption{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite{stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
 \label{tab:tms_results_single}
 \end{table}
-\footnote{Correct values.}
 While RSPD does not recover the exact geometry, it correctly concentrates the entire
 magnitude on the right number of subcomponents, pruning the rest to near-zero
 (Figure~\ref{fig:tms_5_2}). Despite 
 these differences, the causal importance values match the original SPD method on
 $\mathrm{TMS}_{5\text{-}2}$, with both assigning a single subcomponent to each of the five inputs.
 This breaks down on the larger $\mathrm{TMS}_{40\text{-}10}$, where RSPD no longer achieves a
-one-hot assignment and some subcomponents become important for several inputs at once. \footnote{double check after running sweep}
+one-hot assignment and some subcomponents become important for several inputs at once.
 
-\subsubsection{Toy Model of Dependent Superposition}
+\subsubsection{ Toy Model of Dependent Superposition}
 \label{sec:tms-tied-experiment}
 
 To introduce the simplest form of statistical dependence, inputs are
@@ -723,7 +722,7 @@ projection is taken as a single feature, it is reducible into a mixture of
 mutually exclusive features. This reducibility, however, is directed at the
 encoder mapping $f$: it establishes only that the feature can be projected onto an axis-aligned direction. It does not clarify whether the
 two members should be separated laterally into distinct subcomponents, or
-kept together. \footnote{indent this down}
+kept together.
 
 Empirically, both SPD and RSPD
 find a decomposition where one subcomponent is
@@ -746,7 +745,6 @@ where as in SPD, the pairs collapse onto overlapping subcomponents.
      SPD was trained with $200$ subcomponents and RSPD with $100$, as these yielded the best results for each method.}
     \label{fig:both}
 \end{figure}
-\footnote{update left image, i accidentally trained RSPD twice i think}
 Despite their differences, both methods achieve perfect alignment on the MMCS
 and surprisingly SPD, despite its overlapping subcomponents achieves
 a better result in terms of Ml2R, with a higher mean and lower variance.
