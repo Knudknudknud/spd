@@ -160,7 +160,7 @@ and a single rank one subcomponent then captures both,
 just as it would a single independent input. Rank one therefore
 does not appear to indicate the simplest decomposition of the inputs,
 since what a rank one subcomponent captures depends on
-the inputs alignment in the model's hidden space, rather than on the input distribution alone.
+the inputs' alignment in the model's hidden space, rather than on the input distribution alone.
 
 
 Finally, The Toy Model of Geometry shows that the rank-$k$ extension does not translate to SPD
@@ -370,7 +370,7 @@ Where each $f_j(t) \in \mathbb{R}^{d}$ is an irreducible feature with
 internal dimensionality $d \geq 1$, each $V_j \in \mathbb{R}^{d_\text{out} \times d}$,
 and $\| V_k^\top V_r \| < \delta$ for $k \neq r$.
 Here an irreducible feature is one that cannot be decomposed 
-nto two independent or mutually exclusive features, as defined
+into two independent or mutually exclusive features, as defined
 below. The original definition is internally inconsistent,
 as noted by \textcite{busch2025}, whose restatement
 is adopted instead.\\
@@ -441,7 +441,7 @@ here $\vec{a}^l(x)$ is the activation vector of layer $l$ and C is the number of
 The conditional probability is computed using a standard transformer block following the architecture of \autocite{vaswani2023attentionneed}. For each layer $l$,
 the read activations \(h_c^l(x) \in \mathbb{R}^k\) of the \(C\) subcomponents are concatenated into a matrix \(H^l(x) \in \mathbb{R}^{C \times k}\),
 with no positional encoding.
-These activations are projected into the transformers internal dimension through a learned linear projection. The resulting representations are then processed by a standard transformer block consisting of a single attention head,
+These activations are projected into the transformer's internal dimension through a learned linear projection. The resulting representations are then processed by a standard transformer block consisting of a single attention head,
 a feed-forward network, residual connections, and layer normalization.
 
 Finally, each subcomponent representation is projected down to a single scalar, and a Softmax over all subcomponents is computed.
@@ -474,7 +474,7 @@ The first two experiments reuse the Toy Model of Superposition (TMS) \autocite{e
 once sampled with independent inputs, and once with paired.
 The paired setting introduces statistical dependence between inputs,
 where the toy model assigns both to one joint direction, allowing a 
-single rank 1 subcomponent to capture both inputs.
+single rank one subcomponent to capture both inputs.
 
 The third experiment is done through the Toy Model of
 Compressed Computation, where 100 ReLU functions
@@ -679,8 +679,6 @@ magnitude on the right number of subcomponents, pruning the rest to near-zero
 (Figure~\ref{fig:tms_5_2}). Despite 
 these differences, the causal importance values match the original SPD method on
 $\mathrm{TMS}_{5\text{-}2}$, with both assigning a single subcomponent to each of the five inputs.
-This breaks down on the larger $\mathrm{TMS}_{40\text{-}10}$, where RSPD no longer achieves a
-one-hot assignment and some subcomponents become important for several inputs at once.
 
 \subsubsection{ Toy Model of Dependent Superposition}
 \label{sec:tms-tied-experiment}
@@ -731,7 +729,7 @@ Empirically, both SPD and RSPD
 find a decomposition where one subcomponent is
 causally important for one pair $\{x_{2i-1}, x_{2i}\}$.
 In RSPD, this pair is assigned to a distinct subcomponent,
-where as in SPD, the pairs collapse onto overlapping subcomponents.
+whereas in SPD, the pairs collapse onto overlapping subcomponents.
 
 \begin{figure}[H]
     \centering
@@ -743,19 +741,19 @@ where as in SPD, the pairs collapse onto overlapping subcomponents.
     activated in isolation at magnitude 0.75.
     Despite $W$ being shared across both layers, two sets of subcomponents are learnt, one for 
     each layer.The top heatmap is the first layer and the bottom heatmap is the second
-    layer , with rows corresponding to the subcomponent index and columns corresponding to the causal importance
+    layer, with rows corresponding to the subcomponent index and columns corresponding to the causal importance
     value. The subcomponents are permuted within each panel to make the block structure visible.
      SPD was trained with $200$ subcomponents and RSPD with $100$, as these yielded the best results for each method.}
     \label{fig:both}
 \end{figure}
 Despite their differences, both methods achieve perfect alignment on the MMCS
 and surprisingly SPD, despite its overlapping subcomponents achieves
-a better result in terms of Ml2R, with a higher mean and lower variance.
+a better result in terms of ML2R, with a higher mean and lower variance.
 RSPD, like in the independent setting, continues to
 not always concentrate the full feature magnitude
-within the best-aligned subcomponent.
+within the best-aligned subcomponent. (Table \ref{tab:tms_results_paired})
 
-\begin{table}[H]
+\begin{table}[h!]
 \centering
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{lcc}
@@ -766,7 +764,7 @@ MMCS & $1$ & $1$ \\
 ML2R & $0.8997 \pm 0.344$ & $0.720 \pm 0.465$ \\
 \bottomrule
 \end{tabular}
-\caption{Decomposition quality in the paired $\mathrm{TMS-Paired}_{40\text{-}10}$ setting. SPD refers to the original method \autocite{stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
+\caption{Decomposition quality in the paired $\mathrm{TMS}_{40\text{-}10}$ setting. SPD refers to the original method \autocite{stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
 \label{tab:tms_results_paired}
 \end{table}
 
@@ -779,9 +777,7 @@ one that carries the bulk of the feature magnitude, resulting in a lower ML2R wi
 Referring back to the $\mathrm{TMS}_{5\text{-}2}$ decomposition shown
 in Figure~\ref{fig:tms_5_2}, the RSPD method appears to recover a
 slightly rotated geometry, with residual feature magnitude distributed
-across adjacent subcomponents. The geometric offset may arise as a compensatory
-mechanism for this residual leakage, allowing the combined subcomponents
-to maintain accurate reconstruction despite imperfect feature isolation.
+across adjacent subcomponents.
 
 \subsection{Toy Model of Compressed Computation}
 \label{sec:tcc-experiment}
@@ -817,10 +813,9 @@ one-dimensional structure of the inputs. For $W_{\text{out}}$ it is less clear.
 APD \autocite{AttributionBasedParameterDecomposition} initially expected a
 monosemantic assignment, with each subcomponent responsible for one of the
 $100$ ReLU computations, while SPD \autocite{stochasticparameterdecomposition}
-reports a polysemantic one, in which $50$ subcomponents jointly contribute to
+reports a polysemantic decomposition, in which $50$ subcomponents jointly contribute to
 all computations and the rest are pruned to near-zero norm,
-which is most in line with the result of \autocite{bhagat2025compressed},
-and is most likely the correct interpretation.
+which is most in line with the result of \autocite{bhagat2025compressed}.
 
 \subsubsection{Causal importance}
 In its causal importance assignment, RSPD finds a middle ground between SPD and
@@ -838,7 +833,7 @@ underneath it actually is. (Figure \ref{fig:cc_importance})
     with each input activated in isolation at magnitude $0.75$.
     The top heatmap is the first layer $W_{1}$ and the bottom
     heatmap is the second layer $W_{2}$, with rows corresponding to the subcomponent index and
-    columns to the causal importance value. The subcomponents are permuted within each panel. The model is trained using one-hot sampling.}
+    columns to the causal importance value. The subcomponents are permuted within each panel.}
     \label{fig:cc_importance}
 \end{figure}
 
@@ -852,7 +847,7 @@ target model \autocite{stochasticparameterdecomposition}.
 \left[ \left( W_{U[i,:]} \sum_{c'} W_{\text{out},c'} \right)
 \odot \left( W_{\text{in},c}\, W_{E[:,i]} \right) \right] \label{eq:subcomponentcontribution}
 \end{align}
-where $W_{E[:,i]}$ and $W_{U[i,:]}$ are the $i$-th column and row of the embedding
+Where $W_{E[:,i]}$ and $W_{U[i,:]}$ are the $i$-th column and row of the embedding
 and unembedding matrices, $c, c' \in \{1,\dots,C\}$ index subcomponents, and $\odot$
 denotes elementwise multiplication. The term $W_{U[i,:]}W_{\text{out}}$ measures how
 strongly the neurons contribute to the output, and $W_{\text{in}}W_{E[:,i]}$ how
@@ -885,20 +880,22 @@ carry the bulk of the norm, there remains a longer
 tail of subcomponents with non-negligible norms in the first layer compared to SPD.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_softmax.png}
-    \hfill
-    \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_spd.png}
-    \caption{Left: RSPD. Right: SPD. Subcomponent norms, sorted by decreasing matrix norm.}
+    % \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_softmax.png}
+    % \hfill
+    % \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_spd.png}
+    \includegraphics[width=\linewidth,height=8cm]{combined_subcomponent_norms.png}
+    \caption{Top: RSPD. Bottom: SPD. Difference in subcomponent norms between RSPD and SPD. Norms are computed using the Frobenius Norm
+    and sorted by decreasing norm.}
     \label{fig:CC_norms}
 \end{figure}
 
-SPD \footnote{new caption here, comes out blurry like frequencies for some reason. Make the figure larger if possible ,actually just 2x2 the image}, by contrast, shows a sharp drop in norm after the causally important subcomponents,
+SPD by contrast, shows a sharp drop in norm after the causally important subcomponents,
 with the inactive subcomponents pruned to near-zero norm in $W_{in}$ and a trailing tail of small but non-negligible norms in $W_{out}$.
 
 An initial hypothesis for why the RSPD architecture fails to produce hard-zero norms in
 $W_{\text{in}}$, was that unlike the hard-sigmoid gating used in SPD, the Softmax distribution does produce exact zeros. However,
 the causal importance value frequencies rule out this explanation.
-The learned importance assignments are bimodal, with all
+The learned importance assignments are bimodal, with all values
 concentrated at either $0$ or $1$. (Figure \ref{fig:CC_causal_importance_hist})
 The absence of hard-zero norms therefore seems
 not to arise from the gating distribution itself, but rather from how
@@ -910,7 +907,7 @@ reconstruction mass is distributed across subcomponents during optimization.
     \hfill
     \caption{Histograms of the causal importance values for the RSPD decomposition, taken over a
     single batch at the end of training, for $W_{\text{in}}$. Shown in logarithmic scale.
-    Training was done with with batch size $2048$ and $200$ sampling resulting in $409600$ total values shown.}
+    Training was done with batch size $2048$ and $200$ sampling resulting in $409600$ total values shown.}
     \label{fig:CC_causal_importance_hist}
 \end{figure}
 
@@ -928,7 +925,7 @@ subcomponents absorb the difference.
 \subsection{Toy Model of Geometry}
 
 In the paired TMS regime, even though input pairs were nominally two-dimensional, the model collapsed them onto a single direction,
-so a rank-1 decomposition per feature was sufficient. To test the rank-$k$ extension of Section~\ref{sec:rank-k-attention},
+so a rank one decomposition per feature was sufficient. To test the rank-$k$ extension of Section~\ref{sec:rank-k-attention},
 a setting is needed where features cannot collapse to a single direction.
 This experiment generalizes the cube example from the introduction, where a model is trained to compute the volume of an $n$-dimensional simplex from its $n+1$ vertices in $\mathbb{R}^n$:
 \begin{equation}
@@ -941,34 +938,30 @@ the model receives $K$ simplices as input, each sampled with probability $p$ and
 \begin{equation}
     f(x) = W_{out} \text{ReLU}(W_{in} x), \quad W_{in} \in \mathbb{R}^{d_{\text{hidden}} \times K n(n+1)}, \quad W_{out} \in \mathbb{R}^{K \times d_{\text{hidden}}},
 \end{equation}
-here $n(n+1)$ is the total number of coordinates of a simplex in $\mathbb{R}^n$ and $K$ is the number of simplices.
+Here $n(n+1)$ is the total number of coordinates of a simplex in $\mathbb{R}^n$ and $K$ is the number of simplices.
 Concretely, for this experiment the simplices are triangles in $\mathbb{R}^2$, with $K = 3$ and $d_{\text{hidden}} = 150$.
 
 Unlike TMS, $d_{\text{hidden}}$ is chosen to be much greater than the input dimension (here $d_{\text{in}}= 18$),
 so that the model does not need to express features in superposition.
-The intention being that the model assigns each simplex to a
-separate subset of neurons, allowing the routing of information
-from input to output to be studied in isolation, as the minimality
-loss is applied at different strengths and as the rank
-is increased.
+The model should therefore assign each simplex to a distinct subsets of neurons
+that can more easily be studied in isolation,
+as the minimality loss is applied at different strengths and as the rank is increased.
+
 
 
 \subsubsection{Target model structure}
 To examine how the model computes the volume, its computation is split into
-an input side and an output side, following Section~\ref{sec:tcc-experiment}.
+an input side and an output side following Section~\ref{sec:tcc-experiment}.
+The input vector $\vec{x} \in \mathbb{R}^{18}$ is divided into $K$ disjoint groups
+$\{\mathcal{C}_g\}_{g=1}^{K}$, where $\mathcal{C}_g$ is the set of column indices
+belonging to simplex $g$, and the groups jointly cover all input columns.
 
-The input vector $\vec{x} \in \mathbb{R}^{18}$ is divided into $K$ disjoint
-groups, where $\mathcal{C}_g$ is the set of column indices belonging to simplex
-$g$ and the groups jointly cover all input columns.
-
-On the input side, the influence of simplex $g$ on hidden neuron $i$ is the
-total weight from that simplex's columns into the neuron,
+The influence of simplex $g$ on hidden neuron $i$ is the
+total weight from that simplex's columns into the hidden neuron given by:
 \begin{equation}
-    \rho_{[i,g]} := \sum_{j \in \mathcal{C}_g} W_{\text{in},[i,j]}.
+    \rho_{[i,g]} := \sum_{j \in \mathcal{C}_g} W_{\text{in},[i,j]}
 \end{equation}
-Each $\rho_{[i,g]}$ is the portion of neuron $i$'s total input weight,
-$\sum_{j} W_{\text{in},[i,j]}$, contributed by simplex $g$.
-The contribution of neuron $i$ to output $o$ follows directly from its entry $W_{\text{out},[o,i]}$.
+The output contribution of neuron $i$ to output $o$ follows directly from its entry $W_{\text{out},[o,i]}$.
 
 \begin{figure}[H]
     \centering
@@ -977,22 +970,22 @@ The contribution of neuron $i$ to output $o$ follows directly from its entry $W_
     Top: the input-side contribution $\rho_{[i,g]}$ of each simplex group $g$ to each
     hidden neuron $i$. Bottom: the output-side contribution $W_{\text{out},[o,i]}$ of each
     hidden neuron to each simplex output $o$. Only neurons with $\rho_{[i,g]} > 0.05$ for
-    some group and $W_{\text{out},[o,i]} > 0.05$ for some output are shown. Neurons are
-    ordered first by the simplex that drives them and then by output strength.}
+    some group and $W_{\text{out},[o,i]} > 0.05$ for some output are shown. Neurons
+    are ordered by $\rho_{[i,g]}$} and $W_{\text{out},[o,i]}$.
     \label{fig:simplex_target_structure}
 \end{figure}
 
-The target model learns a predominantly modular structure \footnote{make font larger}
+The target model learns a predominantly modular structure
 (Figure~\ref{fig:simplex_target_structure}). Each simplex activates a distinct
 subset of the hidden neurons, and those neurons,
 contribute to that simplex's output.
-Folding these responses into a simplex to output matrix, shows
+Folding these responses into a simplex to output matrix shows
 an almost diagonal structure, with each simplex contributing predominantly to its own output.
 (Figure~\ref{fig:simplex_group_output}).
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth, height=5cm]{group_output_matrix_simplex.png}
-    \caption{Group-to-output response of the trained network. Each entry
+    \caption{Group to output response of the trained network. Each entry
     $P_{g,:} = \tfrac{1}{N}\sum_{n=1}^{N} \big[\, W_{\text{out}}\,\mathrm{ReLU}(W_{\text{in}}\, x^{(g)}_n)\,\big]$
     is the mean output when only simplex $g$ is active, where each probe
     $x^{(g)}_n$ has the coordinates $\mathcal{C}_g$ of simplex $g$ sampled and all other
@@ -1020,7 +1013,7 @@ hidden neuron $i$ through subcomponent $c$ is given by
     \qquad
     \rho_{[i,g]} \approx \sum_{c=1}^{C} \rho_{c,[i,g]}.
 \end{equation}
-here, i,g are hidden indices, $\mathcal{C}_{g}$ the column indices of simplex $g$, and $c$ the subcomponent index.
+Here i,g are hidden indices, $\mathcal{C}_{g}$ the column indices of simplex $g$, and $c$ the subcomponent index.
 
 The output side similarly to before is given directly. The contribution of subcomponent $c$ at
 neuron $i$ to output $o$ is the weight entry $W_{\text{out},c,[o,i]}$, with
@@ -1036,24 +1029,18 @@ $c'$ at each neuron.
     \left( \sum_{j=1}^{d_{\text{in}}}  W_{\text{in},c,[i,j]}  \right)
     \left( \sum_{k=1}^{d_{\text{out}}} W_{\text{out},c',[k,i]} \right).
 \end{equation}
-It is large when the hidden neurons that $c$ reads from the input are the same
-neurons that $c'$ writes to the output from.
-The form of $\Psi$ follows from composing the two subcomponents as a single
-linear map. Ignoring the ReLU, the entry $\Psi_{c',c}$ equals the sum over all
-entries of the matrix product $W_{\text{out},c'} W_{\text{in},c}$.
+It is large when the hidden neurons that $c$ reads from are the same
+neurons that $c'$ writes from. The form of $\Psi$ follows from composing the
+two subcomponents as a single linear map, making it an approximation up to the ReLU nonlinearity.
 
 These three quantities together describe the routing through the decomposition. The input
 contribution $\rho_{c,[i,g]}$ shows how each simplex group contributes to subcomponent $c$,
-the output contribution $W_{\text{out},c',[k,i]}$ shows how subcomponent $c'$ contribute to each output,
+the output contribution $W_{\text{out},c',[k,i]}$ shows how subcomponent $c'$ contributes to each output,
 and the coupling matrix $\Psi_{c',c}$ composes the two, measuring how
 strongly a subcomponent $W_{\text{in},c}$ connects to a subcomponent $W_{\text{out},c'}$
 through shared hidden neurons.
 
 
-Unlike in the paired TMS model, a simplex's computation
-is spread across a higher dimensional space,
-and is not collapsible into a single direction, that
-a single rank-1 subcomponent could capture.
 Whether the decomposition method recovers the 
 ground-truth structure inside a set of rank one subcomponents,
 or a single higher dimensional subcomponent
@@ -1071,7 +1058,7 @@ simultaneously, resulting in a decomposition that mixes otherwise
 reducible computations.
 
 To isolate the effect of the subcomponent rank from that of the minimality coefficient,
-the two factors are varied one at a time. First, the rank is fixed at $k=1$, recovering the
+the two factors are varied one at a time. Firstly the rank is fixed at $k=1$, recovering the
 original SPD formulation, and the minimality coefficient $\beta_3$ is varied to examine its
 influence on the decomposition. Second, $\beta_3$ is fixed at a value that produced a clear
 decomposition at $k=1$, and the rank is increased to examine it influences
@@ -1082,7 +1069,7 @@ the decomposition.
 With the rank fixed at $k=1$, the minimality coefficient $\beta_3$ is
 varied in order to compare how SPD and RSPD distribute importance
 under different levels of sparsity pressure.
-Since a rank-1 subcomponent
+Since a rank one subcomponent
 cannot represent a full simplex, the focus lies on
 how each method allocates importance across subcomponents, when
 the capacity is insufficient.
@@ -1117,7 +1104,7 @@ important for all three simplices.
     \includegraphics[width=\linewidth, height=12cm]{SPD_minimality_sweep_condensed_1e-3_to_1e-6.png}
     \caption{Causal importance values for SPD across the minimality sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
-    The panels correspond to $\beta_3$ values in $[10^{-3}, 10^{-5}, 10^{-6}]$, all at rank 1. 
+    The panels correspond to $\beta_3$ values in $[10^{-3}, 10^{-5}, 10^{-6}]$, all at rank one. 
     Within each panel
     the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
     heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
@@ -1132,7 +1119,7 @@ important for all three simplices.
     \includegraphics[width=\linewidth, height=12cm]{Softmax_minimality_sweep_condensed_1e-3_to_1e-6.png}
     \caption{Causal importance values for RSPD across the minimality sweep, with each input activated
     in isolation at magnitude $0.75$ and the resulting importance over subcomponents.
-    The panels correspond to $\beta_3$ values in $[10^{-3}, 10^{-5}, 10^{-6}]$, all at rank 1.
+    The panels correspond to $\beta_3$ values in $[10^{-3}, 10^{-5}, 10^{-6}]$, all at rank one.
     Within each panel
     the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom
     heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
@@ -1318,7 +1305,7 @@ the hidden representation of the target model. When a pair's activations are cor
 aligned along a common direction and captured by a single rank one subcomponent.
 In that sense one decomposition is strictly finer than the other.
 The same pattern appears in VPD, where a toy model implements multiple collinear
-circuits that are captured by a single rank 1 subcomponent,
+circuits that are captured by a single rank one subcomponent,
 that becomes causally important for all of them \autocite{bushnaq2026interpreting_new_spd}.
 It is hypothesized that this phenomenon would also translate to higher ranks,
 where a single subcomponent that spans a higher dimensional subspace would,
@@ -1337,7 +1324,7 @@ importance independently with a small MLP, whereas
 the architecture used here computes it relationally,
 through a transformer block with softmax over subcomponent
 activations. The observed differences therefore cannot
-be attributed to either change in isolation. It is however,
+be attributed to either change in isolation. It is, however
 likely to be related to the softmax, since
 concurrent work has achieved good results, with a transformer
 based importance assignment \autocite{bushnaq2026interpreting_new_spd}.
@@ -1442,7 +1429,7 @@ If the randomly generated points did not form a simplex, then the simplex was re
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{SPD_minimality_io_sweep_full_1e1_to_1e-6.png}
-    \caption{Overview of routing patterns for SPD at rank 1, with the minimality
+    \caption{Overview of routing patterns for SPD at rank one, with the minimality
     coefficient fixed varied over $10^{-1}$ to $10^{-6}$ (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
@@ -1501,7 +1488,7 @@ If the randomly generated points did not form a simplex, then the simplex was re
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_minimality_io_sweep_full_1e1_to_1e-6.png}
-    \caption{Overview of routing patterns for RSPD at rank 1, with the minimality
+    \caption{Overview of routing patterns for RSPD at rank one, with the minimality
     coefficient varied over $10^{-1}$ to $10^{-6}$ (left to right). Within each panel, only the
     subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left
     edges, from each input group $g$ to a first-layer subcomponent $c$, give
@@ -1622,7 +1609,7 @@ If the randomly generated points did not form a simplex, then the simplex was re
 % Oral exam add just Attention to current SPD, cover the loophole.
 
 
-% visualize rank 1-3-5-7, instead of 1,2,3,4 or osmething.
+% visualize rank one-3-5-7, instead of 1,2,3,4 or osmething.
 
 
 % my notation is a bit mixed up
