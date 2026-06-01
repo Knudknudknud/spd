@@ -82,8 +82,8 @@ def plot_input_hidden_output_translation(
 
     #As
     im_top = ax_top.imshow(A_sorted, aspect="auto", cmap="Blues")
-    ax_top.set_ylabel("Input group")
-    ax_top.set_title("Input group contribution to hidden neurons")
+    ax_top.set_ylabel("Input group", fontsize=12)
+    ax_top.set_title("Input group contribution to hidden neurons", fontsize=14)
     ax_top.set_yticks(range(n_groups))
     ax_top.set_yticklabels([f"group {g+1}" for g in range(n_groups)])
 
@@ -92,11 +92,11 @@ def plot_input_hidden_output_translation(
 
     # B
     im_bottom = ax_bottom.imshow(B_sorted, aspect="auto", cmap="Reds")
-    ax_bottom.set_ylabel("Output")
-    ax_bottom.set_xlabel("Hidden neurons")
+    ax_bottom.set_ylabel("Output", fontsize=12)
+    ax_bottom.set_xlabel("Hidden neurons", fontsize=12)
     ax_bottom.set_yticks(range(n_outputs))
     ax_bottom.set_yticklabels([f"output {i+1}" for i in range(n_outputs)])
-    ax_bottom.set_title("Hidden neuron contribution to outputs")
+    ax_bottom.set_title("Hidden neuron contribution to outputs", fontsize=14)
 
     cax_bottom = make_axes_locatable(ax_bottom).append_axes("right", size="2%", pad=0.1)
     plt.colorbar(im_bottom, cax=cax_bottom)
@@ -123,15 +123,7 @@ def plot_group_output_matrix(
     title=None,
     n_samples=200,
 ):
-    """
-    For each input group g (one per output dimension of `dataset`):
-        1. sample n_samples valid simplices for that group via the dataset
-        2. place their flattened vertices in the feature vector (others zero)
-        3. forward pass through the linear-ReLU network
-        4. average the output responses
 
-    P[g, out] = mean network output when only group g is active.
-    """
     device = dataset.device
     W_in  = torch.as_tensor(W_in, dtype=torch.float32, device=device)
     W_out = torch.as_tensor(W_out, dtype=torch.float32, device=device)
@@ -142,11 +134,10 @@ def plot_group_output_matrix(
 
     with torch.no_grad():
         for g, (k, group) in enumerate(zip(dataset.dimensions, dataset.groups)):
-            # (n_samples, k+1, k) non-degenerate simplices for this group
             vertices = dataset._sample_valid_simplices(n_samples, k)
 
             X = torch.zeros(n_samples, dataset.n_features, device=device)
-            X[:, group] = vertices.reshape(n_samples, -1)   # fill only group g
+            X[:, group] = vertices.reshape(n_samples, -1)   # Couldve also just changed the data distribution to only one active, but its okay.
 
             # forward pass
             H = torch.relu(X @ W_in.T)
@@ -171,7 +162,6 @@ def plot_group_output_matrix(
 
     save_figure(fig, save_dir / title)
     plt.close(fig)
-
 
 def compute_io_flows(C1, C2, group_features):
     """
@@ -208,7 +198,6 @@ def pick_components(read, write, coverage=0.95):
     contrib2 = np.abs(write).sum(axis=1)   # (C2,) output-side outflow
 
     def cover(v):
-        
         order = np.argsort(-v)
         cum = np.cumsum(v[order])
         total = cum[-1]
@@ -325,6 +314,7 @@ def render_io_chain(columns, flows, save_path, title=None, edge_frac=0.05):
 
     # flows
     for i, M in enumerate(flows):
+        #Scale proportional to the max in a layer, im not sure if this is the best way of doing it...
         max_flow = np.abs(M).max()
         if max_flow <= 0:
             raise ValueError("Flow matrix has non-positive maximum value, cannot scale ribbons.")

@@ -229,7 +229,6 @@ def plot_increasing_importance_minimality_coeff_ci_vals(
 
     return fig
 
-
 def feature_contribution_plot(
     ax: plt.Axes,
     relu_conns: Float[Tensor, "n_layers n_features d_mlp"],
@@ -314,7 +313,6 @@ def feature_contribution_plot(
 
     return labelled_neurons
 
-
 def compute_target_weight_neuron_contributions(
     target_model: ResidualMLP, n_features: int | None = None
 ) -> Float[Tensor, "n_layers n_features d_mlp"]:
@@ -359,7 +357,6 @@ def compute_target_weight_neuron_contributions(
 
     # Truncate to the first *n_features* for visualisation
     return relu_conns[:, :n_features, :]
-
 
 def compute_spd_weight_neuron_contributions(
     components: dict[str, LinearComponent],
@@ -427,13 +424,10 @@ def compute_spd_weight_neuron_contributions(
     print("relu_conns_spd:", relu_conns_spd)
     return relu_conns_spd[:, :n_features, :, :]
 
-
-
 def plot_spd_feature_contributions_truncated(
     components: dict[str, LinearComponent],
     target_model: ResidualMLP,
     n_features: int | None = 100,
-    only_duplicate_pairs: bool = False,
 ):
     n_layers = target_model.config.n_layers
     d_mlp = target_model.config.d_mlp
@@ -465,19 +459,6 @@ def plot_spd_feature_contributions_truncated(
         )
 
     max_component_indices = torch.stack(max_component_indices, dim=0)  # [layers, N]
-
-    if only_duplicate_pairs:
-        comps = max_component_indices[0]  # reference layer
-
-        unique, counts = torch.unique(comps, return_counts=True)
-        dup_components = unique[counts > 1]
-
-        mask = torch.isin(comps, dup_components)
-
-        relu_conns = relu_conns[:, mask]
-        relu_conns_spd = relu_conns_spd[:, mask]
-        max_component_indices = max_component_indices[:, mask]
-
 
     comps = max_component_indices[0]
     perm = torch.argsort(comps, stable=True)
@@ -684,13 +665,11 @@ def plot_subcomponent_norms(model, save_path=None):
                 "d_in C K, C K d_out -> C d_in d_out"
             )
             #https://docs.pytorch.org/docs/2.12/generated/torch.norm.html 
-            #k=1, generally so the latter 2 are just l2 norms.
             ab_norms = torch.linalg.matrix_norm(W,dim=(1, 2)).cpu().numpy()
             order = np.argsort(ab_norms)[::-1]
             ab_norms = ab_norms[order]
             x = np.arange(len(ab_norms))
 
-     
             axes[0, i].bar(x, ab_norms, alpha=0.6)
             axes[0, i].set_title(name)
             axes[0, i].set_xlabel("Subcomponent index")
@@ -734,7 +713,6 @@ def main():
             components=components,
             target_model=target_model,
             n_features=10,
-            only_duplicate_pairs=False
         )
         fig.savefig(
             out_dir / f"resid_mlp_weights_{n_layers}layers_{wandb_id}.png",
@@ -747,7 +725,7 @@ def main():
         fig_pairs = plot_neuron_contribution_pairs(
             components=components,
             target_model=target_model,
-            n_features= 60, 
+            n_features= 10, 
         )
         fig_pairs.savefig(
             out_dir / f"neuron_contribution_pairs_{n_layers}layers_{wandb_id}.png",
