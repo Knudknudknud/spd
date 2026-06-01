@@ -228,4 +228,21 @@ combine_images(
     size=8,
     dpi=350,
 )
+
+
+#combined norm plot:
+
+image_paths = [
+    r"C:\Users\Knud\uni\spd\spd\experiments\resid_mlp\out\figures\subcomponent_norms_1layers_1x3kncu2.png",
+    r"C:\Users\Knud\uni\spd_original\spd\experiments\resid_mlp\out\figures\subcomponent_norms_1layers_4ht2hhtz.png",
+]
+
+combine_images(
+    image_paths,
+    save_path=r"C:\Users\Knud\uni\spd\thesis\written_product\Images\combined_subcomponent_norms.png",
+    ncols=1,     
+    size=8,
+    dpi=350,
+)
+
 print("Combined image saved.")

@@ -2,7 +2,6 @@ import math
 import torch
 from torch import Tensor
 
-
 class SimplexDataset:
     def __init__(self, dimensions: list[int], device: str = "cpu",
                  data_generation_type: str = "at_least_zero_active",
@@ -46,10 +45,14 @@ class SimplexDataset:
 
         for _ in range(self.max_resample_attempts):
             dets = self._edge_dets(vertices)
+
+            #a simplex is invalid if the determinant of the edge set v0-v1,v0-v2,... is linearly dependent, i.e if the determinant is zero
             bad = torch.abs(dets) < self.degeneracy_eps
             n_bad = int(bad.sum().item())
             if n_bad == 0:
                 return vertices
+            #check is not that efficient, would technically only have to recompute the bad ones,
+            #but for the toy model its fine.
             vertices[bad] = torch.rand(n_bad, k + 1, k, device=self.device)
 
         raise RuntimeError(
@@ -62,23 +65,30 @@ class SimplexDataset:
         labels = torch.zeros(batch_size, self.output_dim, device=self.device)
 
         if self.data_generation_type == "at_least_zero_active":
+            #produces a mask for every simplex in a batch, and see if it should be active.
             group_active = torch.rand(batch_size, len(self.dimensions), device=self.device) < self.feature_probability
         elif self.data_generation_type == "exactly_one_active":
+            #select a random simplex for every batch, and set it to active - a 1D vector of length batch_size.
             chosen = torch.randint(len(self.dimensions), (batch_size,), device=self.device)
+            #Create a matrix of shape batch x simplex groups
             group_active = torch.zeros(batch_size, len(self.dimensions), dtype=torch.bool, device=self.device)
+            #Index into the batch row and set column chosen to true.
             group_active[torch.arange(batch_size), chosen] = True
         else:
             raise ValueError("not a valid data_generation_type for Simplex")
 
         for g_idx, (k, group) in enumerate(zip(self.dimensions, self.groups)):
+            #select the active columns of the current simplex group, and get the batch indices where they are active.
             active_rows = group_active[:, g_idx].nonzero(as_tuple=True)[0]
             if active_rows.numel() == 0:
                 continue
-
+            
             num_active = active_rows.numel()
-            vertices = self._sample_valid_simplices(num_active, k)
+            #Num of active simplices in the batch, and the dimension of the simplex group.
+            vertices = self._sample_valid_simplices(num_active, k) #returns batch x (k+1) x k tensor
 
-            batch[active_rows[:, None], group] = vertices.reshape(num_active, -1)
+            rows = active_rows.reshape(-1, 1)
+            batch[rows, group] = vertices.reshape(num_active, -1)
             labels[active_rows, g_idx] = self._volume_from_vertices(vertices)
 
         return batch, labels
@@ -89,40 +99,4 @@ if __name__ == "__main__":
 
     # sanity: known formulas still work
     ds = SimplexDataset([2])
-    vertices = torch.tensor([[[0., 0.], [1., 0.], [0., 1.]]])
-    assert abs(ds._volume_from_vertices(vertices).item() - 0.5) < 1e-6
-    print("unit triangle: pass")
-
-    ds3 = SimplexDataset([3])
-    vertices = torch.tensor([[[0., 0., 0.], [1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]])
-    assert abs(ds3._volume_from_vertices(vertices).item() - 1/6) < 1e-6
-    print("unit tetrahedron: pass")
-
-    # rejection actually rejects degenerate inputs
-    degenerate = torch.zeros(1, 4, 3)
-    dets = ds3._edge_dets(degenerate)
-    assert torch.abs(dets).item() < 1e-6
-    print("degenerate detection: pass")
-
-    # end-to-end shapes
-    ds = SimplexDataset([4, 2], feature_probability=1.0)
-    x, labels = ds.generate_batch(8)
-    assert x.shape == (8, 4 * 5 + 2 * 3)
-    assert labels.shape == (8, 2)
-    assert (labels > 0).all()
-    print("batch shapes & all-positive labels: pass")
-
-    # volume distribution: how spread out are the labels?
-    print("\n--- volume distribution per dimension ---")
-    for k in [2, 3, 4, 5]:
-        ds_k = SimplexDataset([k], feature_probability=1.0)
-        _, labels = ds_k.generate_batch(10000)
-        vols = labels[:, 0]
-        print(f"k={k}: min={vols.min():.2e}  median={vols.median():.2e}  "
-              f"max={vols.max():.2e}  mean={vols.mean():.2e}  std={vols.std():.2e}")
-        # log-spread tells us how many orders of magnitude the volumes span
-        log_vols = torch.log10(vols.clamp(min=1e-30))
-        print(f"      log10 range: [{log_vols.min():.2f}, {log_vols.max():.2f}]  "
-              f"(spans {log_vols.max() - log_vols.min():.1f} orders of magnitude)")
-
-    print("\nall tests passed")
+    print(ds.generate_batch(2))

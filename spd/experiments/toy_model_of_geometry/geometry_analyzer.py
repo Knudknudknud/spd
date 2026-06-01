@@ -27,12 +27,9 @@ def get_group_features(
     return groups, group_sizes, n_features
 
 
-def save_figure(fig: plt.Figure, save_path: Path) -> None:
-    fig.savefig(save_path, dpi=150, bbox_inches="tight")
+def save_figure(fig: plt.Figure, save_path: Path, dpi: int = 350) -> None:
+    fig.savefig(save_path, dpi=dpi, bbox_inches="tight")
     plt.close(fig)
-
-
-
 
 def plot_input_hidden_output_translation(
     W1,
@@ -61,6 +58,7 @@ def plot_input_hidden_output_translation(
 
         #sum over the feature group, to find the total activation of each hidden neuron from this group.
         hidden_activation = group_input.sum(axis=1)
+        #for visual clarity cap at zero, albeit a negative result is not possible due to the ReLU in the original model.
         A[g, :] = np.maximum(hidden_activation, 0)
 
     #Across every group, pick the one that maximally activates it.
@@ -75,16 +73,12 @@ def plot_input_hidden_output_translation(
     A_sorted = A[:, neuron_order]
     B_sorted = B[:, neuron_order]
 
-
-
     fig, (ax_top, ax_bottom) = plt.subplots(
         2, 1,
         figsize=(16, 6),
         sharex=True,
         gridspec_kw={"height_ratios": [n_groups, n_outputs]},
     )
-
-
 
     #As
     im_top = ax_top.imshow(A_sorted, aspect="auto", cmap="Blues")
@@ -110,14 +104,14 @@ def plot_input_hidden_output_translation(
     sorted_dominant_input = dominant_input[neuron_order]
     group_sizes = np.bincount(sorted_dominant_input, minlength=n_groups)
     boundaries = np.cumsum(group_sizes)[:-1]
-
     for boundary in boundaries:
         ax_top.axvline(boundary - 0.5, color="black", lw=1)
         ax_bottom.axvline(boundary - 0.5, color="black", lw=1)
 
-    fig.suptitle(title)
-    plt.tight_layout()
+    if title:
+        fig.suptitle(title, fontsize=14)
 
+    plt.tight_layout()
     save_figure(fig, save_dir / "w1_w2_input_hidden_output_translation.png")
     plt.close(fig)
 
@@ -163,7 +157,8 @@ def plot_group_output_matrix(
     fig, ax = plt.subplots(figsize=(4.5, 3.5))
     im = ax.imshow(P, cmap="viridis", aspect="auto")
 
-    ax.set_title(title)
+    if title:
+        ax.set_title(title)
     ax.set_xlabel("Output group")
     ax.set_ylabel("Input group")
     ax.set_xticks(range(n_out))
@@ -435,7 +430,13 @@ def plot_io_routing_chain(
 
 
 def main() -> None:
+    #I have not had the time to clean this up fully, so i apologize in advance.
       
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    ranks = [2,2,2]
+    group_features, _, _ = get_group_features(ranks)
+    dataset = SimplexDataset(ranks, device=device)
+
     run_dirs = [
         #minimaities
         (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "RSPD -Minimality coefficient: 1e-1"),
@@ -454,57 +455,39 @@ def main() -> None:
         (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "RSPD - Rank: 7"),
         (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "RSPD - Rank: 8"),
     ]
-    
-    model_dir = r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\smaller_test"
-    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
+    #Subcomponent level
     for run_dir, run_title in run_dirs:
-        RUN_DIR = Path(
-            run_dir)
-        ranks = [2,2,2]
-
+        RUN_DIR = Path(run_dir)
         state_dict = torch.load(
             RUN_DIR / "model_30000.pth",
-            map_location=DEVICE,
+            map_location=device,
         )
 
             
-            
-
         A1 = state_dict["components.linear1.A"]
         B1 = state_dict["components.linear1.B"]
-
         A2 = state_dict["components.linear2.A"]
         B2 = state_dict["components.linear2.B"]
 
-
-
-
-        W1 = einops.einsum(A1, B1, "d_in C K, C K d_out -> d_out d_in").detach().cpu().numpy()
-        W2 = einops.einsum(A2, B2, "d_in C K, C K d_out -> d_out d_in").detach().cpu().numpy()
-        
         #Components
         C1 = einops.einsum(A1, B1, "d_in C K, C K d_out -> C d_out d_in").detach().cpu().numpy()
         C2 = einops.einsum(A2, B2, "d_in C K, C K d_out -> C d_out d_in").detach().cpu().numpy()
-
-
-        group_features, _, _ = get_group_features(ranks)
-
         plot_io_routing_chain(C1, C2, group_features, save_dir=RUN_DIR, title=run_title, coverage=0.80, edge_frac=0.01,sort_nodes=True, sweeps=10)
 
-    
+
+    #Target Model level
+    model_dir = r"C:\Users\Knud\uni\spd_original\spd\experiments\toy_model_of_geometry\out\smaller_test"
     model_dir = Path(model_dir)
     state_dict = torch.load(
         model_dir / "geometry.pth",
-        map_location=DEVICE,
+        map_location=device,
     )
     W1 = state_dict["linear1.weight"].detach().cpu().numpy()
     W2 = state_dict["linear2.weight"].detach().cpu().numpy()
-    ranks = [2,2,2]
-    group_features, _, _ = get_group_features(ranks)
 
-    plot_input_hidden_output_translation(W1, W2, group_features, save_dir=model_dir, title="Hidden neuron activations to input and output groups", threshold=0.05)
-    dataset = SimplexDataset([2,2,2], device=DEVICE)
+    plot_input_hidden_output_translation(W1, W2, group_features, save_dir=model_dir, #title="Hidden neuron contributions to input and output groups",
+                                            threshold=0.05)
     plot_group_output_matrix(W1, W2, save_dir=model_dir, title="Input to output matrix (Target Model)", dataset=dataset)
 
 if __name__ == "__main__":
