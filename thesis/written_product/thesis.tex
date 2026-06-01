@@ -493,7 +493,7 @@ k-dimensional case by computing the volume of a simplex
 from its vertices. The ground truth decomposition is no longer containable in a single rank one subcomponent, as the geometry of the feature is more complex.
 This experiment serves to test how well the modified architecture and SPD can group feature parts together, when their expressiveness is increased.
 
-\begin{table*}[h!]
+\begin{table*}[H]
 \centering
 
 \renewcommand{\arraystretch}{1.25}
@@ -634,7 +634,7 @@ In this setting, each input $\mathbf{x} \in \mathbb{R}^{d_{\text{in}}}$ has comp
 Under this setup, the ground-truth decomposition is a set of $d_{\text{in}}$ rank one matrices, each non-zero only along the $j$-th column $W_{:,j}$.
 Like in the original SPD paper, two TMS models are trained: $\mathrm{TMS}_{5\text{-}2}$ with $d_{\text{in}}=5$ and $d_{\text{hidden}}=2$, and $\mathrm{TMS}_{40\text{-}10}$ with $d_{\text{in}}=40$ and $d_{\text{hidden}}=10$.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{tms_5_2_plot.png}
     \caption{Decomposition of $\mathrm{TMS}_{5\text{-}2}$ using RSPD. 
@@ -655,7 +655,7 @@ concentrate the entire feature magnitude within a single subcomponent,
 resulting in a lower ML2R with high variance. For the larger model this skews the geometry further.
 (Table \ref{tab:tms_results_single}).
 
-\begin{table}[h!]
+\begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{lcccccc}
@@ -726,17 +726,12 @@ two members should be separated laterally into distinct subcomponents, or
 kept together. \footnote{indent this down}
 
 Empirically, both SPD and RSPD
-find a decomposition of
-twenty subcomponents, each entirely
-causally important for one pair $\{x_{2i-1}, x_{2i}\}$, so each subcomponent
-represents the two collapsed features of a pair as a single direction. This
-tendency to group collinear features is also reported for VPD
-\autocite{bushnaq2026interpreting_new_spd}, where the importance objective is
-shown not to encourage splitting a causally important subcomponent into
-separate collinear subcomponents, even when they correspond to distinct
-concepts in the underlying model.
+find a decomposition where one subcomponent is
+causally important for one pair $\{x_{2i-1}, x_{2i}\}$.
+In RSPD, this pair is assigned to a distinct subcomponent,
+where as in SPD, the pairs collapse onto overlapping subcomponents.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.48\linewidth,height=10cm]{spd_40_10_paired.png}
     \hfill
@@ -760,21 +755,20 @@ lower ML2R with higher variance, indicating that the best-aligned subcomponent,
 does not always carry the full feature magnitude
 (Table~\ref{tab:tms_results_paired}).
 
-\begin{table}[h!]
+\begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{lcc}
 \toprule
 & SPD & RSPD \\
 \midrule
-MMCS & $1.00 \pm 0.016$ & $0.999$ \\
-ML2R & $1.00 \pm 0.205$ & $0.720 \pm 0.465$ \\
+MMCS & $1$ & $1$ \\
+ML2R & $0.8997 \pm 0.344$ & $0.720 \pm 0.465$ \\
 \bottomrule
 \end{tabular}
 \caption{Decomposition quality in the paired $\mathrm{TMS-Paired}_{40\text{-}10}$ setting. SPD refers to the original method \autocite{stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
 \label{tab:tms_results_paired}
 \end{table}
-\footnote{correct values}
 
 Overall across all three settings,
 SPD produces stronger results both in MMCS
@@ -807,7 +801,7 @@ minimize the MSE between its output and the target function. For comparability w
 $d_{\text{hidden}} = 50$, rank $k=1$ matrices, $C = 200$ subcomponents, and an
 embedding dimension $d_{\text{emb}} = 1000$.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=15cm, height=5cm]{CCmodel.png}
     \caption{Architecture of The Toy Model of Compressed Computation. Picture taken from \autocite{bhagat2025compressed}}.
@@ -837,7 +831,7 @@ all computations at once, the importance is concentrated with some
 subcomponents being important for several at once.
 The assignment therefore appears sparser than the computation
 underneath it actually is. (Figure \ref{fig:cc_importance})
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{softmax_CC.png}
     \caption{Causal importance values for RSPD on The Toy Model of Compressed Computation,
@@ -874,7 +868,7 @@ are over- or under-represented (Figure~\ref{fig:cc_contribution}). This is consi
 with the lower ML2R seen in TMS and paired TMS, and occurs even though the
 faithfulness and reconstruction losses are near-zero.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=8cm]{cc_softmax_attention.png}
      \caption{Neuron-level contributions for The Toy Model of Compressed Computation, shown for the
@@ -889,7 +883,7 @@ the RSPD decomposition also shows a more gradual norm distribution across subcom
 While the $100$ and $50$ causally important subcomponents of $W_{\text{in}}$ and $W_{\text{out}}$
 carry the bulk of the norm, there remains a longer
 tail of subcomponents with non-negligible norms in the first layer compared to SPD.
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_softmax.png}
     \hfill
@@ -898,7 +892,7 @@ tail of subcomponents with non-negligible norms in the first layer compared to S
     \label{fig:CC_norms}
 \end{figure}
 
-SPD \footnote{new caption here, comes out blurry like frequencies for some reason. Make the figure larger if possible}, by contrast, shows a sharp drop in norm after the causally important subcomponents,
+SPD \footnote{new caption here, comes out blurry like frequencies for some reason. Make the figure larger if possible ,actually just 2x2 the image}, by contrast, shows a sharp drop in norm after the causally important subcomponents,
 with the inactive subcomponents pruned to near-zero norm in $W_{in}$ and a trailing tail of small but non-negligible norms in $W_{out}$.
 
 An initial hypothesis for why the RSPD architecture fails to produce hard-zero norms in
@@ -910,7 +904,7 @@ The absence of hard-zero norms therefore seems
 not to arise from the gating distribution itself, but rather from how
 reconstruction mass is distributed across subcomponents during optimization.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.48\linewidth,height=5cm]{cc_softmax_causal_importance_hist.png}
     \hfill
@@ -976,7 +970,7 @@ Each $\rho_{[i,g]}$ is the portion of neuron $i$'s total input weight,
 $\sum_{j} W_{\text{in},[i,j]}$, contributed by simplex $g$.
 The contribution of neuron $i$ to output $o$ follows directly from its entry $W_{\text{out},[o,i]}$.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=5cm]{w1_w2_input_hidden_output_translation.png}
     \caption{Routing structure of the trained network over the hidden neurons.
@@ -995,7 +989,7 @@ contribute to that simplex's output.
 Folding these responses into a simplex to output matrix, shows
 an almost diagonal structure, with each simplex contributing predominantly to its own output.
 (Figure~\ref{fig:simplex_group_output}).
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth, height=5cm]{group_output_matrix_simplex.png}
     \caption{Group-to-output response of the trained network. Each entry
@@ -1275,16 +1269,15 @@ the one-hot assignment suggested a monosemantic assignment,
 yet at the neuron level it did not singlehandedly capture the full neuron contribution 
 of the target model. In The Toy Model of Geometry,
 the importance values likewise suggested a per-simplex assignment in the first layer, but
-the routing analysis showed subcomponents reading from multiple simplices at once.
+the routing showed subcomponents reading from multiple simplices at once.
 Finally, in The Toy Model of Superposition, where SPD and RSPD produced the same one-hot importance
-assignment, RSPD diverged on both MMCS and ML2R, recovering a slightly rotated geometry with
+assignment, RSPD diverged on both MMCS and ML2R, recovering a rotated geometry with
 residual magnitude spread across neighboring subcomponents.
 
 It was initially hypothesized that normalizing the importance distribution would tie
 it directly to the magnitude of each subcomponent, so that a subcomponent's predicted
 importance and its share of the reconstruction would correlate. This did not hold
-in practice. Despite the one-hot importance assignment, a single subcomponent assigned
-full importance did not capture the full magnitude of the feature. The cause is not
+in practice. The cause is not
 entirely clear, but it is hypothesized to relate to how entropy shapes
 the subcomponent norms during training, where causally unimportant subcomponents
 are not pruned to zero norm but remain residually active. 
@@ -1318,12 +1311,12 @@ future work should investigate alternative designs that enforce the necessary st
 The rank of the subcomponents connects to a broader ambiguity about what structure
 parameter decomposition is meant to recover. In SPD the rank one constraint is
 intended to enforce the simplicity of a mechanism, but even rank one
-subcomponents can carry features of vastly different nominal complexity,
+subcomponents can carry features of different nominal complexity,
 depending on the target model's training. In TMS, both methods would capture
 either a single input or a pair of inputs, depending on how these were projected in
 the hidden representation of the target model. When a pair's activations are correlated, the two are
 aligned along a common direction and captured by a single rank one subcomponent.
-In that sense one decomposition is strictly coarser than the other.
+In that sense one decomposition is strictly finer than the other.
 The same pattern appears in VPD, where a toy model implements multiple collinear
 circuits that are captured by a single rank 1 subcomponent,
 that becomes causally important for all of them \autocite{bushnaq2026interpreting_new_spd}.
@@ -1336,59 +1329,104 @@ and future work should investigate how to determine the right rank for a given s
 and how to design methods that can recover the desired structure at higher ranks.
 
 \section{Limitations and future work}
-
-Beyond the limitations already noted, this work has a few primary shortcomings.
-
-\section{Limitations and future work}
-Beyond the limitations already noted, this work has several main shortcomings.
-The comparison between SPD and RSPD conflates two changes.
-The original method computes each subcomponent's
+Beyond the limitations already noted, this
+work has several main shortcomings.
+Firstly, the comparison between SPD and RSPD conflates two changes at once.
+SPD computes each subcomponent's
 importance independently with a small MLP, whereas
 the architecture used here computes it relationally,
 through a transformer block with softmax over subcomponent
 activations. The observed differences therefore cannot
-be attributed to either change in isolation. Even so,
-concurrent work has also replaced the MLP with a transformer block,
-achieving strong results. The differences therefore
-more plausibly attributed to the softmax. \autocite{bushnaq2026interpreting_new_spd}
+be attributed to either change in isolation. It is however,
+likely to be related to the softmax, since
+concurrent work has achieved good results, with a transformer
+based importance assignment \autocite{bushnaq2026interpreting_new_spd}.
 
 From the perspective of irreducibility, the experiments
 do not examine whether a subcomponent is 
 reducible or could be separated into even simpler subcomponents.
 Further work should investigate how to examine this automatically,
-for instance by applying
-the algorithms of \autocite{engels2025languagemodelfeaturesonedimensionally}.
-Additionally further work could investigate how this 
-should best contextualized to SPD, for example
-if the reducibility conditions could discover
-collinear features that are captured within a single subcomponent.
+for instance by applying the algorithms of
+\autocite{engels2025languagemodelfeaturesonedimensionally}.
+Additionally further work could investigate how 
+reducibility is best attributed to parameter decomposition.
+For example, if the reducibility conditions 
+could be applied to separate subcomponents, that
+contain two collinear features, into two
+subcomponents that each capture one of the features.
 \autocite{bushnaq2026interpreting_new_spd}
 
-Finally, every setting studied here is a toy model with a known ground-truth decomposition. The
-methods have not been tested on larger systems,
+Finally, every setting studied here is a toy model with
+a known ground-truth decomposition. The
+architecture has not been tested on larger models,
 where the true decomposition is unknown, which is
-ultimately where a parameter-decomposition method must prove useful. This is compounded by a strong
-sensitivity to hyperparameters, in particular the minimality coefficient and the subcomponent rank,
+ultimately where a parameter decomposition method must prove useful.
+This is compounded by a strong sensitivity to hyperparameters,
+in particular the minimality coefficient and the subcomponent rank,
 which were tuned against the known ground truth.
-
-\newpage
 \section{References}
 \printbibliography[heading=none]
 
 
 \section{Appendix}
 \subsection{Model training}
+\subsubsection{Toy Model of Superposition}
+\textbf{Target Model:}
+Following the work of \autocite{stochasticparameterdecomposition},
+the target model for both $\text{TMS}_{5-2}$  and $\text{TMS}_{40-10}$, 
+the paired and unpaired TMS experiment were trained for 10000 epochs,
+with adamW, and a constant learning rate of $5 \times 10^{-3}$. 
+Each feature was sampled to be active with probability $p = 0.05$, and when active, its coordinates were sampled uniformly from $[0,1]$
+in the independent model. Similarly, in the paired
+version, the features were sampled from $[0.1,1]$ with $p=0.05$ or both zero with probability $1-p$.
+
+\textbf{Decomposition Hyperparameters:}
+\renewcommand\labelitemi{\tiny$\bullet$}
+\begin{itemize}
+    \setlength\itemsep{0em}
+    \item Optimizer: Adam, with a learning rate of $10^{-3}$, with a cosine learning rate schedule.
+    \item Training duration: 40.000 steps, with a batch size of 4096
+    \item Data distribution: Following the data distribution of the model.
+    \item Transformer parameters: The importance transformer consisted of a single attention head, with a hidden dimension of 32, scaled by $4$ in the feedforward layer. 
+    \item SPD coefficients: $\mathcal{L}_{\text{faithfulness}}=1$, $\mathcal{L}_{\text{Stochastic-recon}}=1$, $\mathcal{L}_{\text{Stochastic-recon-layerwise}}=1$, $\mathcal{L}_{\text{minimality}}$ was swept from $10^{-1}$ and $10^{-6}$ in steps of $10^{-1}$.
+\end{itemize}
 
 
+\subsubsection{Toy Model of Compressed Computation}
 
+The target model training was also copied from \autocite{stochasticparameterdecomposition},
+with AdamW, a learning rate of $3 \times 10^{-3}$ scheduled through cosine decay
+and weight decay of 0.01. Input was sampled from the interval $[-1,1]$ with a probability of $p = 0.01$ and zero with probability $1-p$.
 
-\subsection{Toy Model of Geometry}
-This section contains full size images over the entire sweep of minimality coefficients,
-that didn't fit in the main text
-\footnote{add the losses of training}
+\textbf{Decomposition Hyperparameters:}
+\renewcommand\labelitemi{\tiny$\bullet$}
+\begin{itemize}
+    \setlength\itemsep{0em}
+    \item Optimizer: Adam, with a learning rate of $2 \times 10^{-3}$ scheduled using cosine decay.
+    \item Training duration: 40.000 steps, with a batch size of 4096
+    \item Data distribution: Following the data distribution of the model.
+    \item Transformer parameters: The importance transformer consisted of a single attention head, with a hidden dimension of 32, scaled by $4$ in the feedforward layer. 
+    \item Loss coefficients: $\mathcal{L}_{\text{faithfulness}}=1$, $\mathcal{L}_{\text{Stochastic-recon}}=1$, $\mathcal{L}_{\text{Stochastic-recon-layerwise}}=1$, $\mathcal{L}_{\text{minimality}}$ was swept from $10^{-1}$ and $10^{-6}$ in steps of $10^{-1}$.
+\end{itemize}
+\subsubsection{Toy Model of Geometry}
+The toy model of geometry was trained for 40000 epochs, with adamW, a learning rate of $10^{-3}$ scheduled through cosine decay.
+Each simplex had coordinates sampled uniformly from $[0,1]$ with probability $p=0.4$ and zero with probability $1-p$.
+If the randomly generated points did not form a simplex, then the simplex was redrawn.
+\textbf{Decomposition Hyperparameters:}
+\renewcommand\labelitemi{\tiny$\bullet$}
+\begin{itemize}
+    \setlength\itemsep{0em}
+    \item Optimizer: Adam, with a learning rate of $2 \times 10^{-3}$ scheduled using cosine decay.
+    \item Training duration: 40.000 steps, with a batch size of 4096
+    \item Data distribution: Following the data distribution of the model.
+    \item Transformer parameters: The importance transformer consisted of a single attention head, with a hidden dimension of 32, scaled by $4$ in the feedforward layer. 
+    \item Loss coefficients: $\mathcal{L}_{\text{faithfulness}}=1$, $\mathcal{L}_{\text{Stochastic-recon}}=1$, $\mathcal{L}_{\text{Stochastic-recon-layerwise}}=1$, $\mathcal{L}_{\text{minimality}}$ was swept from $10^{-1}$ and $10^{-6}$ in steps of $10^{-1}$.
+    \item Ranks: The rank was swept from $1$ to $6$ in steps of $1$, with the minimality coefficient fixed at $10^{-5}$ for SPD and $10^{-3}$ for RSPD.
+\end{itemize}
 \newpage
+\subsection{Additional figures}
 \subsubsection{SPD: Sweep over minimality coefficients}
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{SPD_minimality_sweep_full_1e1_to_1e-6.png}
     \caption{Causal importance values for SPD across the minimality sweep, with each input activated
@@ -1398,11 +1436,10 @@ that didn't fit in the main text
     heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel.}
     \label{appendix:SPD_minimality_sweep}
-    
 \end{figure}
 
 \newpage
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{SPD_minimality_io_sweep_full_1e1_to_1e-6.png}
     \caption{Overview of routing patterns for SPD at rank 1, with the minimality
@@ -1420,7 +1457,7 @@ that didn't fit in the main text
 
 \newpage
 \subsubsection{SPD: Sweep over ranks for fixed minimality}
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_rank_1_to_8.png}
     \caption{Causal importance values for SPD across the rank sweep, with minimality coefficient $\beta_{3} = 10^{-5}$. Each with each input activated
@@ -1431,7 +1468,7 @@ that didn't fit in the main text
     columns corresponding to the causal importance value. The subcomponents are permuted within each panel.}
 \end{figure}
 \newpage
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{SPD_causal_importances_ranking_sweep_minimality_1e-e5_io_routing_chain_rank_1_to_8.png}
     \caption{Overview of routing patterns for SPD across ranks 1 to 6, with the minimality
@@ -1449,7 +1486,7 @@ that didn't fit in the main text
 \newpage
 \subsubsection{RSPD: Sweep over minimality coefficients}
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_minimality_sweep_full_1e1_to_1e-6.png}
     \caption{Causal importance values for RSPD with attention across the minimality sweep, with each input activated
@@ -1461,7 +1498,7 @@ that didn't fit in the main text
 \end{figure}
 
 \newpage
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_minimality_io_sweep_full_1e1_to_1e-6.png}
     \caption{Overview of routing patterns for RSPD at rank 1, with the minimality
@@ -1479,7 +1516,7 @@ that didn't fit in the main text
 \newpage
 \subsubsection{RSPD: Sweep over ranks for fixed minimality}
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_causal_importances_ranking_sweep_minimality_1e-e3_rank_1_to_8.png}
     \caption{Causal importance values for RSPD with attention across the rank sweep, with minimality coefficient $\beta_{3} = 10^{-3}$. Each input activated
@@ -1492,7 +1529,7 @@ that didn't fit in the main text
 \end{figure}
 
 \newpage
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth, height=18cm]{Softmax_rank_io_sweep_full_rank_1_to_8.png}
     \caption{Overview of routing patterns for RSPD across ranks 1 to 6, with the minimality
