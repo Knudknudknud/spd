@@ -514,7 +514,7 @@ def plot_spd_feature_contributions_truncated(
 
     axes1[1].set_ylabel("Neuron contribution")
     axes1[1].set_xlabel("Subcomponent index")
-    axes1[1].set_title("Softmax and attention subcomponents")
+    axes1[1].set_title("RSPD subcomponents")
     axes1[1].set_xticks(range(k))
 
     # align y-limits
