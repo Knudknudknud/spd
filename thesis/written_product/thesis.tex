@@ -861,6 +861,9 @@ the RSPD decomposition also shows a more gradual norm distribution across subcom
 While the $100$ and $50$ causally important subcomponents of $W_{\text{in}}$ and $W_{\text{out}}$
 carry the bulk of the norm, there remains a longer
 tail of subcomponents with non-negligible norms in the first layer compared to SPD.
+SPD by contrast, shows a sharp drop in norm after the causally important subcomponents,
+with the inactive subcomponents pruned to near-zero norm in $W_{in}$ and a trailing tail of small but non-negligible norms in $W_{out}$.
+
 \begin{figure}[H]
     \centering
     % \includegraphics[width=0.48\linewidth,height=6cm]{CC_norms_softmax.png}
@@ -871,9 +874,6 @@ tail of subcomponents with non-negligible norms in the first layer compared to S
     and sorted by decreasing norm.}
     \label{fig:CC_norms}
 \end{figure}
-
-SPD by contrast, shows a sharp drop in norm after the causally important subcomponents,
-with the inactive subcomponents pruned to near-zero norm in $W_{in}$ and a trailing tail of small but non-negligible norms in $W_{out}$.
 
 An initial hypothesis for why the RSPD architecture fails to produce hard-zero norms in
 $W_{\text{in}}$, was that unlike the hard-sigmoid gating used in SPD, the Softmax distribution does produce exact zeros. However,
