@@ -427,28 +427,34 @@ def main() -> None:
 
     run_dirs = [
         #minimaities
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "RSPD -Minimality coefficient: 1e-1"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01", "RSPD - Minimality coefficient: 1e-2"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001", "RSPD - Minimality coefficient: 1e-3"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001", "RSPD - Minimality coefficient: 1e-4"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001", "RSPD - Minimality coefficient: 1e-5"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001", "RSPD - Minimality coefficient: 1e-6"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.1", "RSPD -Minimality coefficient: 1e-1"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.01", "RSPD - Minimality coefficient: 1e-2"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.001", "RSPD - Minimality coefficient: 1e-3"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.0001", "RSPD - Minimality coefficient: 1e-4"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.00001", "RSPD - Minimality coefficient: 1e-5"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\minimality_sweep\0.000001", "RSPD - Minimality coefficient: 1e-6"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\new_rank_sweep\0.1", "RSPD -Minimality coefficient: 1e-1"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\new_rank_sweep\0.01", "RSPD - Minimality coefficient: 1e-2"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\new_rank_sweep\0.001", "RSPD - Minimality coefficient: 1e-3"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\new_rank_sweep\0.0001", "RSPD - Minimality coefficient: 1e-4"),
+        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\new_rank_sweep\0.00001", "RSPD - Minimality coefficient: 1e-5"),
+        #(r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\new_rank_sweep\0.000001", "RSPD - Minimality coefficient: 1e-6"),
         #Rank plots:
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1", "RSPD - Rank: 1"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2", "RSPD - Rank: 2"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3", "RSPD - Rank: 3"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4", "RSPD - Rank: 4"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "RSPD - Rank: 5"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "RSPD - Rank: 6"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "RSPD - Rank: 7"),
-        (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "RSPD - Rank: 8"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_1", "RSPD - Rank: 1"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_2", "RSPD - Rank: 2"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_3", "RSPD - Rank: 3"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_4", "RSPD - Rank: 4"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_5", "RSPD - Rank: 5"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_6", "RSPD - Rank: 6"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_7", "RSPD - Rank: 7"),
+        # (r"C:\Users\Knud\uni\spd\spd\experiments\toy_model_of_geometry\out\rank_plots\rank_8", "RSPD - Rank: 8"),
     ]
 
     #Subcomponent level
     for run_dir, run_title in run_dirs:
         RUN_DIR = Path(run_dir)
         state_dict = torch.load(
-            RUN_DIR / "model_30000.pth",
+            RUN_DIR / "model_40000.pth",
             map_location=device,
         )
 
