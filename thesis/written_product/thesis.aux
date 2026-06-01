@@ -7,7 +7,7 @@
 \abx@aux@segm{0}{0}{sharkey2025openproblemsmechanisticinterpretability}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction (mangler rettelser, ellers done)}{1}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
 \abx@aux@cite{0}{park2024linearrepresentationhypothesisgeometry}
 \abx@aux@segm{0}{0}{park2024linearrepresentationhypothesisgeometry}
 \abx@aux@cite{0}{elhage2022toymodelssuperposition}
@@ -46,18 +46,16 @@
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
 \abx@aux@cite{0}{christensen2025decompositionsmalltransformermodels}
 \abx@aux@segm{0}{0}{christensen2025decompositionsmalltransformermodels}
-\abx@aux@cite{0}{seshadri2026crosslayer}
-\abx@aux@segm{0}{0}{seshadri2026crosslayer}
 \abx@aux@cite{0}{bushnaq2026interpreting_new_spd}
 \abx@aux@segm{0}{0}{bushnaq2026interpreting_new_spd}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Related work (Done to rettelser)}{2}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}The linear representation hypothesis}{2}{subsection.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Activation-space decomposition}{2}{subsection.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Parameter-space decomposition}{2}{subsection.2.3}\protected@file@percent }
 \abx@aux@cite{0}{AttributionBasedParameterDecomposition}
 \abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related work (Done to rettelser)}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}The linear representation hypothesis}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Activation-space decomposition}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Parameter-space decomposition}{2}{subsection.2.3}\protected@file@percent }
 \abx@aux@cite{0}{AttributionBasedParameterDecomposition}
 \abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
@@ -154,8 +152,8 @@
 \newlabel{fig:CC_causal_importance_hist}{{7}{12}{Histograms of the causal importance values for the RSPD decomposition, taken over a single batch at the end of training, for $W_{\text {in}}$. Shown in logarithmic scale. Training was done with with batch size $2048$ and $200$ sampling resulting in $409600$ total values shown}{figure.7}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Toy Model of Geometry}{12}{subsection.4.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Target model structure}{13}{subsubsection.4.4.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Routing structure of the trained network over the hidden neurons. Top: the input-side contribution $\rho _{[i,g]}$ of each simplex group $g$ to each hidden neuron $i$. Bottom: the output-side contribution $W_{\text  {out},[k,i]}$ of each hidden neuron to each simplex output $k$. Only neurons with $\rho _{[i,g]} > 0.05$ for some group and $W_{\text  {out},[o,i]} > 0.05$ for some output are shown. Neurons are ordered first by the simplex that drives them and then by output strength.}}{13}{figure.8}\protected@file@percent }
-\newlabel{fig:simplex_target_structure}{{8}{13}{Routing structure of the trained network over the hidden neurons. Top: the input-side contribution $\rho _{[i,g]}$ of each simplex group $g$ to each hidden neuron $i$. Bottom: the output-side contribution $W_{\text {out},[k,i]}$ of each hidden neuron to each simplex output $k$. Only neurons with $\rho _{[i,g]} > 0.05$ for some group and $W_{\text {out},[o,i]} > 0.05$ for some output are shown. Neurons are ordered first by the simplex that drives them and then by output strength}{figure.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Routing structure of the trained network over the hidden neurons. Top: the input-side contribution $\rho _{[i,g]}$ of each simplex group $g$ to each hidden neuron $i$. Bottom: the output-side contribution $W_{\text  {out},[o,i]}$ of each hidden neuron to each simplex output $o$. Only neurons with $\rho _{[i,g]} > 0.05$ for some group and $W_{\text  {out},[o,i]} > 0.05$ for some output are shown. Neurons are ordered first by the simplex that drives them and then by output strength.}}{13}{figure.8}\protected@file@percent }
+\newlabel{fig:simplex_target_structure}{{8}{13}{Routing structure of the trained network over the hidden neurons. Top: the input-side contribution $\rho _{[i,g]}$ of each simplex group $g$ to each hidden neuron $i$. Bottom: the output-side contribution $W_{\text {out},[o,i]}$ of each hidden neuron to each simplex output $o$. Only neurons with $\rho _{[i,g]} > 0.05$ for some group and $W_{\text {out},[o,i]} > 0.05$ for some output are shown. Neurons are ordered first by the simplex that drives them and then by output strength}{figure.8}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Group-to-output response of the trained network. Each entry $P_{g,:} = \tfrac  {1}{N}\DOTSB \sum@ \slimits@ _{n=1}^{N} \big  [\, W_{\text  {out}}\,\mathrm  {ReLU}(W_{\text  {in}}\, x^{(g)}_n)\,\big  ]$ is the mean output when only simplex $g$ is active, where each probe $x^{(g)}_n$ has the coordinates $\mathcal  {C}_g$ of simplex $g$ sampled and all other coordinates set to zero, averaged over $N = 200$ samples.}}{14}{figure.9}\protected@file@percent }
 \newlabel{fig:simplex_group_output}{{9}{14}{Group-to-output response of the trained network. Each entry $P_{g,:} = \tfrac {1}{N}\sum _{n=1}^{N} \big [\, W_{\text {out}}\,\mathrm {ReLU}(W_{\text {in}}\, x^{(g)}_n)\,\big ]$ is the mean output when only simplex $g$ is active, where each probe $x^{(g)}_n$ has the coordinates $\mathcal {C}_g$ of simplex $g$ sampled and all other coordinates set to zero, averaged over $N = 200$ samples}{figure.9}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Subcomponent structure}{14}{subsubsection.4.4.2}\protected@file@percent }
@@ -216,8 +214,7 @@
 \@writefile{lof}{\contentsline {figure}{\numberline {22}{\ignorespaces Causal importance values for RSPD with attention across the rank sweep, with minimality coefficient $\beta _{3} = 10^{-3}$. Each input activated in isolation at magnitude $0.75$ and the resulting importance over subcomponents. The panels correspond to the rank values from $1$ to $6$. Within each panel the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and columns corresponding to the causal importance value. The subcomponents are permuted within each panel.}}{32}{figure.22}\protected@file@percent }
 \newlabel{appendix:SPD_rank_sweep}{{22}{32}{Causal importance values for RSPD with attention across the rank sweep, with minimality coefficient $\beta _{3} = 10^{-3}$. Each input activated in isolation at magnitude $0.75$ and the resulting importance over subcomponents. The panels correspond to the rank values from $1$ to $6$. Within each panel the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and columns corresponding to the causal importance value. The subcomponents are permuted within each panel}{figure.22}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {23}{\ignorespaces Overview of routing patterns for RSPD across ranks 1 to 6, with the minimality coefficient fixed at $10^{-3}$ (left to right). Within each panel, only the subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left edges, from each input group $g$ to a first-layer subcomponent $c$, give $\DOTSB \sum@ \slimits@ _{i=1}^{d_{\text  {hidden}}} \rho ^{l}_{c,[i,g]}$, the total contribution of group $g$ to subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix $\Psi _{c',c}$, how strongly each first-layer subcomponent routes into each second-layer subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, are given by $\DOTSB \sum@ \slimits@ _{i=1}^{d_{\text  {hidden}}} W_{\text  {out},c,[k,i]}$. Within each panel, edge widths are scaled to the largest edge in each of the three edge sets, so they are comparable within a set but not across sets or panels.}}{33}{figure.23}\protected@file@percent }
-\abx@aux@read@bbl@mdfivesum{A36BF2948FF06091FB9FE8BA44E1CD86}
-\abx@aux@read@bblrerun
+\abx@aux@read@bbl@mdfivesum{0D820487AAD56D0C9781090704196999}
 \abx@aux@defaultrefcontext{0}{sharkey2025openproblemsmechanisticinterpretability}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{stochasticparameterdecomposition}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{park2024linearrepresentationhypothesisgeometry}{none/global//global/global/global}
@@ -237,7 +234,6 @@
 \abx@aux@defaultrefcontext{0}{dunefsky2024transcodersinterpretablellmfeature}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{AttributionBasedParameterDecomposition}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{christensen2025decompositionsmalltransformermodels}{none/global//global/global/global}
-\abx@aux@defaultrefcontext{0}{seshadri2026crosslayer}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{bushnaq2026interpreting_new_spd}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{busch2025}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{vaswani2023attentionneed}{none/global//global/global/global}

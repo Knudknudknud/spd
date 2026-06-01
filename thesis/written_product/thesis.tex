@@ -35,7 +35,7 @@
     \vspace{1.4em}
  
     {\large\itshape
-    Danish: Multidimensional Parameter Decomposition\\
+    Multidimensional Parameter Decomposition\\
     for Mechanistic Interpretability\par}
  
     \vspace*{\fill}
@@ -94,7 +94,7 @@ Github code can be found: \href{https://github.com/Knudknudknud/DS-Thesis}{[here
 \pagenumbering{arabic}
 
 
-\section{Introduction (mangler rettelser, ellers done)}
+\section{Introduction}
 
 Mechanistic interpretability seeks to reverse-engineer neural networks into a set of
 human interpretable mechanisms. Different branches of the field pursue this goal with different
@@ -105,7 +105,7 @@ However, both the atomic structure for decomposition
  and the decomposition itself remain open problems.
 \autocite{sharkey2025openproblemsmechanisticinterpretability}
 Whether a decomposition recovers the computational primitives
-of a neural network depends on what the ground truth decomposition
+of a neural network depends on what the ground-truth decomposition
 is taken to be. With models consisting of independent features,
 the decomposition is unambiguous, with one atom per feature.
 If the features are dependent or co-occur, the decomposition becomes underdetermined.
@@ -142,27 +142,26 @@ to see whether they can be recovered during training rather than
 through post-hoc clustering.
 To
 explore this, the subcomponents are extended to rank k and a joint, relational importance function
-is introduced, computed across subcomponents rather than independently. 
+is computed across subcomponents instead of independently per subcomponent. 
 Lastly, a new toy model, the Toy
-Model of Geometry, is introduced to evaluate both SPD and the modification in a higher-dimensional setting.
+Model of Geometry, is introduced to evaluate both SPD and its modification in a higher-dimensional setting.
 
-Across the toy models studied, the relational importance function, implemented as a transformer
-block with Softmax over subcomponents, recovers sparse, one-hot causal importance
-assignments. These sparse assignments should correspond to full ownership, but the marked
-subcomponents, despite directional alignment, only partially reconstruct the feature magnitude
-themselves, with inactive subcomponents driving the remainder.
+Across the toy models studied, the relational architecture implemented as a transformer
+block with Softmax over subcomponents produces sparse, one-hot causal importance
+assignments. These sparse assignments should correspond to full ownership, but
+are frequently found to only partially reconstruct the feature by themselves,
+with neighbouring subcomponents contributing the remaining magnitude.
 
 Secondly, in The Toy Model of Superposition it is found
 that constraining a subcomponent to rank one does not restrict
 it to a single input. When two inputs are sampled together,
 the model collapses them onto a shared direction in its hidden space,
 and a single rank one subcomponent then captures both,
-just as it would a single independent input. rank one therefore
+just as it would a single independent input. Rank one therefore
 does not appear to indicate the simplest decomposition of the inputs,
-since what a rank one subcomponent captures depends on the model
-transformation, and specifically on how it has collapsed those
-inputs in its hidden space, rather than on the input distribution
-in isolation.
+since what a rank one subcomponent captures depends on
+the inputs alignment in the model's hidden space, rather than on the input distribution alone.
+
 
 Finally, The Toy Model of Geometry shows that the rank-$k$ extension does not translate to SPD
 without further modification, as increasing the rank produces the opposite of the intended effect.
@@ -195,55 +194,48 @@ arithmetic \autocite{nanda2023progressmeasuresgrokkingmechanistic} in
 irreducible low-dimensional subspaces.
 \subsection{Activation-space decomposition}
 Decomposing a network's activations  focuses on disentangling layer activations into interpretable features.
-Here, sparse autoencoders (SAE) are one of the most widely researched methods \autocite{sparseautoencodershighlyinterpretable, bricken2023monosemanticity},
-that learn an overcomplete dictionary that expresses each hidden state as a sparse combination of one-dimensional features.
+Here, sparse autoencoders (SAE) are one of the most widely researched methods \autocite{sparseautoencodershighlyinterpretable, bricken2023monosemanticity}.
+These learn an overcomplete dictionary that expresses each hidden state as a sparse combination of one-dimensional features.
 However, these features are not necessarily aligned with the network's computation, due to feature absorption, inconsistencies across dictionary sizes, and a failure to capture feature geometry.
  \autocite{absorptionstudyingfeaturesplitting, sparseautoencoderscanonicalunits,mendel2024sae}.
 
 Circuit discovery extends feature analysis to identify
 how a computation is processed by the network's structure,
 by identifying  minimal subgraphs required to perform a given task,
-without loss of precision. \autocite{olah2020zoomin,marks2025sparsefeaturecircuitsdiscovering}.
+without loss of precision \autocite{olah2020zoomin,marks2025sparsefeaturecircuitsdiscovering}.
 However, these methods generally do not account for the
 polysemantic and densely connected structure of neural networks,
 where the functional behaviour can be attributed to multiple distinct but functionally equivalent subgraphs \autocite{méloux2025everythingeverywhereoncemechanistic}.
 
 \subsection{Parameter-space decomposition}
 
-Recently a newer line of work aims to decompose the network's parameters directly, instead of the activations.
+Recently, a newer line of work aims to decompose the network's parameters directly, instead of their activations.
 Transcoders \autocite{dunefsky2024transcodersinterpretablellmfeature} represent an intermediate step that learns a sparse approximation of an MLP layer. Parameter decomposition methods go further, factorizing the network's weights directly, with the goal of recovering the network's computational primitives.
 
-Most directly relevant to this work is the description-length-driven
-line of Attribution-based Parameter Decomposition
+Most directly relevant to this work is the
+line of Attribution-based Parameter Decomposition (APD)
 \autocite{AttributionBasedParameterDecomposition} and
 Stochastic Parameter Decomposition (SPD)
 \autocite{stochasticparameterdecomposition}, which has
 recently been explored in small transformer models
-\autocite{christensen2025decompositionsmalltransformermodels}
-and cross-layer clustering \autocite{seshadri2026crosslayer}.
+\autocite{christensen2025decompositionsmalltransformermodels}.
 While APD decomposes a network into multidimensional
 subcomponents,
-the method is sensitive to hyperparameters, and does not scale beyond toy settings due
-to computational complexity. SPD addresses this
+the method is sensitive to hyperparameters, and does not scale beyond toy models
+due to computational complexity. SPD addresses this
 by decomposing each weight matrix into rank one
 subcomponents and learning a per-input importance
 function over them, at the cost of requiring post-hoc
-clustering to recover higher-rank mechanisms;
-both methods are detailed in
+clustering to recover higher-rank mechanisms. 
+Both methods are detailed in
 Section~\ref{sec:spd_background}.
 
 In concurrent work, adVersarial Parameter Decomposition (VPD)
 \autocite{bushnaq2026interpreting_new_spd} extends this line of
-research by replacing SPD's stochastic masking procedure with an
-adversarial objective that searches for subcomponent ablations capable
-of invalidating the learned importance assignments. The method enforces
-that, for any input, every subset of subcomponents containing those
-identified as causally important must still reconstruct the network's
-output. VPD also scales parameter decomposition to a small
-language model.
-%  Other parameter-space
-% approaches include local loss landscape decomposition
-% \autocite{chrisman2025identifyingsparselyactivecircuits}.
+research by replacing SPD's stochastic masking with an adversarial
+objective that forces subcomponents to be 
+causally important in any subset that contains
+them, rather than when all unimportant subcomponents are ablated.
 
 \section{Method (done until korrektur)}
 
@@ -281,7 +273,7 @@ SPD \autocite{stochasticparameterdecomposition} addresses these limitations by e
 W^{l}_{i,j} \approx \sum_{c=1}^{C} U^{l}_{i,c} V^{l}_{c,j}, 
 \quad \text{where} \quad U^l \in \mathbb{R}^{d_{\text{out}} \times C}, \, V^l \in \mathbb{R}^{C \times d_{\text{in}}}
 \end{equation}
-where $C$ is a hyperparameter, for the number of subcomponents for each layer, $l$ indexes the layer and $i,j$ are the hidden indices.
+Here $C$ is a hyperparameter, for the number of subcomponents for each layer, $l$ indexes the layer and $i,j$ are the hidden indices.
 The subcomponent count, $C$, may be chosen to be larger than both $d_{\text{in}}$ and $d_{\text{out}}$, enabling the method to learn features in superposition \autocite{stochasticparameterdecomposition}.
 
 To enforce the properties above, three losses are introduced, which are optimized jointly.
@@ -290,7 +282,7 @@ Faithfulness is enforced through a mean squared error loss between the original 
 \begin{equation}
     \mathcal{L}_{\text{faithfulness}} = \frac{1}{N} \sum_{l=1}^{L}\sum_{i,j} \left( W_{i,j}^{l} - \sum_{c=1}^{C} U^{l}_{i,c}V^{l}_{c,j} \right)^{2}  
 \end{equation}
-where $N$ is the total parameter count in the target model.
+Here $N$ is the total parameter count in the target model.
 
 Optimization for simplicity and minimality is achieved through a
 stochastic masking procedure. Intuitively, if a subcomponent is not
@@ -303,8 +295,8 @@ and output a scalar importance for the corresponding subcomponent:
 \begin{equation}
 g^{l}_{c}(x) = \Gamma^l_c(x) = \sigma_{H}(\gamma^{l}_{c}(h^{l}_{c}(x))), \qquad h^{l}_{c}(x) = \vec{V}_{c}^{l\top} \vec{a}^l(x)
 \end{equation}
-here $\sigma_{H}$ is a hard sigmoid and $\vec{a}^l(x)$ is the
-activation vector of layer $l$. $g_c^{l}(x)$ serves as the lower bound for how much a subcomponent can be masked. With $r^l_{c} \sim \mathcal{U}(0, 1)$ sampled per subcomponent, the masked weight matrix $W^{'l}$ is given by:
+Here $\sigma_{H}$ is a hard sigmoid, $\vec{a}^l(x)$ is the
+activation vector of layer $l$ and $g_c^{l}(x)$ serves as the lower bound for how much a subcomponent can be masked. With $r^l_{c} \sim \mathcal{U}(0, 1)$ sampled per subcomponent, the masked weight matrix $W^{'l}$ is given by:
 \begin{equation}
 \begin{aligned}
     m_{c}^l(x, r) &= g^{l}_{c}(x) + \bigl(1 - g^{l}_{c}(x)\bigr)\, r^l_{c}, \\
@@ -490,7 +482,7 @@ forcing the model to learn an approximation instead of an exact reconstruction \
 
 The fourth experiment generalizes the paired setting to a
 k-dimensional case by computing the volume of a simplex
-from its vertices. The ground truth decomposition is no longer containable in a single rank one subcomponent, as the geometry of the feature is more complex.
+from its vertices. The ground-truth decomposition is no longer containable in a single rank one subcomponent, as the geometry of the feature is more complex.
 This experiment serves to test how well the modified architecture and SPD can group feature parts together, when their expressiveness is increased.
 
 \begin{table*}[H]
@@ -972,8 +964,8 @@ The contribution of neuron $i$ to output $o$ follows directly from its entry $W_
     \includegraphics[width=\linewidth, height=5cm]{w1_w2_input_hidden_output_translation.png}
     \caption{Routing structure of the trained network over the hidden neurons.
     Top: the input-side contribution $\rho_{[i,g]}$ of each simplex group $g$ to each
-    hidden neuron $i$. Bottom: the output-side contribution $W_{\text{out},[k,i]}$ of each
-    hidden neuron to each simplex output $k$. Only neurons with $\rho_{[i,g]} > 0.05$ for
+    hidden neuron $i$. Bottom: the output-side contribution $W_{\text{out},[o,i]}$ of each
+    hidden neuron to each simplex output $o$. Only neurons with $\rho_{[i,g]} > 0.05$ for
     some group and $W_{\text{out},[o,i]} > 0.05$ for some output are shown. Neurons are
     ordered first by the simplex that drives them and then by output strength.}
     \label{fig:simplex_target_structure}
