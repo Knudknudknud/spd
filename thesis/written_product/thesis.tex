@@ -747,8 +747,11 @@ where as in SPD, the pairs collapse onto overlapping subcomponents.
     \label{fig:both}
 \end{figure}
 \footnote{update left image, i accidentally trained RSPD twice i think}
-In terms of MMCS, both methods achieve perfect alignment, with values
-equal to 1. \footnote{double check SPD value} They still differ, however, in how well they capture the full
+Despite their differences, both methods achieve perfect alignment on the MMCS
+and surprisingly SPD, despite its overlapping subcomponents achieves
+a better result in terms of Ml2R, with a higher mean and lower variance.
+RSPD, like in the independent setting, continues to not always concentrate the full feature magnitude within the best-aligned subcomponent, resulting in a lower ML2R with higher variance. This suggests that the best-aligned subcomponent does not always carry the full feature magnitude, and that the adapted architecture's relational importance function does not always manage to capture this full magnitude within a single subcomponent, even when it is perfectly aligned with the target feature direction.
+Additionally in terms of ML2R, they  how well they capture the full
 magnitude of the projection: as already seen with independent inputs
 (Table~\ref{tab:tms_results_single}), the modified architecture again shows a
 lower ML2R with higher variance, indicating that the best-aligned subcomponent,
