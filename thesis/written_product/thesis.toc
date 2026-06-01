@@ -5,7 +5,7 @@
 \contentsline {subsection}{\numberline {2.3}Parameter-space decomposition}{2}{subsection.2.3}%
 \contentsline {section}{\numberline {3}Method (done until korrektur)}{3}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Background on SPD}{3}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Irreducibility and the natural unit of decomposition}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.2}Irreducible features}{4}{subsection.3.2}%
 \contentsline {subsection}{\numberline {3.3}Relational SPD (RSPD)}{5}{subsection.3.3}%
 \contentsline {section}{\numberline {4}Results}{5}{section.4}%
 \contentsline {subsection}{\numberline {4.1}Overview of experiments}{5}{subsection.4.1}%

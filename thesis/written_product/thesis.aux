@@ -69,9 +69,11 @@
 \abx@aux@segm{0}{0}{engels2025languagemodelfeaturesonedimensionally}
 \abx@aux@cite{0}{busch2025}
 \abx@aux@segm{0}{0}{busch2025}
+\abx@aux@cite{0}{busch2025}
+\abx@aux@segm{0}{0}{busch2025}
 \newlabel{spd_minimality}{{3.1}{4}{Background on SPD}{equation.3.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Irreducibility and the natural unit of decomposition}{4}{subsection.3.2}\protected@file@percent }
-\newlabel{sec:irreducibility}{{3.2}{4}{Irreducibility and the natural unit of decomposition}{subsection.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Irreducible features}{4}{subsection.3.2}\protected@file@percent }
+\newlabel{sec:irreducibility}{{3.2}{4}{Irreducible features}{subsection.3.2}{}}
 \abx@aux@cite{0}{vaswani2023attentionneed}
 \abx@aux@segm{0}{0}{vaswani2023attentionneed}
 \abx@aux@cite{0}{elhage2022toymodelssuperposition}
@@ -94,17 +96,15 @@
 \abx@aux@segm{0}{0}{AttributionBasedParameterDecomposition}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
 \abx@aux@segm{0}{0}{stochasticparameterdecomposition}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Overview of the toy models and their properties. }}{6}{table.1}\protected@file@percent }
+\newlabel{tbl:Experiment_overview}{{1}{6}{Overview of the toy models and their properties}{table.1}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Toy Model of Superposition}{6}{subsection.4.2}\protected@file@percent }
 \newlabel{sec:tms-experiments}{{4.2}{6}{Toy Model of Superposition}{subsection.4.2}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Independent features}{6}{subsubsection.4.2.1}\protected@file@percent }
-\abx@aux@cite{0}{stochasticparameterdecomposition}
-\abx@aux@segm{0}{0}{stochasticparameterdecomposition}
-\abx@aux@cite{0}{stochasticparameterdecomposition}
-\abx@aux@segm{0}{0}{stochasticparameterdecomposition}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Decomposition of $\mathrm  {TMS}_{5\text  {-}2}$ using RSPD. The first two panels show the target model's weight columns and the sum of learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ carry large norm and contribute predominantly to the reconstruction. Each active subcomponent recovers primarily one feature direction. with minor leakage across subcomponents.}}{7}{figure.1}\protected@file@percent }
-\newlabel{fig:tms_5_2}{{1}{7}{Decomposition of $\mathrm {TMS}_{5\text {-}2}$ using RSPD. The first two panels show the target model's weight columns and the sum of learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ carry large norm and contribute predominantly to the reconstruction. Each active subcomponent recovers primarily one feature direction. with minor leakage across subcomponents}{figure.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Decomposition quality across both TMS regimes. SPD refers to the original method \blx@tocontentsinit {0}\autocite {stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref {sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}}{7}{table.2}\protected@file@percent }
-\newlabel{tab:tms_results_single}{{2}{7}{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite {stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref {sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$}{table.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Decomposition of $\mathrm  {TMS}_{5\text  {-}2}$ using RSPD. The first two panels show the target model's weight columns and the sum of the learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ have large norm and contribute predominantly to the reconstruction. Each active subcomponent recovers primarily one feature direction, with minor leakage across subcomponents.}}{7}{figure.1}\protected@file@percent }
+\newlabel{fig:tms_5_2}{{1}{7}{Decomposition of $\mathrm {TMS}_{5\text {-}2}$ using RSPD. The first two panels show the target model's weight columns and the sum of the learned subcomponents. Subsequent panels show the individual subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated, only the first $5$ have large norm and contribute predominantly to the reconstruction. Each active subcomponent recovers primarily one feature direction, with minor leakage across subcomponents}{figure.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Decomposition quality across both TMS regimes. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}}{7}{table.2}\protected@file@percent }
+\newlabel{tab:tms_results_single}{{2}{7}{Decomposition quality across both TMS regimes. If the standard deviation is not reported, it is due to it being smaller than $0.001$}{table.2}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2} Toy Model of Dependent Superposition}{7}{subsubsection.4.2.2}\protected@file@percent }
 \newlabel{sec:tms-tied-experiment}{{4.2.2}{7}{Toy Model of Dependent Superposition}{subsubsection.4.2.2}{}}
 \abx@aux@cite{0}{stochasticparameterdecomposition}
@@ -214,7 +214,7 @@
 \@writefile{lof}{\contentsline {figure}{\numberline {22}{\ignorespaces Causal importance values for RSPD with attention across the rank sweep, with minimality coefficient $\beta _{3} = 10^{-3}$. Each input activated in isolation at magnitude $0.75$ and the resulting importance over subcomponents. The panels correspond to the rank values from $1$ to $6$. Within each panel the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and columns corresponding to the causal importance value. The subcomponents are permuted within each panel.}}{32}{figure.22}\protected@file@percent }
 \newlabel{appendix:SPD_rank_sweep}{{22}{32}{Causal importance values for RSPD with attention across the rank sweep, with minimality coefficient $\beta _{3} = 10^{-3}$. Each input activated in isolation at magnitude $0.75$ and the resulting importance over subcomponents. The panels correspond to the rank values from $1$ to $6$. Within each panel the top heatmap is the first layer $W_{1}$ (labelled linear1) and the bottom heatmap is the second layer $W_{2}$ (linear2), with rows corresponding to the subcomponent index and columns corresponding to the causal importance value. The subcomponents are permuted within each panel}{figure.22}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {23}{\ignorespaces Overview of routing patterns for RSPD across ranks 1 to 6, with the minimality coefficient fixed at $10^{-3}$ (left to right). Within each panel, only the subcomponents accounting for $80\%$ of the total $L_1$ norm in each layer are shown. The left edges, from each input group $g$ to a first-layer subcomponent $c$, give $\DOTSB \sum@ \slimits@ _{i=1}^{d_{\text  {hidden}}} \rho ^{l}_{c,[i,g]}$, the total contribution of group $g$ to subcomponent $c$ across all hidden neurons. The middle edges give the routing matrix $\Psi _{c',c}$, how strongly each first-layer subcomponent routes into each second-layer subcomponent. The right edges, from a second-layer subcomponent $c$ to each output $k$, are given by $\DOTSB \sum@ \slimits@ _{i=1}^{d_{\text  {hidden}}} W_{\text  {out},c,[k,i]}$. Within each panel, edge widths are scaled to the largest edge in each of the three edge sets, so they are comparable within a set but not across sets or panels.}}{33}{figure.23}\protected@file@percent }
-\abx@aux@read@bbl@mdfivesum{0D820487AAD56D0C9781090704196999}
+\abx@aux@read@bbl@mdfivesum{D5C0084D88C358687D99E0A89A155488}
 \abx@aux@defaultrefcontext{0}{sharkey2025openproblemsmechanisticinterpretability}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{stochasticparameterdecomposition}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{park2024linearrepresentationhypothesisgeometry}{none/global//global/global/global}

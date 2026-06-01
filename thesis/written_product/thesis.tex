@@ -74,7 +74,7 @@ are faithful to the model's weights, with each subcomponent corresponding to a d
 Stochastic Parameter Decomposition (SPD) does so by constraining each subcomponent to its simplest,
 rank one form and learning an importance assignment that decides which subcomponents are responsible for
 a given input. Since the subcomponents are constrained to be rank one, higher dimensional
-features can not be captured during training and must instead be reassembled by clustering
+features cannot be captured during training and must instead be reassembled by clustering
 multiple lower rank subcomponents together post training.
 
 To explore whether this grouping can instead be done during training, the SPD architecture is adapted
@@ -83,7 +83,7 @@ to use rank-$k$ subcomponents together with a relational importance assignment t
 This reformulation while producing sparser importance assignments, appears to be a poor
 guide to the decomposition underneath. In this setting a one-hot importance assignment does not imply complete ownership,
 since the subcomponents it marks as unimportant still carry relevant magnitude that contribute to the
-output. It is concluded that, under this reformulation, the importance values can not be taken
+output. It is concluded that, under this reformulation, the importance values cannot be taken
 as literal measures of feature ownership, and that other approaches should be considered if higher-dimensional features are to
 be captured during training.
 Github code can be found: \href{https://github.com/Knudknudknud/DS-Thesis}{[here]} and \footnote{move files} WanDB training logs: \href{https://wandb.ai/knsoe24-syddansk-universitetsforlag-university-press-of-/Thesis\%20runs?nw=nwuserknsoe24}{[here]}.\footnote{todo, rename runs}
@@ -127,7 +127,7 @@ computation, exposing the grouping directly but collapsing per side-length infor
 % as the cube example.
 % \autocite{engels2025languagemodelfeaturesonedimensionally}
 % Features are irreducible, and thus constitute units of decomposition,
-% if their joint distribution can not be decomposed into independent
+% if their joint distribution cannot be decomposed into independent
 % factors or into a mixture of mutually exclusive events.
 
 Beyond what the atoms should be, the decomposition procedure itself remains open.
@@ -137,7 +137,7 @@ One such approach, Stochastic Parameter Decomposition (SPD) \autocite{stochastic
 function.
 
 This work examines SPD in settings with multi-dimensional
-features that can not be captured by a single rank one subcomponent,
+features that cannot be captured by a single rank one subcomponent,
 to see whether they can be recovered during training rather than
 through post-hoc clustering.
 To
@@ -322,15 +322,14 @@ This is done through both a layer-wise and a global reconstruction loss. The lay
                   f(x \mid W)\right).
 \end{aligned}
 \end{equation}
-where $D$ is a task-specific divergence measure, such as MSE or KL divergence.
+Where $D$ is a task-specific divergence measure, such as MSE or KL divergence.
 
 Lastly, to enforce minimality, the importance function
 is trained to activate only the subcomponents
 required to reproduce the target model's output,
-leaving the rest inactive. The loss balances
-reconstruction accuracy against the number of
-active subcomponents, creating a tradeoff between
-faithfulness and minimality.
+leaving the rest inactive.
+Combined with the reconstruction objective,
+this produces a tradeoff between reconstruction and minimality.
 \begin{equation}
     \mathcal{L}_{\text{minimality}}
       = \sum_{l=1}^{L} \sum_{c=1}^{C} \bigl(g^{l}_{c}(x)\bigr)^{p},
@@ -348,12 +347,12 @@ The full SPD objective is a weighted sum of these terms:
 \end{equation}
 
 
-\subsection{Irreducibility and the natural unit of decomposition}
+\subsection{Irreducible features}
 \label{sec:irreducibility}
 A growing body of work has identified irreducible
 multi-dimensional features in trained models,
 in which concepts are encoded in higher-dimensional
-subspaces that can not be decomposed into independent
+subspaces that cannot be decomposed into independent
 one-dimensional features
 \autocite{engels2025languagemodelfeaturesonedimensionally}.
 This has prompted a redefinition of the superposition
@@ -363,16 +362,18 @@ irreducible and may span more than a single direction.
 
 \textbf{Definition: Multi-dimensional superposition hypothesis}\\
 Every hidden
-state $x_{i,l}(t)$ can be written as a sum of feature contributions
+state $x_{i,l}(t)$ can be written as a sum of feature contributions.
 \begin{equation}
-    x_{i,l}(t) = \sum_j V_j \, f_j(t),
+    x_{i,l}(t) = \sum_j V_j \, f_j(t)
 \end{equation}
-where each $f_j(t) \in \mathbb{R}^{d_{f_j}}$ is an irreducible feature with
-internal dimensionality $d_{f_j} \geq 1$, each $V_j \in \mathbb{R}^{d \times d_{f_j}}$,
+Where each $f_j(t) \in \mathbb{R}^{d}$ is an irreducible feature with
+internal dimensionality $d \geq 1$, each $V_j \in \mathbb{R}^{d_\text{out} \times d}$,
 and $\| V_k^\top V_r \| < \delta$ for $k \neq r$.
-
-Here an irreducible feature is one that can not be decomposed into two independent or mutually exclusive features, as defined below.
-The original mixture case is self-contradicting, so it is restated as in \autocite{busch2025}.
+Here an irreducible feature is one that cannot be decomposed 
+nto two independent or mutually exclusive features, as defined
+below. The original definition is internally inconsistent,
+as noted by \textcite{busch2025}, whose restatement
+is adopted instead.\\
 
 \textbf{Definition: Reducibility} \\
 A feature $f: \mathcal{X} \to \mathbb{R}^{d}$,
@@ -397,9 +398,9 @@ when it is in its smallest form. They do not, however,
 define what the features are in the first place, nor how they
 should be extracted from the network's parameters. SPD addresses
 this, but in its original form recovers only rank one
-subcomponents and can not express the multi-dimensional features
+subcomponents and cannot express the multi-dimensional features
 these definitions require.
-This gap is what motivates adapting SPD to higher rank.
+This gap is what motivates adapting SPD to higher ranks.
 Rather than clustering rank one subcomponents post-hoc,
 the rank one subcomponents are replaced with rank-$k$
 subcomponents, so that multi-dimensional features can be represented
@@ -408,11 +409,11 @@ is introduced in Section~\ref{sec:rank-k-attention}.
 
 \subsection{Relational SPD (RSPD)}
 \label{sec:rank-k-attention}
-In the original SPD paper, the subcomponents are constructed as rank one matrices,
+In the original SPD paper, the subcomponents are constructed as rank one matrices
 through an outer product of two vectors. As motivated in
-Section~\ref{sec:irreducibility}, a rank one subcomponent can not
+Section~\ref{sec:irreducibility}, a rank one subcomponent cannot
 represent an irreducible multi-dimensional feature, forcing it to either
- be split across multiple subcomponents or approximated by a single one at
+be split across multiple subcomponents or approximated through a single subcomponent at
 the cost of reconstruction. To allow such features to be captured during training,
 the pairs of vectors are replaced with pairs of matrices.
 \begin{equation}
@@ -422,7 +423,7 @@ W^{l}_{i,j} \approx \sum_{c=1}^{C} \sum_{r=1}^{k} U^{l}_{c,i,r} V^{l}_{c,r,j},
 Each subcomponent, denoted $W^{l}_{c} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
 with entries $W^{l}_{c,[i,j]} = \sum_{r=1}^{k} U^{l}_{c,i,r} V^{l}_{c,r,j}$, has rank
 at most $k$, recovering the original SPD definition when $k=1$. As in the
-multi-dimensional superposition hypothesis, $k$ is an upper bound on each
+Multi-dimensional superposition hypothesis, $k$ is an upper bound on each
 subcomponent's representational capacity; the effective rank may be lower.
 
 In SPD, each subcomponent's importance is computed independently through an MLP followed by a sigmoid nonlinearity,
@@ -431,16 +432,16 @@ feature across them, even when it is irreducible. Likewise, the minimality loss 
 it imposes little penalty for distributing a feature across multiple subcomponents,
 nor for a single subcomponent to encode parts of multiple features. (Section \ref{spd_minimality})
 
-To address this, the causal importance function is redefined to maximize the conditional probability, that a given subcomponent $U_{c}^{l}V^{l}_{c}$, is responsible for a given feature, conditioned on the activations of all subcomponents in the same layer.
+To address this, the causal importance function is redefined to maximize the conditional probability that a given subcomponent $W^{l}_{c}$, is responsible for a given feature, conditioned on the activations of all subcomponents in the same layer.
 \begin{equation}
     g^l_{c}(x) = p\!\left(W^l_c \mid \{h^l_{c'}(x)\}^{C}_{c'=1}\right), \quad h^l_c(x) = {V^l_c}^{\top} \vec{a}^l(x) \in \mathbb{R}^k
 \end{equation}
 here $\vec{a}^l(x)$ is the activation vector of layer $l$ and C is the number of subcomponents in layer $l$, $g^{l}_{c}(x)$ the causal importance value and $h_{c}^l$ the input to the causal importance function.
 
-The conditional importance is computed using a standard transformer block following the architecture of \autocite{vaswani2023attentionneed}. For each layer $l$,
+The conditional probability is computed using a standard transformer block following the architecture of \autocite{vaswani2023attentionneed}. For each layer $l$,
 the read activations \(h_c^l(x) \in \mathbb{R}^k\) of the \(C\) subcomponents are concatenated into a matrix \(H^l(x) \in \mathbb{R}^{C \times k}\),
 with no positional encoding.
-These activations are projected into the transformer residual stream through a learned linear projection. The resulting representations are then processed by a standard transformer block consisting of a single attention head,
+These activations are projected into the transformers internal dimension through a learned linear projection. The resulting representations are then processed by a standard transformer block consisting of a single attention head,
 a feed-forward network, residual connections, and layer normalization.
 
 Finally, each subcomponent representation is projected down to a single scalar, and a Softmax over all subcomponents is computed.
@@ -469,25 +470,29 @@ To evaluate how the proposed changes affect SPD's performance,
 the result section is structured around four experiments.
 For an overview see Table \ref{tbl:Experiment_overview}.
 
-The first two experiments reuse The Toy model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition}
-once sampled with independent inputs and once with paired.
-The paired setting introduces statistical dependence between features,
-where the toy model assigns both features to a single direction, allowing a 
+The first two experiments reuse the Toy Model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition},
+once sampled with independent inputs, and once with paired.
+The paired setting introduces statistical dependence between inputs,
+where the toy model assigns both to one joint direction, allowing a 
 single rank 1 subcomponent to capture both inputs.
 
-The third experiment is done through The Toy Model of
+The third experiment is done through the Toy Model of
 Compressed Computation, where 100 ReLU functions
 are learnt to be approximated through a 50-dimensional bottleneck,
-forcing the model to learn an approximation instead of an exact reconstruction \autocite{bhagat2025compressed}. 
+forcing the model to learn an approximation
+instead of an exact reconstruction
+ \autocite{bhagat2025compressed}. 
 
 The fourth experiment generalizes the paired setting to a
 k-dimensional case by computing the volume of a simplex
 from its vertices. The ground-truth decomposition is no longer containable in a single rank one subcomponent, as the geometry of the feature is more complex.
-This experiment serves to test how well the modified architecture and SPD can group feature parts together, when their expressiveness is increased.
+This experiment serves to test how well
+the modified architecture and SPD capture
+higher dimensional features when their
+expressiveness is increased.
 
-\begin{table*}[H]
+\begin{table*}[h!]
 \centering
-
 \renewcommand{\arraystretch}{1.25}
 \setlength{\tabcolsep}{5pt}
 
@@ -513,7 +518,7 @@ This experiment serves to test how well the modified architecture and SPD can gr
 Objective & $x \in \mathbb{R} \mapsto x$ 
           & $x \in \mathbb{R}^d \mapsto x$ 
           & $x \in \mathbb{R} \mapsto x + \mathrm{ReLU}(x)$ 
-          & $x \in \mathbb{R}^d \mapsto \mathbb{R}$\\
+          & $x \in \mathbb{R}^d \mapsto y \in \mathbb{R}$\\
 \midrule
 
 Statistical dependence&
@@ -559,11 +564,9 @@ One-hot per simplex
 \end{tabularx}
 
 \vspace{0.5em}
-
 \caption{Overview of the toy models and their properties.
 }
 \label{tbl:Experiment_overview}
-
 \end{table*}
 
 
@@ -575,7 +578,11 @@ The Toy Model of Superposition (TMS) \autocite{elhage2022toymodelssuperposition}
 \begin{equation}
     \hat{x} = \mathrm{ReLU}(W^{\top}Wx + b), \qquad W \in \mathbb{R}^{d_{\text{hidden}} \times d_{\text{in}}}, \quad d_{\text{in}} \gg d_{\text{hidden}}.
 \end{equation}
-TMS is studied in two regimes: one with independent inputs, reproducing the original SPD setup, and one with paired inputs that introduces statistical dependence. For both regimes, the rank of each subcomponent is kept at $1$, both because this is the ground-truth structure and to isolate the effect of RSPD.
+TMS is studied in two regimes: one with independent inputs,
+reproducing the original SPD setup, and one with paired
+inputs that introduces statistical dependence. For both regimes,
+the rank of each subcomponent is kept at $1$,
+ both because this is the ground-truth structure, and to isolate the effect of RSPD.
 
 To quantify how well the learned subcomponents recover the target model columns,
 two metrics are computed across both regimes.
@@ -595,13 +602,12 @@ W_{c,[:,j]} \cdot W_{:,j}
 \left\| W_{c,[:,j]} \right\|_2 \, \left\| W_{:,j} \right\|_2
 }
 \end{equation}
-
-where $c  \in \{1,\dots, C\}$ is the subcomponent index and
+Where $c  \in \{1,\dots, C\}$ is the subcomponent index and
 $j \in \{1, \ldots, d_{\text{in}}\}$ is the input index. A value of $1$ indicates
 that every target column has a perfectly aligned subcomponent.
 
-Apart from directional alignment, the strength of the alignment
-is also measured, to detect feature shrinkage, a problem apparent
+Apart from directional alignment, the norm of the best-aligned subcomponent
+is also measured to detect feature shrinkage, a problem apparent
 in both Sparse Autoencoders and Attribution-Based Parameter
 Decomposition \autocite{jermyn2024tanhPenaltyDictionaryLearning,wright2024featureSuppressionSAEs,AttributionBasedParameterDecomposition}.
 The mean $L_{2}$ ratio (ML2R) compares the $L_{2}$ norm of the best-aligned
@@ -617,25 +623,30 @@ subcomponent to that of the target model for each of its columns \autocite{stoch
 \left\| W_{:,j} \right\|_2
 }
 \end{equation}
-where $\text{mcs(j)} = \arg \max_{c}$ of the MMCS expression for column $j$.
+Where $\text{mcs(j)} = \arg \max_{c}$ of the MMCS expression for column $j$.
 A ratio near $1$ indicates the target column $W_{:,j}$ is fully
 captured by its best-aligned subcomponent.
 
 \subsubsection{Independent features}
-In this setting, each input $\mathbf{x} \in \mathbb{R}^{d_{\text{in}}}$ has components $x_j {\sim} \mathcal{U}(0,1)$ for $j = 1, \dots, d_{\text{in}}$.
-Under this setup, the ground-truth decomposition is a set of $d_{\text{in}}$ rank one matrices, each non-zero only along the $j$-th column $W_{:,j}$.
-Like in the original SPD paper, two TMS models are trained: $\mathrm{TMS}_{5\text{-}2}$ with $d_{\text{in}}=5$ and $d_{\text{hidden}}=2$, and $\mathrm{TMS}_{40\text{-}10}$ with $d_{\text{in}}=40$ and $d_{\text{hidden}}=10$.
+In this setting, each input $\mathbf{x} \in \mathbb{R}^{d_{\text{in}}}$ has
+components $x_j \, {\sim} \, \mathcal{U}(0,1)$ for $j = 1, \dots, d_{\text{in}}$.
+Under this setup, the ground-truth decomposition is a set of $d_{\text{in}}$
+rank one matrices, each non-zero only along the $j$-th column $W_{:,j}$.
+Like in the original SPD paper, two TMS models
+are trained: $\mathrm{TMS}_{5\text{-}2}$ with $d_{\text{in}}=5$,
+$d_{\text{hidden}}=2$ and $\mathrm{TMS}_{40\text{-}10}$ with
+$d_{\text{in}}=40$ and $d_{\text{hidden}}=10$.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{tms_5_2_plot.png}
     \caption{Decomposition of $\mathrm{TMS}_{5\text{-}2}$ using RSPD. 
     The first two panels show the target model's weight columns and the
-    sum of learned subcomponents. Subsequent panels show the individual
+    sum of the learned subcomponents. Subsequent panels show the individual
     subcomponents, ordered by decreasing norm. Although $20$ subcomponents are allocated,
-    only the first $5$ carry large norm and contribute predominantly
+    only the first $5$ have large norm and contribute predominantly
     to the reconstruction. Each active subcomponent recovers primarily
-     one feature direction. with minor leakage across subcomponents.}
+     one feature direction, with minor leakage across subcomponents.}
     \label{fig:tms_5_2}
 \end{figure}
 Here SPD perfectly recovers the target model's geometry, with both MMCS and ML2R equal to $1$
@@ -660,7 +671,7 @@ MMCS  & $1.00$ & $ 0.970 \pm 0.028$ & $1.00$ & $0.824 \pm 0.09$ \\
 ML2R  & $1.00$ & $ 0.8290 \pm 0.130$ & $1.055 \pm 0.045$ & $0.566 \pm 0.489$ \\
 \bottomrule
 \end{tabular}
-\caption{Decomposition quality across both TMS regimes. SPD refers to the original method \autocite{stochasticparameterdecomposition}; RSPD refers to the relational importance function of Section~\ref{sec:rank-k-attention}. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
+\caption{Decomposition quality across both TMS regimes. If the standard deviation is not reported, it is due to it being smaller than $0.001$.}
 \label{tab:tms_results_single}
 \end{table}
 While RSPD does not recover the exact geometry, it correctly concentrates the entire
@@ -918,7 +929,7 @@ subcomponents absorb the difference.
 
 In the paired TMS regime, even though input pairs were nominally two-dimensional, the model collapsed them onto a single direction,
 so a rank-1 decomposition per feature was sufficient. To test the rank-$k$ extension of Section~\ref{sec:rank-k-attention},
-a setting is needed where features can not collapse to a single direction.
+a setting is needed where features cannot collapse to a single direction.
 This experiment generalizes the cube example from the introduction, where a model is trained to compute the volume of an $n$-dimensional simplex from its $n+1$ vertices in $\mathbb{R}^n$:
 \begin{equation}
     \text{Vol}(v_1, \ldots, v_{n+1}) = \frac{1}{n!} \left| \det\!\left( \begin{bmatrix} v_2 - v_1 & v_3 - v_1 & \cdots & v_{n+1} - v_1 \end{bmatrix} \right) \right|.
@@ -1072,7 +1083,7 @@ With the rank fixed at $k=1$, the minimality coefficient $\beta_3$ is
 varied in order to compare how SPD and RSPD distribute importance
 under different levels of sparsity pressure.
 Since a rank-1 subcomponent
-can not represent a full simplex, the focus lies on
+cannot represent a full simplex, the focus lies on
 how each method allocates importance across subcomponents, when
 the capacity is insufficient.
 
@@ -1273,7 +1284,7 @@ are not pruned to zero norm but remain residually active.
 This was surprising, since SPD's minimality term is also only
 an indirect penalty on the norm, yet it still prunes
 inactive subcomponents to near-zero. 
-It can not, however, be ruled out that the effect stems from the interaction
+It cannot, however, be ruled out that the effect stems from the interaction
 of softmax and entropy, or that the method might find better success in a
 setting where each subcomponent must reconstruct the output within every subset,
 rather than only when all others are ablated,
