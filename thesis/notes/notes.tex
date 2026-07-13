@@ -1,0 +1,123 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx} % Inserting images
+\graphicspath{{Images/}} % Expects Image folder in current folder.
+\usepackage{float} % Improves h specifier
+
+\usepackage{fancyhdr, setspace, geometry, times} % Layout
+\geometry{a4paper, left=30mm, right=30mm, top=20mm, bottom=15mm, headheight=27.1pt}
+\onehalfspacing
+
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{tabularx, booktabs} %tables
+\usepackage{multicol} % Allows multi columns
+
+% Custom Commands located in texmf
+\usepackage{Theoremboxes}
+\usepackage{Commands}
+
+% Uncomment for dark mode
+%\usepackage{darkmode}
+%\enabledarkmode
+
+% Declares this document as the main one, when using chapters.
+%\newcommand{\included}{}
+%Place inside document, if to be used with chapters. (or similar structure)
+%\input{lectures/Lecture1}
+
+
+
+% First page
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[r]{Knud Sønderbek \par \today}
+\fancyfoot[R]{\thepage}
+
+\title{}
+\date{\today}
+\author{Knud Sønderbek}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\newpage
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+\pagenumbering{arabic}
+\section{Optimizers:}
+\section{what does batch size do}
+\section{Differences between l1 and l2 loss}
+The l1 normalization i.e for question about minimality, more eagerly pushes certain features or sbucomponents to exact  zero. \\
+This comes as a consequence of the derivative of it.
+\begin{align*}
+    \frac{d}{dx}x = 1 / -x = -1 \\
+    \frac{d}{dx}x^2=2x
+\end{align*}
+i.e the derivative depends on the magnitude, for l2 loss. It doesnt for l1 loss. Taken with an oscilating loss function it will oscilate to  0.
+
+
+\subsection{regularization}
+\begin{enumerate}
+    \setlength\itemsep{0em}
+    \item We dont use dropout, as this is done by the ablation anyway.
+    \item We dont use any weight decay, as component magnitude is quite important! Don't want feature shrinkage
+\end{enumerate}
+\section{If they ask about why a circle cant be rank 1?}
+
+
+
+\section{Why does the cosine similarity go from 0 -1 ?}
+Cauchy schwartz inequlaity states at $uv \leq |u| \cdot |v|$
+
+\section{Optimizers}
+\subsection{SGD:}
+
+\[
+    w_{i} = W_{i-1} - lr * \nabla W_{i-1} 
+\]
+Issue, take $p^2$, the gradient very quickly deteriorates, and goes to near zero within few iterations. 
+
+\subsection{Mometum}
+Momentum gives memory:
+\[
+    vel = 0.5 * velocity + gradient
+\]
+where velocity is saved over iterations. i.e it slows down slower
+
+\subsubsection{Adam:}
+Momentum with adagrad i.e there is a per component momentum computation, instead of a global one!
+So if one is more sensitive than the other its ok!
+
+
+
+\section{Quantum}
+Quantum (plural quanta): An indivisible computational module that,
+for example, retrieves a fact, implements an algorithm, or more generally
+corresponds to some basic skill possessed by a model.
+
+
+\section{example of matrix mult routing}
+\[
+    W_{l} = \begin{bmatrix}
+    a & b
+    \end{bmatrix}, W_{l+1} \begin{bmatrix}
+    c\\
+    d
+    \end{bmatrix}
+\]
+Multiplying through gives:
+\[
+    W_{l_{1}} W_{l_{0}} = \begin{bmatrix}
+    ac & bc\\
+    ad & bd
+    \end{bmatrix}
+\]
+Summing over these entries gives $ac+bc+ad+bd= (c+d)(a+b)$
+And through the routing matrix:
+\[
+    (a+b) * (c+d)
+\]
+
+
+
+\end{document}

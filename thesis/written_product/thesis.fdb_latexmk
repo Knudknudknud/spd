@@ -1,12 +1,12 @@
 # Fdb version 4
-["biber thesis"] 1780341630.59956 "thesis.bcf" "thesis.bbl" "thesis" 1780341993.57114 0
+["biber thesis"] 1780344195.89531 "thesis.bcf" "thesis.bbl" "thesis" 1780347516.61403 0
   "references.bib" 1779956677 13468 a2467d0bfef641926e7be2273ae0496f ""
-  "thesis.bcf" 1780341993 112942 da4bf314b283bd649ecb6058a806baf4 "pdflatex"
+  "thesis.bcf" 1780347516 113182 80d84f9f271aba9232a47c0f019fe09b "pdflatex"
   (generated)
   "thesis.bbl"
   "thesis.blg"
   (rewritten before read)
-["pdflatex"] 1780341956.0757 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1780341993.57264 0
+["pdflatex"] 1780347488.05551 "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" "thesis.pdf" "thesis" 1780347516.61501 0
   "Images/CCmodel.png" 1778734121 33210 151b177e5897e27061d084ad80eae905 ""
   "Images/Io_routing_chain_combined_rank_3_and_5.png" 1780317469 6900624 f4403b8177d26ff74c3a95d92d4b8293 ""
   "Images/Io_routing_chain_for_spd_and_softmax_combined_minimality_1e-3_and_1e-5.png" 1780317469 7154070 68d7dc0f75a2967a559b9f4ee052f090 ""
@@ -22,17 +22,17 @@
   "Images/Softmax_minimality_sweep_condensed_1e-3_to_1e-6.png" 1780091721 143190 4c0ce3c4f5465c6aacd0ba4890ebfdd8 ""
   "Images/Softmax_minimality_sweep_full_1e1_to_1e-6.png" 1780091721 282472 48d43f030ddd1cb7ec116f98c3d88921 ""
   "Images/Softmax_rank_io_sweep_full_rank_1_to_8.png" 1780317470 4961132 1a5e8bac504a4f89e3b489c4a3cb646e ""
-  "Images/cc_softmax_attention.png" 1780163823 758469 458408d493a30bc66699eb1e464247bc ""
   "Images/cc_softmax_causal_importance_hist.png" 1780224574 24619 e71d238f0f4211f2e36aca2cb7baa28a ""
   "Images/ccmodel_small.png" 1780336473 150778 b391bb96c04e75fbda5f8dfdc85166de ""
   "Images/combined_subcomponent_norms.png" 1780317470 182622 f85ffb4ff1b0d44b8841a768f306f141 ""
+  "Images/component_contribution_soft_max.png" 1780342261 523588 7db46407fdbf2fb6bd7dae2e288c3d41 ""
   "Images/group_output_matrix_simplex.png" 1780091498 30350 153cceb2090a349d2caac38f1bfd6630 ""
   "Images/softmax_40_10_paired.png" 1780227812 141672 106ae6055daf340cdc9cdca1b4e9dbde ""
   "Images/spd_40_10_paired.png" 1780313725 189702 3d035d85f3031815f7f73f496d9c40da ""
   "Images/tms_5_2_plot.png" 1780178919 194557 8fd5979308c72d1980f5fde6623d00b0 ""
   "Images/w1_w2_input_hidden_output_translation.png" 1780317830 293956 87e74bd6d73655f165420383210cf8b2 ""
   "arxiv.sty" 1774611555 7902 f2cb9d6386c38cb1ddd8d4504a6292a3 ""
-  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1780341954 84088 5873b86d7cfae422b3784fb3e6651106 ""
+  "c:/Users/bruger/uni/spd/thesis/written_product/thesis.tex" 1780347485 83135 083918a7ac32ce691ed31074b5d71ab9 ""
   "c:/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc" 1722946599 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "c:/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1722947038 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "c:/texlive/2024/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1722957685 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -156,12 +156,12 @@
   "c:/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1722958775 5437080 ed7bddc74a2a640cd859bad2f86a3c86 ""
   "c:/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1722959163 6879081 fdeace8d7504e29902b33a8915f1b7e1 ""
   "c:/texlive/2024/texmf.cnf" 1722958746 713 e69b156964470283e0530f5060668171 ""
-  "thesis.aux" 1780341993 43221 f53993f690147186690169fffdf19fbd "pdflatex"
-  "thesis.bbl" 1780341633 62699 a73e865923f710628b7f61e9c25b7a7d "biber thesis"
-  "thesis.out" 1780341993 6905 ac390b02353f091f85e39ae27737df3c "pdflatex"
-  "thesis.run.xml" 1780341993 2319 feea68f5df4df9d84b38864f03f3a104 "pdflatex"
-  "thesis.tex" 1780341954 84088 5873b86d7cfae422b3784fb3e6651106 ""
-  "thesis.toc" 1780341993 3316 b00f8902a11fd54e38f0777205547eed "pdflatex"
+  "thesis.aux" 1780347516 43278 5d3373b627fbe9349d5aca27970e9b61 "pdflatex"
+  "thesis.bbl" 1780344199 62699 a73e865923f710628b7f61e9c25b7a7d "biber thesis"
+  "thesis.out" 1780347516 6691 ff4bfd53f97cceed40fed95270cbdc81 "pdflatex"
+  "thesis.run.xml" 1780347516 2319 feea68f5df4df9d84b38864f03f3a104 "pdflatex"
+  "thesis.tex" 1780347485 83135 083918a7ac32ce691ed31074b5d71ab9 ""
+  "thesis.toc" 1780347516 3212 dabf5b4d0b5d8d1c484fc031dc00d928 "pdflatex"
   (generated)
   "thesis.aux"
   "thesis.bcf"

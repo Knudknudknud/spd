@@ -1,0 +1,12 @@
+\contentsline {section}{\numberline {1}Optimizers:}{1}{}%
+\contentsline {section}{\numberline {2}what does batch size do}{1}{}%
+\contentsline {section}{\numberline {3}Differences between l1 and l2 loss}{1}{}%
+\contentsline {subsection}{\numberline {3.1}regularization}{1}{}%
+\contentsline {section}{\numberline {4}If they ask about why a circle cant be rank 1?}{1}{}%
+\contentsline {section}{\numberline {5}Why does the cosine similarity go from 0 -1 ?}{1}{}%
+\contentsline {section}{\numberline {6}Optimizers}{1}{}%
+\contentsline {subsection}{\numberline {6.1}SGD:}{1}{}%
+\contentsline {subsection}{\numberline {6.2}Mometum}{1}{}%
+\contentsline {subsubsection}{\numberline {6.2.1}Adam:}{2}{}%
+\contentsline {section}{\numberline {7}Quantum}{2}{}%
+\contentsline {section}{\numberline {8}example of matrix mult routing}{2}{}%

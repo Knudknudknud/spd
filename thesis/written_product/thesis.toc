@@ -13,11 +13,10 @@
 \contentsline {subsubsection}{\numberline {4.2.1}Toy Model of Independent Superposition}{6}{subsubsection.4.2.1}%
 \contentsline {subsubsection}{\numberline {4.2.2} Toy Model of Dependent Superposition}{7}{subsubsection.4.2.2}%
 \contentsline {subsection}{\numberline {4.3}Toy Model of Compressed Computation}{9}{subsection.4.3}%
-\contentsline {subsubsection}{\numberline {4.3.1}Causal importance assignment}{9}{subsubsection.4.3.1}%
-\contentsline {subsubsection}{\numberline {4.3.2}Subcomponent norm distribution}{11}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.1}Subcomponent norm distribution}{11}{subsubsection.4.3.1}%
 \contentsline {subsection}{\numberline {4.4}Toy Model of Geometry}{12}{subsection.4.4}%
 \contentsline {subsubsection}{\numberline {4.4.1}Target model structure}{12}{subsubsection.4.4.1}%
-\contentsline {subsubsection}{\numberline {4.4.2}Subcomponent structure}{14}{subsubsection.4.4.2}%
+\contentsline {subsubsection}{\numberline {4.4.2}Subcomponent structure}{13}{subsubsection.4.4.2}%
 \contentsline {subsubsection}{\numberline {4.4.3}Causal importance assignment at different minimality coefficients}{14}{subsubsection.4.4.3}%
 \contentsline {subsubsection}{\numberline {4.4.4}Causal importance assignment at different ranks}{17}{subsubsection.4.4.4}%
 \contentsline {section}{\numberline {5}Discussion}{21}{section.5}%
